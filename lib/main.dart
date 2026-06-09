@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -45,11 +46,20 @@ import 'services/activity_log_service.dart';
 import 'features/returns/presentation/bloc/returns_cubit.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await EasyLocalization.ensureInitialized();
+  try {
+    WidgetsFlutterBinding.ensureInitialized();
+    await EasyLocalization.ensureInitialized();
 
-  // 1. Initialize DB config
-  RealmConfig.init();
+    // 1. Initialize DB config
+    RealmConfig.init();
+  } catch (e, stackTrace) {
+    try {
+      File('crash_log.txt').writeAsStringSync('Error: $e\nStacktrace: $stackTrace\n');
+    } catch (e2) {
+      // Ignore write errors
+    }
+    rethrow;
+  }
 
   // 2. Initialize SharedPreferences
   final prefs = await SharedPreferences.getInstance();
