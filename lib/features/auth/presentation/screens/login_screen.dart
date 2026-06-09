@@ -174,26 +174,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     SizedBox(height: 24.h),
                     
-                    // Testing notes/tips
-                    Container(
-                      padding: EdgeInsets.all(12.r),
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.primary.withOpacity(0.05),
-                        borderRadius: BorderRadius.circular(12.r),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Testing credentials / حسابات التجربة:',
-                            style: TextStyle(fontSize: 10.sp, fontWeight: FontWeight.bold),
-                          ),
-                          SizedBox(height: 4.h),
-                          Text('• Admin: admin / admin123', style: theme.textTheme.bodySmall),
-                          Text('• Cashier: cashier / cashier123', style: theme.textTheme.bodySmall),
-                        ],
-                      ),
-                    ),
+
                   ],
                 ),
               ),
