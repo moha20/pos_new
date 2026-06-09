@@ -97,13 +97,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           children: [
                             TextFormField(
                               controller: _companyController,
-                              decoration: InputDecoration(
-                                labelText: 'company_name'.tr(),
-                                border: const OutlineInputBorder(),
-                                suffixIcon: !isAdmin ? const Icon(Icons.lock, size: 18) : null,
-                              ),
-                              readOnly: !isAdmin,
-                              enabled: isAdmin,
+                              decoration: InputDecoration(labelText: 'company_name'.tr(), border: const OutlineInputBorder()),
                               validator: (v) => v == null || v.isEmpty ? 'no_data'.tr() : null,
                             ),
                             SizedBox(height: 12.h),
