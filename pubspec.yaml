@@ -37,6 +37,7 @@ dev_dependencies:
   flutter_lints: ^3.0.0
   build_runner: any
   flutter_launcher_icons: any
+  inno_bundle: any
 
 flutter_launcher_icons:
   android: "launcher_icon"
@@ -52,6 +53,15 @@ flutter_launcher_icons:
   macos:
     generate: true
     image_path: "assets/images/logo.jpg"
+
+inno_bundle:
+  id: 0C1B0360-F22B-4521-BD33-C6F36476FAD1
+  name: Al-Mohandis POS
+  publisher: Al-Mohandis
+  installer_icon: windows/runner/resources/app_icon.ico
+  languages:
+    - english
+    - arabic
 
 flutter:
   uses-material-design: true
