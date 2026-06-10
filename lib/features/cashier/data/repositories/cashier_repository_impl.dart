@@ -1,55 +1,45 @@
-import 'package:realm/realm.dart';
+import 'package:hive/hive.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../domain/repositories/cashier_repository.dart';
 import '../../domain/entities/expense_entity.dart';
 import '../models/expense_model.dart';
+import '../../../../core/db/hive_config.dart';
 
 class CashierRepositoryImpl implements CashierRepository {
-  final Realm realm;
+  final Box _box;
   final SharedPreferences prefs;
 
-  CashierRepositoryImpl(this.realm, this.prefs);
-
-  ObjectId _parseId(String idStr) {
-    try {
-      return ObjectId.fromHexString(idStr);
-    } catch (_) {
-      return ObjectId();
-    }
-  }
+  CashierRepositoryImpl(this._box, this.prefs);
 
   @override
   Future<List<ExpenseEntity>> getExpenses() async {
-    return realm.all<Expense>().map((e) => e.toEntity()).toList();
+    return _box.values
+        .map((v) => ExpenseModel.fromMap(v as Map<dynamic, dynamic>).toEntity())
+        .toList();
   }
 
   @override
   Future<void> addExpense(ExpenseEntity expense) async {
-    realm.write(() {
-      realm.add(Expense(
-        ObjectId(),
-        expense.description,
-        expense.amount,
-        expense.category,
-        expense.date,
-        shiftId: expense.shiftId,
-      ));
-    });
+    final id = generateId();
+    final model = ExpenseModel(
+      id: id,
+      description: expense.description,
+      amount: expense.amount,
+      category: expense.category,
+      date: expense.date,
+      shiftId: expense.shiftId,
+    );
+    await _box.put(id, model.toMap());
   }
 
   @override
   Future<void> deleteExpense(String id) async {
-    final dbExp = realm.find<Expense>(_parseId(id));
-    if (dbExp != null) {
-      realm.write(() {
-        realm.delete(dbExp);
-      });
-    }
+    await _box.delete(id);
   }
 
   @override
   Future<void> openShift(double startingCash) async {
-    final shiftId = ObjectId().toString();
+    final shiftId = generateId();
     await prefs.setBool('is_shift_open', true);
     await prefs.setDouble('starting_cash', startingCash);
     await prefs.setString('active_shift_id', shiftId);

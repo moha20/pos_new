@@ -1,23 +1,43 @@
-import 'package:realm/realm.dart';
 import '../../domain/entities/user_entity.dart';
 
-part 'user_model.realm.dart';
+class UserModel {
+  final String id;
+  final String name;
+  final String username;
+  final String passwordHash;
+  final String role; // 'admin' | 'cashier' | 'viewer'
+  final bool isActive;
 
-@RealmModel()
-class _User {
-  @PrimaryKey()
-  late ObjectId id;
-  late String name;
-  late String username;
-  late String passwordHash;
-  late String role; // 'admin' | 'cashier' | 'viewer'
-  late bool isActive;
-}
+  UserModel({
+    required this.id,
+    required this.name,
+    required this.username,
+    required this.passwordHash,
+    required this.role,
+    required this.isActive,
+  });
 
-extension UserMapper on User {
+  Map<String, dynamic> toMap() => {
+    'id': id,
+    'name': name,
+    'username': username,
+    'passwordHash': passwordHash,
+    'role': role,
+    'isActive': isActive,
+  };
+
+  factory UserModel.fromMap(Map<dynamic, dynamic> map) => UserModel(
+    id: map['id'] as String,
+    name: map['name'] as String,
+    username: map['username'] as String,
+    passwordHash: map['passwordHash'] as String,
+    role: map['role'] as String,
+    isActive: map['isActive'] as bool,
+  );
+
   UserEntity toEntity() {
     return UserEntity(
-      id: id.toString(),
+      id: id,
       name: name,
       username: username,
       role: role,

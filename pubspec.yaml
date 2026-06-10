@@ -12,7 +12,8 @@ dependencies:
     sdk: flutter
   cupertino_icons: ^1.0.8
   signals_flutter: any
-  realm: any
+  hive: ^4.0.0
+  hive_flutter: ^4.0.0
   easy_localization: ^3.0.7
   go_router: any
   responsive_framework: any
@@ -35,7 +36,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.0
-  build_runner: any
+
   flutter_launcher_icons: any
   inno_bundle: any
 

@@ -1,12 +1,11 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:realm/realm.dart';
+import 'package:hive/hive.dart';
 
 import 'app.dart';
 import 'core/di/di.dart';
-import 'core/db/realm_config.dart';
+import 'core/db/hive_config.dart';
 import 'services/print_service.dart';
 import 'services/barcode_service.dart';
 import 'services/backup_service.dart';
@@ -46,41 +45,32 @@ import 'services/activity_log_service.dart';
 import 'features/returns/presentation/bloc/returns_cubit.dart';
 
 void main() async {
-  try {
-    WidgetsFlutterBinding.ensureInitialized();
-    await EasyLocalization.ensureInitialized();
+  WidgetsFlutterBinding.ensureInitialized();
+  await EasyLocalization.ensureInitialized();
 
-    // 1. Initialize DB config
-    RealmConfig.init();
-  } catch (e, stackTrace) {
-    try {
-      File('crash_log.txt').writeAsStringSync('Error: $e\nStacktrace: $stackTrace\n');
-    } catch (e2) {
-      // Ignore write errors
-    }
-    rethrow;
-  }
+  // 1. Initialize Hive DB
+  await HiveConfig.init();
 
   // 2. Initialize SharedPreferences
   final prefs = await SharedPreferences.getInstance();
 
   // 3. Register Core infrastructure singletons
-  Gravity.put<Realm>(RealmConfig.realm);
+  Gravity.put<Box>(HiveConfig.usersBox);
   Gravity.put<SharedPreferences>(prefs);
   Gravity.put<PrintService>(PrintService());
   Gravity.put<BarcodeService>(BarcodeService());
   Gravity.put<BackupService>(BackupService());
 
   // 4. Register Repository implementations
-  Gravity.put<AuthRepository>(AuthRepositoryImpl(Gravity.find<Realm>()));
-  Gravity.put<ProductRepository>(ProductRepositoryImpl(Gravity.find<Realm>()));
-  Gravity.put<CustomerRepository>(CustomerRepositoryImpl(Gravity.find<Realm>()));
-  Gravity.put<SupplierRepository>(SupplierRepositoryImpl(Gravity.find<Realm>()));
-  Gravity.put<SaleRepository>(SaleRepositoryImpl(Gravity.find<Realm>()));
+  Gravity.put<AuthRepository>(AuthRepositoryImpl(HiveConfig.usersBox));
+  Gravity.put<ProductRepository>(ProductRepositoryImpl(HiveConfig.productsBox));
+  Gravity.put<CustomerRepository>(CustomerRepositoryImpl(HiveConfig.customersBox));
+  Gravity.put<SupplierRepository>(SupplierRepositoryImpl(HiveConfig.suppliersBox));
+  Gravity.put<SaleRepository>(SaleRepositoryImpl(HiveConfig.salesBox, HiveConfig.productsBox));
   Gravity.put<CashierRepository>(
-    CashierRepositoryImpl(Gravity.find<Realm>(), Gravity.find<SharedPreferences>()),
+    CashierRepositoryImpl(HiveConfig.expensesBox, Gravity.find<SharedPreferences>()),
   );
-  Gravity.put<ActivityLogRepository>(ActivityLogRepositoryImpl(Gravity.find<Realm>()));
+  Gravity.put<ActivityLogRepository>(ActivityLogRepositoryImpl(HiveConfig.activityLogsBox));
   Gravity.put<ActivityLogService>(ActivityLogService(Gravity.find<ActivityLogRepository>()));
 
   // 5. Register Presentation BLoC state singletons

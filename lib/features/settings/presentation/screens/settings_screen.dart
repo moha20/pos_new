@@ -14,9 +14,8 @@ import '../../../../widgets/language_toggle.dart';
 import '../../../../widgets/app_logo.dart';
 import '../../../../core/di/di.dart';
 import '../../../../services/backup_service.dart';
-import 'package:realm/realm.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../../../core/db/realm_config.dart';
+import '../../../../core/db/hive_config.dart';
 import '../../../customers/data/models/customer_model.dart';
 import '../../../suppliers/data/models/supplier_model.dart';
 import '../../../inventory/data/models/product_model.dart';
@@ -1162,7 +1161,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   void _executeClearData(BuildContext context, String type) async {
     final isArabic = context.locale.languageCode == 'ar';
-    final realm = RealmConfig.realm;
 
     final customerBloc = context.read<CustomerBloc>();
     final supplierBloc = context.read<SupplierBloc>();
@@ -1172,60 +1170,48 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     try {
       if (type == 'customers' || type == 'all') {
-        realm.write(() {
-          final customers = realm.all<Customer>();
-          realm.deleteMany(customers);
-          // Re-seed default Cash Customer
-          realm.add(Customer(
-            ObjectId(),
-            'عميل نقدي / Cash Customer',
-            '0000000000',
-            'Local Store',
-            0.0,
-            0.0,
-            DateTime.now(),
-            'retail',
-          ));
+        await HiveConfig.customersBox.clear();
+        // Re-seed default Cash Customer
+        final custId = generateId();
+        await HiveConfig.customersBox.put(custId, {
+          'id': custId,
+          'name': 'عميل نقدي / Cash Customer',
+          'phone': '0000000000',
+          'address': 'Local Store',
+          'totalPurchases': 0.0,
+          'balance': 0.0,
+          'createdAt': DateTime.now().toIso8601String(),
+          'priceLevel': 'retail',
         });
         customerBloc.add(LoadCustomers());
       }
 
       if (type == 'suppliers' || type == 'all') {
-        realm.write(() {
-          final suppliers = realm.all<Supplier>();
-          realm.deleteMany(suppliers);
-        });
+        await HiveConfig.suppliersBox.clear();
         supplierBloc.add(LoadSuppliers());
       }
 
       if (type == 'products' || type == 'all') {
-        realm.write(() {
-          final products = realm.all<Product>();
-          realm.deleteMany(products);
-        });
+        await HiveConfig.productsBox.clear();
         inventoryBloc.add(LoadInventory());
       }
 
       if (type == 'sales' || type == 'all') {
-        realm.write(() {
-          final sales = realm.all<Sale>();
-          realm.deleteMany(sales);
-          // Reset customer totalPurchases and balance
-          final customers = realm.all<Customer>();
-          for (final c in customers) {
-            c.totalPurchases = 0.0;
-            c.balance = 0.0;
-          }
-        });
+        await HiveConfig.salesBox.clear();
+        // Reset customer totalPurchases and balance
+        final customerBox = HiveConfig.customersBox;
+        for (final key in customerBox.keys.toList()) {
+          final data = customerBox.get(key) as Map<dynamic, dynamic>;
+          final updated = Map<String, dynamic>.from(data);
+          updated['totalPurchases'] = 0.0;
+          updated['balance'] = 0.0;
+          await customerBox.put(key, updated);
+        }
         customerBloc.add(LoadCustomers());
       }
 
       if (type == 'shifts_expenses' || type == 'all') {
-        // Clear expenses
-        realm.write(() {
-          final expenses = realm.all<Expense>();
-          realm.deleteMany(expenses);
-        });
+        await HiveConfig.expensesBox.clear();
         // Clear shift variables in shared prefs
         final prefs = await SharedPreferences.getInstance();
         await prefs.setBool('is_shift_open', false);
@@ -1235,10 +1221,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       }
 
       if (type == 'activity_logs' || type == 'all') {
-        realm.write(() {
-          final logs = realm.all<ActivityLog>();
-          realm.deleteMany(logs);
-        });
+        await HiveConfig.activityLogsBox.clear();
       }
 
       scaffoldMessenger.showSnackBar(

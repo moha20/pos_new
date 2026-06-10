@@ -1,113 +1,117 @@
-import 'package:realm/realm.dart';
+import 'package:hive/hive.dart';
 import '../../domain/repositories/product_repository.dart';
 import '../../domain/entities/product_entity.dart';
 import '../models/product_model.dart';
+import '../../../../core/db/hive_config.dart';
 
 class ProductRepositoryImpl implements ProductRepository {
-  final Realm realm;
+  final Box _box;
 
-  ProductRepositoryImpl(this.realm);
-
-  ObjectId _parseId(String idStr) {
-    try {
-      return ObjectId.fromHexString(idStr);
-    } catch (_) {
-      return ObjectId();
-    }
-  }
+  ProductRepositoryImpl(this._box);
 
   @override
   Future<List<ProductEntity>> getProducts() async {
-    return realm.all<Product>().map((p) => p.toEntity()).toList();
+    return _box.values
+        .map((v) => ProductModel.fromMap(v as Map<dynamic, dynamic>).toEntity())
+        .toList();
   }
 
   @override
   Future<ProductEntity?> getProductById(String id) async {
-    final p = realm.find<Product>(_parseId(id));
-    return p?.toEntity();
+    final data = _box.get(id);
+    if (data != null) {
+      return ProductModel.fromMap(data as Map<dynamic, dynamic>).toEntity();
+    }
+    return null;
   }
 
   @override
   Future<ProductEntity?> getProductByBarcode(String barcode) async {
-    final results = realm.query<Product>('barcode == \$0', [barcode]);
-    if (results.isNotEmpty) {
-      return results.first.toEntity();
+    for (final entry in _box.toMap().entries) {
+      final product = ProductModel.fromMap(entry.value as Map<dynamic, dynamic>);
+      if (product.barcode == barcode) {
+        return product.toEntity();
+      }
     }
     return null;
   }
 
   @override
   Future<void> addProduct(ProductEntity product) async {
-    realm.write(() {
-      realm.add(Product(
-        ObjectId(),
-        product.name,
-        product.barcode,
-        product.category,
-        product.brand,
-        product.costPrice,
-        product.stock,
-        product.minStock,
-        product.unit,
-        product.isActive,
-        imagePath: product.imagePath,
-        prices: product.prices.map((p) => PriceTier(
-          p.level,
-          p.labelAr,
-          p.labelEn,
-          p.price,
-        )).toList(),
-      ));
-    });
+    final id = generateId();
+    final model = ProductModel(
+      id: id,
+      name: product.name,
+      barcode: product.barcode,
+      category: product.category,
+      brand: product.brand,
+      costPrice: product.costPrice,
+      stock: product.stock,
+      minStock: product.minStock,
+      unit: product.unit,
+      isActive: product.isActive,
+      imagePath: product.imagePath,
+      prices: product.prices.map((p) => PriceTierModel(
+        level: p.level,
+        labelAr: p.labelAr,
+        labelEn: p.labelEn,
+        price: p.price,
+      )).toList(),
+    );
+    await _box.put(id, model.toMap());
   }
 
   @override
   Future<void> updateProduct(ProductEntity product) async {
-    final dbProduct = realm.find<Product>(_parseId(product.id));
-    if (dbProduct != null) {
-      realm.write(() {
-        dbProduct.name = product.name;
-        dbProduct.barcode = product.barcode;
-        dbProduct.category = product.category;
-        dbProduct.brand = product.brand;
-        dbProduct.costPrice = product.costPrice;
-        dbProduct.stock = product.stock;
-        dbProduct.minStock = product.minStock;
-        dbProduct.unit = product.unit;
-        dbProduct.isActive = product.isActive;
-        dbProduct.imagePath = product.imagePath;
-        
-        // Rebuild price list
-        dbProduct.prices.clear();
-        for (final p in product.prices) {
-          dbProduct.prices.add(PriceTier(
-            p.level,
-            p.labelAr,
-            p.labelEn,
-            p.price,
-          ));
-        }
-      });
+    if (_box.containsKey(product.id)) {
+      final model = ProductModel(
+        id: product.id,
+        name: product.name,
+        barcode: product.barcode,
+        category: product.category,
+        brand: product.brand,
+        costPrice: product.costPrice,
+        stock: product.stock,
+        minStock: product.minStock,
+        unit: product.unit,
+        isActive: product.isActive,
+        imagePath: product.imagePath,
+        prices: product.prices.map((p) => PriceTierModel(
+          level: p.level,
+          labelAr: p.labelAr,
+          labelEn: p.labelEn,
+          price: p.price,
+        )).toList(),
+      );
+      await _box.put(product.id, model.toMap());
     }
   }
 
   @override
   Future<void> deleteProduct(String id) async {
-    final dbProduct = realm.find<Product>(_parseId(id));
-    if (dbProduct != null) {
-      realm.write(() {
-        realm.delete(dbProduct);
-      });
-    }
+    await _box.delete(id);
   }
 
   @override
   Future<void> updateStock(String id, int changeQty) async {
-    final dbProduct = realm.find<Product>(_parseId(id));
-    if (dbProduct != null) {
-      realm.write(() {
-        dbProduct.stock += changeQty;
-      });
+    final data = _box.get(id);
+    if (data != null) {
+      final product = ProductModel.fromMap(data as Map<dynamic, dynamic>);
+      final updated = ProductModel(
+        id: product.id,
+        name: product.name,
+        barcode: product.barcode,
+        category: product.category,
+        brand: product.brand,
+        costPrice: product.costPrice,
+        stock: product.stock + changeQty,
+        minStock: product.minStock,
+        unit: product.unit,
+        isActive: product.isActive,
+        imagePath: product.imagePath,
+        prices: product.prices,
+      );
+      await _box.put(id, updated.toMap());
     }
   }
 }

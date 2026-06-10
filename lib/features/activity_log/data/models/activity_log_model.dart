@@ -1,24 +1,47 @@
-import 'package:realm/realm.dart';
 import '../../domain/entities/activity_log_entity.dart';
 
-part 'activity_log_model.realm.dart';
+class ActivityLogModel {
+  final String id;
+  final DateTime timestamp;
+  final String action;
+  final String category;
+  final String description;
+  final String userId;
+  final String? referenceId;
 
-@RealmModel()
-class _ActivityLog {
-  @PrimaryKey()
-  late ObjectId id;
-  late DateTime timestamp;
-  late String action;
-  late String category;
-  late String description;
-  late String userId;
-  late String? referenceId;
-}
+  ActivityLogModel({
+    required this.id,
+    required this.timestamp,
+    required this.action,
+    required this.category,
+    required this.description,
+    required this.userId,
+    this.referenceId,
+  });
 
-extension ActivityLogMapper on ActivityLog {
+  Map<String, dynamic> toMap() => {
+    'id': id,
+    'timestamp': timestamp.toIso8601String(),
+    'action': action,
+    'category': category,
+    'description': description,
+    'userId': userId,
+    'referenceId': referenceId,
+  };
+
+  factory ActivityLogModel.fromMap(Map<dynamic, dynamic> map) => ActivityLogModel(
+    id: map['id'] as String,
+    timestamp: DateTime.parse(map['timestamp'] as String),
+    action: map['action'] as String,
+    category: map['category'] as String,
+    description: map['description'] as String,
+    userId: map['userId'] as String,
+    referenceId: map['referenceId'] as String?,
+  );
+
   ActivityLogEntity toEntity() {
     return ActivityLogEntity(
-      id: id.toString(),
+      id: id,
       timestamp: timestamp,
       action: action,
       category: category,
