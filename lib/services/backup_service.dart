@@ -1,138 +1,140 @@
+import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:realm/realm.dart';
-import '../core/db/realm_config.dart';
+import 'package:hive/hive.dart';
+import '../core/db/hive_config.dart';
 import 'activity_log_service.dart';
 import '../core/di/di.dart';
-
-// Model imports for schema reinitialization
-import '../features/auth/data/models/user_model.dart';
-import '../features/inventory/data/models/product_model.dart';
-import '../features/customers/data/models/customer_model.dart';
-import '../features/suppliers/data/models/supplier_model.dart';
-import '../features/pos/data/models/sale_model.dart';
-import '../features/cashier/data/models/expense_model.dart';
-import '../features/activity_log/data/models/activity_log_model.dart';
 import '../features/auth/presentation/bloc/auth_bloc.dart';
+import 'file_helper.dart';
 
 class BackupService {
-  /// Local Backup: Copy the current active Realm file to a user-chosen destination
+  Map<String, dynamic> _boxToMap(Box box) {
+    final map = <String, dynamic>{};
+    box.toMap().forEach((key, value) {
+      map[key.toString()] = value;
+    });
+    return map;
+  }
+
+  /// Local Backup: Export Hive database contents to a JSON file
   Future<String?> backupLocal() async {
     try {
-      final activePath = RealmConfig.realm.config.path;
-      final activeFile = File(activePath);
-      if (!activeFile.existsSync()) {
-        return 'database_not_found';
-      }
+      final backupData = {
+        'users': _boxToMap(HiveConfig.usersBox),
+        'products': _boxToMap(HiveConfig.productsBox),
+        'customers': _boxToMap(HiveConfig.customersBox),
+        'suppliers': _boxToMap(HiveConfig.suppliersBox),
+        'sales': _boxToMap(HiveConfig.salesBox),
+        'expenses': _boxToMap(HiveConfig.expensesBox),
+        'activity_logs': _boxToMap(HiveConfig.activityLogsBox),
+      };
 
       final dateStr = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
-      final defaultFileName = 'almohandis_pos_backup_$dateStr.realm';
+      final defaultFileName = 'almohandis_pos_backup_$dateStr.json';
+      final jsonStr = jsonEncode(backupData);
 
-      // Open native save file dialog
-      final outputPath = await FilePicker.platform.saveFile(
-        dialogTitle: 'Select Backup Destination / اختر مكان حفظ النسخة الاحتياطية',
-        fileName: defaultFileName,
-        type: FileType.any,
-      );
-
-      if (outputPath == null) {
-        return 'cancelled';
-      }
-
-      // Perform copy
-      await activeFile.copy(outputPath);
-
-      // Log activity
-      try {
-        final currentUsername = Gravity.find<AuthBloc>().currentUser?.username ?? 'admin';
-        Gravity.find<ActivityLogService>().log(
-          category: 'settings',
-          action: 'database_backup',
-          description: 'Created database backup at: $outputPath',
-          userId: currentUsername,
+      if (kIsWeb) {
+        await saveFileWeb(jsonStr, defaultFileName);
+        _logBackup('web_download');
+        return 'success:downloads/$defaultFileName';
+      } else {
+        // Native save
+        final outputPath = await FilePicker.platform.saveFile(
+          dialogTitle: 'Select Backup Destination / اختر مكان حفظ النسخة الاحتياطية',
+          fileName: defaultFileName,
+          type: FileType.any,
         );
-      } catch (_) {}
 
-      return 'success:$outputPath';
+        if (outputPath == null) {
+          return 'cancelled';
+        }
+
+        final file = File(outputPath);
+        await file.writeAsString(jsonStr);
+        _logBackup(outputPath);
+        return 'success:$outputPath';
+      }
     } catch (e) {
       return 'error:${e.toString()}';
     }
   }
 
-  /// Local Restore: Replace the active database file with a backup file chosen by the user
+  /// Local Restore: Replace the active Hive database contents with data from a JSON backup file
   Future<String?> restoreLocal() async {
     try {
-      // Pick the backup file (.realm)
       final result = await FilePicker.platform.pickFiles(
         dialogTitle: 'Select Backup File to Restore / اختر ملف النسخة الاحتياطية للاستعادة',
         type: FileType.custom,
-        allowedExtensions: ['realm'],
+        allowedExtensions: ['json'],
+        withData: true,
       );
 
-      if (result == null || result.files.single.path == null) {
+      if (result == null) {
         return 'cancelled';
       }
 
-      final backupPath = result.files.single.path!;
-      final backupFile = File(backupPath);
-      if (!backupFile.existsSync()) {
-        return 'backup_file_not_found';
+      final bytes = result.files.single.bytes;
+      if (bytes == null) {
+        return 'error:no_data_read';
       }
 
-      final defaultPath = RealmConfig.realm.config.path;
+      final jsonStr = utf8.decode(bytes);
+      final backupData = jsonDecode(jsonStr) as Map<String, dynamic>;
 
-      // 1. Close current realm instance
-      RealmConfig.realm.close();
-
-      // 2. Remove existing database files (database, lock file, management folder)
-      final activeFile = File(defaultPath);
-      if (activeFile.existsSync()) {
-        activeFile.deleteSync();
+      // Verify backup structure
+      if (!backupData.containsKey('users') || !backupData.containsKey('products')) {
+        return 'error:invalid_backup_format';
       }
 
-      final lockFile = File('$defaultPath.lock');
-      if (lockFile.existsSync()) {
-        lockFile.deleteSync();
-      }
+      // Restore each box
+      await _restoreBox(HiveConfig.usersBox, backupData['users']);
+      await _restoreBox(HiveConfig.productsBox, backupData['products']);
+      await _restoreBox(HiveConfig.customersBox, backupData['customers']);
+      await _restoreBox(HiveConfig.suppliersBox, backupData['suppliers']);
+      await _restoreBox(HiveConfig.salesBox, backupData['sales']);
+      await _restoreBox(HiveConfig.expensesBox, backupData['expenses']);
+      await _restoreBox(HiveConfig.activityLogsBox, backupData['activity_logs']);
 
-      final managementDir = Directory('$defaultPath.management');
-      if (managementDir.existsSync()) {
-        managementDir.deleteSync(recursive: true);
-      }
-
-      // 3. Copy backup file to active location
-      backupFile.copySync(defaultPath);
-
-      // 4. Re-initialize the active Realm
-      final config = Configuration.local([
-        User.schema,
-        Product.schema,
-        PriceTier.schema,
-        Customer.schema,
-        Supplier.schema,
-        SaleItem.schema,
-        Sale.schema,
-        Expense.schema,
-        ActivityLog.schema,
-      ], schemaVersion: 5);
-
-      RealmConfig.realm = Realm(config);
-
-      // Log activity in new database instance
-      try {
-        final currentUsername = Gravity.find<AuthBloc>().currentUser?.username ?? 'admin';
-        Gravity.find<ActivityLogService>().log(
-          category: 'settings',
-          action: 'database_restore',
-          description: 'Restored database from: $backupPath',
-          userId: currentUsername,
-        );
-      } catch (_) {}
-
+      _logRestore(result.files.single.name);
       return 'success';
     } catch (e) {
       return 'error:${e.toString()}';
     }
+  }
+
+  Future<void> _restoreBox(Box box, dynamic data) async {
+    if (data is Map) {
+      await box.clear();
+      for (final entry in data.entries) {
+        await box.put(entry.key, entry.value);
+      }
+    }
+  }
+
+  void _logBackup(String path) {
+    try {
+      final currentUsername = Gravity.find<AuthBloc>().currentUser?.username ?? 'admin';
+      Gravity.find<ActivityLogService>().log(
+        category: 'settings',
+        action: 'database_backup',
+        description: 'Created database backup at: $path',
+        userId: currentUsername,
+      );
+    } catch (_) {}
+  }
+
+  void _logRestore(String name) {
+    try {
+      final currentUsername = Gravity.find<AuthBloc>().currentUser?.username ?? 'admin';
+      Gravity.find<ActivityLogService>().log(
+        category: 'settings',
+        action: 'database_restore',
+        description: 'Restored database from: $name',
+        userId: currentUsername,
+      );
+    } catch (_) {}
   }
 }

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'dart:io' show Platform;
@@ -7,7 +8,9 @@ class BarcodeService {
   Future<String?> scanBarcode(BuildContext context) async {
     bool isMobile = false;
     try {
-      isMobile = Platform.isAndroid || Platform.isIOS;
+      if (!kIsWeb) {
+        isMobile = Platform.isAndroid || Platform.isIOS;
+      }
     } catch (_) {
       isMobile = false;
     }

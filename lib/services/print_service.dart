@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:pdf/pdf.dart';
@@ -284,9 +286,15 @@ class PrintService {
     try {
       final prefs = Gravity.find<SharedPreferences>();
       final logoPath = prefs.getString('logo_path');
-      if (logoPath != null && logoPath.isNotEmpty && File(logoPath).existsSync()) {
-        final bytes = await File(logoPath).readAsBytes();
-        return pw.MemoryImage(bytes);
+      if (logoPath != null && logoPath.isNotEmpty) {
+        if (logoPath.startsWith('data:image/')) {
+          final base64String = logoPath.split(',').last;
+          final bytes = base64.decode(base64String);
+          return pw.MemoryImage(bytes);
+        } else if (!kIsWeb && File(logoPath).existsSync()) {
+          final bytes = await File(logoPath).readAsBytes();
+          return pw.MemoryImage(bytes);
+        }
       }
     } catch (_) {}
     final logoData = await rootBundle.load('assets/images/logo.jpg');

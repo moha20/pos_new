@@ -12,8 +12,8 @@ dependencies:
     sdk: flutter
   cupertino_icons: ^1.0.8
   signals_flutter: any
-  hive: ^4.0.0
-  hive_flutter: ^4.0.0
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
   easy_localization: ^3.0.7
   go_router: any
   responsive_framework: any
