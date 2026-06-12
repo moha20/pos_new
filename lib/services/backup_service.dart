@@ -1,33 +1,33 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:realm/realm.dart';
-import '../core/db/realm_config.dart';
+import '../core/db/hive_config.dart';
 import 'activity_log_service.dart';
 import '../core/di/di.dart';
-
-// Model imports for schema reinitialization
-import '../features/auth/data/models/user_model.dart';
-import '../features/inventory/data/models/product_model.dart';
-import '../features/customers/data/models/customer_model.dart';
-import '../features/suppliers/data/models/supplier_model.dart';
-import '../features/pos/data/models/sale_model.dart';
-import '../features/cashier/data/models/expense_model.dart';
-import '../features/activity_log/data/models/activity_log_model.dart';
 import '../features/auth/presentation/bloc/auth_bloc.dart';
 
 class BackupService {
-  /// Local Backup: Copy the current active Realm file to a user-chosen destination
+  /// Local Backup: Export all Hive boxes to a JSON file at a user-chosen destination
   Future<String?> backupLocal() async {
     try {
-      final activePath = RealmConfig.realm.config.path;
-      final activeFile = File(activePath);
-      if (!activeFile.existsSync()) {
-        return 'database_not_found';
-      }
+      // Collect all data from all boxes
+      final backupData = <String, dynamic>{
+        'version': 1,
+        'timestamp': DateTime.now().toIso8601String(),
+        'users': _boxToList(HiveConfig.usersBox),
+        'products': _boxToList(HiveConfig.productsBox),
+        'customers': _boxToList(HiveConfig.customersBox),
+        'suppliers': _boxToList(HiveConfig.suppliersBox),
+        'sales': _boxToList(HiveConfig.salesBox),
+        'expenses': _boxToList(HiveConfig.expensesBox),
+        'activity_logs': _boxToList(HiveConfig.activityLogsBox),
+      };
+
+      final jsonString = const JsonEncoder.withIndent('  ').convert(backupData);
 
       final dateStr = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
-      final defaultFileName = 'almohandis_pos_backup_$dateStr.realm';
+      final defaultFileName = 'almohandis_pos_backup_$dateStr.json';
 
       // Open native save file dialog
       final outputPath = await FilePicker.platform.saveFile(
@@ -40,8 +40,8 @@ class BackupService {
         return 'cancelled';
       }
 
-      // Perform copy
-      await activeFile.copy(outputPath);
+      // Write JSON to file
+      await File(outputPath).writeAsString(jsonString);
 
       // Log activity
       try {
@@ -60,14 +60,14 @@ class BackupService {
     }
   }
 
-  /// Local Restore: Replace the active database file with a backup file chosen by the user
+  /// Local Restore: Load a backup JSON file and replace all Hive box data
   Future<String?> restoreLocal() async {
     try {
-      // Pick the backup file (.realm)
+      // Pick the backup file (.json)
       final result = await FilePicker.platform.pickFiles(
         dialogTitle: 'Select Backup File to Restore / اختر ملف النسخة الاحتياطية للاستعادة',
         type: FileType.custom,
-        allowedExtensions: ['realm'],
+        allowedExtensions: ['json'],
       );
 
       if (result == null || result.files.single.path == null) {
@@ -80,46 +80,19 @@ class BackupService {
         return 'backup_file_not_found';
       }
 
-      final defaultPath = RealmConfig.realm.config.path;
+      final jsonString = await backupFile.readAsString();
+      final backupData = json.decode(jsonString) as Map<String, dynamic>;
 
-      // 1. Close current realm instance
-      RealmConfig.realm.close();
+      // Clear and restore each box
+      await _restoreBox(HiveConfig.usersBox, backupData['users'] as List?);
+      await _restoreBox(HiveConfig.productsBox, backupData['products'] as List?);
+      await _restoreBox(HiveConfig.customersBox, backupData['customers'] as List?);
+      await _restoreBox(HiveConfig.suppliersBox, backupData['suppliers'] as List?);
+      await _restoreBox(HiveConfig.salesBox, backupData['sales'] as List?);
+      await _restoreBox(HiveConfig.expensesBox, backupData['expenses'] as List?);
+      await _restoreBox(HiveConfig.activityLogsBox, backupData['activity_logs'] as List?);
 
-      // 2. Remove existing database files (database, lock file, management folder)
-      final activeFile = File(defaultPath);
-      if (activeFile.existsSync()) {
-        activeFile.deleteSync();
-      }
-
-      final lockFile = File('$defaultPath.lock');
-      if (lockFile.existsSync()) {
-        lockFile.deleteSync();
-      }
-
-      final managementDir = Directory('$defaultPath.management');
-      if (managementDir.existsSync()) {
-        managementDir.deleteSync(recursive: true);
-      }
-
-      // 3. Copy backup file to active location
-      backupFile.copySync(defaultPath);
-
-      // 4. Re-initialize the active Realm
-      final config = Configuration.local([
-        User.schema,
-        Product.schema,
-        PriceTier.schema,
-        Customer.schema,
-        Supplier.schema,
-        SaleItem.schema,
-        Sale.schema,
-        Expense.schema,
-        ActivityLog.schema,
-      ], schemaVersion: 5);
-
-      RealmConfig.realm = Realm(config);
-
-      // Log activity in new database instance
+      // Log activity in restored database
       try {
         final currentUsername = Gravity.find<AuthBloc>().currentUser?.username ?? 'admin';
         Gravity.find<ActivityLogService>().log(
@@ -133,6 +106,28 @@ class BackupService {
       return 'success';
     } catch (e) {
       return 'error:${e.toString()}';
+    }
+  }
+
+  /// Convert a Hive box to a list of {key, value} entries for JSON serialization
+  List<Map<String, dynamic>> _boxToList(dynamic box) {
+    final list = <Map<String, dynamic>>[];
+    for (final key in box.keys) {
+      list.add({
+        'key': key.toString(),
+        'value': box.get(key),
+      });
+    }
+    return list;
+  }
+
+  /// Restore a Hive box from a list of {key, value} entries
+  Future<void> _restoreBox(dynamic box, List? entries) async {
+    await box.clear();
+    if (entries == null) return;
+    for (final entry in entries) {
+      final map = entry as Map<String, dynamic>;
+      await box.put(map['key'], map['value']);
     }
   }
 }
