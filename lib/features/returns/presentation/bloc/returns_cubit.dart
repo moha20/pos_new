@@ -129,7 +129,7 @@ class ReturnsCubit extends Cubit<ReturnsState> {
       // 4. Log the action
       activityLogService.log(
         action: 'sales_return',
-        category: 'pos',
+        category: 'returns',
         description: 'Sales return: Returned $qty x ${product.name} for customer ${customer.name}. Total refund: $totalReturnAmount EGP',
         userId: cashierUsername,
         referenceId: productId,
@@ -171,7 +171,7 @@ class ReturnsCubit extends Cubit<ReturnsState> {
       // 3. Log the action
       activityLogService.log(
         action: 'purchase_return',
-        category: 'supplier',
+        category: 'returns',
         description: 'Purchase return: Returned $qty x ${product.name} to supplier ${supplier.name}. Total: $totalReturnAmount EGP',
         userId: cashierUsername,
         referenceId: productId,

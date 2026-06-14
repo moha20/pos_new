@@ -28,8 +28,21 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
     {'key': 'customers', 'icon': Icons.people, 'color': Colors.blue},
     {'key': 'suppliers', 'icon': Icons.local_shipping, 'color': Colors.purple},
     {'key': 'cashier', 'icon': Icons.calculate, 'color': Colors.teal},
+    {'key': 'returns', 'icon': Icons.assignment_return, 'color': Colors.red},
     {'key': 'settings', 'icon': Icons.settings, 'color': Colors.grey},
   ];
+
+  // Map logged category values to filter chip keys (handles singular/plural)
+  static const Map<String, String> _categoryAliases = {
+    'customer': 'customers',
+    'supplier': 'suppliers',
+    'pos': 'pos',
+    'auth': 'auth',
+    'inventory': 'inventory',
+    'cashier': 'cashier',
+    'settings': 'settings',
+    'returns': 'returns',
+  };
 
   @override
   void initState() {
@@ -44,16 +57,18 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
   }
 
   Color _getCategoryColor(String category) {
+    final normalizedCat = _categoryAliases[category] ?? category;
     final cat = _categories.firstWhere(
-      (c) => c['key'] == category,
+      (c) => c['key'] == normalizedCat,
       orElse: () => {'color': Colors.blueGrey},
     );
     return cat['color'] as Color;
   }
 
   IconData _getCategoryIcon(String category) {
+    final normalizedCat = _categoryAliases[category] ?? category;
     final cat = _categories.firstWhere(
-      (c) => c['key'] == category,
+      (c) => c['key'] == normalizedCat,
       orElse: () => {'icon': Icons.info},
     );
     return cat['icon'] as IconData;
@@ -62,24 +77,41 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
   String _getActionLabel(String action, bool isArabic) {
     // Map action keys to readable labels
     final Map<String, Map<String, String>> actionLabels = {
+      // Auth
       'login': {'ar': 'تسجيل دخول', 'en': 'Login'},
       'logout': {'ar': 'تسجيل خروج', 'en': 'Logout'},
+      // POS
       'sale_completed': {'ar': 'عملية بيع', 'en': 'Sale Completed'},
+      'clear_cart': {'ar': 'مسح السلة', 'en': 'Cart Cleared'},
+      // Inventory
       'product_added': {'ar': 'إضافة منتج', 'en': 'Product Added'},
       'product_edited': {'ar': 'تعديل منتج', 'en': 'Product Edited'},
       'product_deleted': {'ar': 'حذف منتج', 'en': 'Product Deleted'},
+      // Customers
       'customer_added': {'ar': 'إضافة عميل', 'en': 'Customer Added'},
       'customer_edited': {'ar': 'تعديل عميل', 'en': 'Customer Edited'},
       'customer_deleted': {'ar': 'حذف عميل', 'en': 'Customer Deleted'},
+      // Suppliers
       'supplier_added': {'ar': 'إضافة مورد', 'en': 'Supplier Added'},
       'supplier_edited': {'ar': 'تعديل مورد', 'en': 'Supplier Edited'},
       'supplier_deleted': {'ar': 'حذف مورد', 'en': 'Supplier Deleted'},
+      // Cashier
       'shift_opened': {'ar': 'فتح وردية', 'en': 'Shift Opened'},
       'shift_closed': {'ar': 'إغلاق وردية', 'en': 'Shift Closed'},
       'expense_added': {'ar': 'إضافة مصروف', 'en': 'Expense Added'},
-      'user_added': {'ar': 'إضافة مستخدم', 'en': 'User Added'},
-      'user_edited': {'ar': 'تعديل مستخدم', 'en': 'User Edited'},
-      'user_deleted': {'ar': 'حذف مستخدم', 'en': 'User Deleted'},
+      'expense_deleted': {'ar': 'حذف مصروف', 'en': 'Expense Deleted'},
+      // Returns
+      'sales_return': {'ar': 'مرتجع مبيعات', 'en': 'Sales Return'},
+      'purchase_return': {'ar': 'مرتجع مشتريات', 'en': 'Purchase Return'},
+      // Settings & Users
+      'add_user': {'ar': 'إضافة مستخدم', 'en': 'User Added'},
+      'update_user': {'ar': 'تعديل مستخدم', 'en': 'User Updated'},
+      'delete_user': {'ar': 'حذف مستخدم', 'en': 'User Deleted'},
+      'settings_updated': {'ar': 'تحديث الإعدادات', 'en': 'Settings Updated'},
+      'logo_updated': {'ar': 'تحديث الشعار', 'en': 'Logo Updated'},
+      // Backup
+      'database_backup': {'ar': 'نسخ احتياطي', 'en': 'Database Backup'},
+      'database_restore': {'ar': 'استعادة البيانات', 'en': 'Database Restored'},
     };
 
     final label = actionLabels[action];
@@ -144,10 +176,9 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
                     selectedColor: color,
                     side: BorderSide(color: color.withValues(alpha: 0.3)),
                     onSelected: (_) {
-                      setState(() => _selectedCategory = cat['key'] as String);
-                      context.read<ActivityLogCubit>().filterByCategory(
-                        cat['key'] as String,
-                      );
+                      final key = cat['key'] as String;
+                      setState(() => _selectedCategory = key);
+                      context.read<ActivityLogCubit>().filterByCategory(key);
                     },
                   );
                 },
@@ -250,6 +281,7 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
                           DataColumn(label: Text('details'.tr(), style: const TextStyle(fontWeight: FontWeight.bold))),
                         ],
                         rows: logs.map((log) {
+                          final normalizedCat = _categoryAliases[log.category] ?? log.category;
                           final catColor = _getCategoryColor(log.category);
 
                           return DataRow(cells: [
@@ -288,7 +320,7 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
                                   Icon(_getCategoryIcon(log.category), size: 14, color: catColor),
                                   SizedBox(width: 4.w),
                                   Text(
-                                    log.category.tr(),
+                                    normalizedCat.tr(),
                                     style: TextStyle(fontSize: 11.sp, fontWeight: FontWeight.bold, color: catColor),
                                   ),
                                 ],

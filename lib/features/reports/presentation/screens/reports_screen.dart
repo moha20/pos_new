@@ -26,6 +26,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isArabic = context.locale.languageCode == 'ar';
+    final screenWidth = MediaQuery.of(context).size.width;
 
     return ResponsiveLayout(
       title: 'reports'.tr(),
@@ -43,12 +44,12 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 children: [
                   // KPI cards grid
                   GridView.count(
-                    crossAxisCount: MediaQuery.of(context).size.width > 900 ? 3 : 2,
+                    crossAxisCount: screenWidth > 900 ? 3 : (screenWidth > 600 ? 2 : 1),
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     crossAxisSpacing: 16,
                     mainAxisSpacing: 16,
-                    childAspectRatio: 2.2,
+                    childAspectRatio: screenWidth > 600 ? 2.2 : 3.2,
                     children: [
                       StatCard(
                         title: 'today_sales'.tr(),

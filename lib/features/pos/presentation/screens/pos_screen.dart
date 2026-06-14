@@ -24,6 +24,7 @@ class POSScreen extends StatefulWidget {
 class _POSScreenState extends State<POSScreen> {
   final _searchController = TextEditingController();
   bool _isGridView = true;
+  int _activeTab = 0;
 
   @override
   void initState() {
@@ -134,23 +135,67 @@ class _POSScreenState extends State<POSScreen> {
       ],
     );
 
-    return ResponsiveLayout(
-      title: 'pos'.tr(),
-      child: isDesktop
-          ? Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Expanded(flex: 5, child: mainContent),
-                const Expanded(flex: 3, child: CartWidget()),
-              ],
-            )
-          : Column(
-              children: [
-                Expanded(flex: 3, child: mainContent),
-                Divider(height: 2.h, thickness: 2),
-                const Expanded(flex: 2, child: CartWidget()),
-              ],
-            ),
+    return BlocBuilder<POSBloc, POSState>(
+      builder: (context, state) {
+        return ResponsiveLayout(
+          title: 'pos'.tr(),
+          child: isDesktop
+              ? Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(flex: 5, child: mainContent),
+                    const Expanded(flex: 3, child: CartWidget()),
+                  ],
+                )
+              : Column(
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: SegmentedButton<int>(
+                          style: SegmentedButton.styleFrom(
+                            selectedBackgroundColor: theme.colorScheme.primary,
+                            selectedForegroundColor: Colors.white,
+                          ),
+                          segments: [
+                            ButtonSegment<int>(
+                              value: 0,
+                              icon: const Icon(Icons.grid_view_rounded),
+                              label: Text('products'.tr()),
+                            ),
+                            ButtonSegment<int>(
+                              value: 1,
+                              icon: Badge(
+                                label: Text('${state.cartItems.length}'),
+                                isLabelVisible: state.cartItems.isNotEmpty,
+                                child: const Icon(Icons.shopping_cart_rounded),
+                              ),
+                              label: Text('cart'.tr()),
+                            ),
+                          ],
+                          selected: {_activeTab},
+                          onSelectionChanged: (value) {
+                            setState(() => _activeTab = value.first);
+                          },
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 200),
+                        child: _activeTab == 0
+                            ? mainContent
+                            : const Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: CartWidget(),
+                              ),
+                      ),
+                    ),
+                  ],
+                ),
+        );
+      },
     );
   }
 
@@ -221,7 +266,6 @@ class _POSScreenState extends State<POSScreen> {
   }
 
   Widget _buildProductCard(BuildContext context, ProductEntity product, ThemeData theme) {
-    final isArabic = context.locale.languageCode == 'ar';
     final currencySymbol = 'currency_symbol'.tr();
     final isLowStock = product.isLowStock;
     final isOutOfStock = product.isOutOfStock;

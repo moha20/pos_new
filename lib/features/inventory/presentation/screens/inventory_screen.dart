@@ -35,6 +35,8 @@ class _InventoryScreenState extends State<InventoryScreen> {
     final isCashier = user?.isCashier ?? true;
     final isViewer = user?.isViewer ?? false;
     final canModify = !isViewer;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isCompact = screenWidth <= 600;
 
     return ResponsiveLayout(
       title: 'inventory'.tr(),
@@ -42,35 +44,58 @@ class _InventoryScreenState extends State<InventoryScreen> {
         if (_selectedProductIds.isNotEmpty)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: ElevatedButton.icon(
-              onPressed: () => _confirmDeleteSelected(context),
-              icon: const Icon(Icons.delete_sweep, color: Colors.white),
-              label: Text('${'delete'.tr()} (${_selectedProductIds.length})', style: const TextStyle(color: Colors.white)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                foregroundColor: Colors.white,
-              ),
-            ),
+            child: isCompact
+                ? Badge(
+                    label: Text('${_selectedProductIds.length}'),
+                    child: IconButton(
+                      icon: const Icon(Icons.delete_sweep, color: Colors.red),
+                      onPressed: () => _confirmDeleteSelected(context),
+                      tooltip: 'delete'.tr(),
+                    ),
+                  )
+                : ElevatedButton.icon(
+                    onPressed: () => _confirmDeleteSelected(context),
+                    icon: const Icon(Icons.delete_sweep, color: Colors.white),
+                    label: Text('${'delete'.tr()} (${_selectedProductIds.length})', style: const TextStyle(color: Colors.white)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
           ),
         if (canModify)
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: ElevatedButton.icon(
-              onPressed: () {
-                final searchQuery = _searchController.text.trim();
-                showDialog(
-                  context: context,
-                  builder: (context) => ProductForm(
-                    initialBarcode: searchQuery.isNotEmpty ? searchQuery : null,
+            padding: EdgeInsets.symmetric(horizontal: isCompact ? 8.0 : 16.0),
+            child: isCompact
+                ? IconButton(
+                    icon: Icon(Icons.add_circle_outline, color: theme.colorScheme.primary, size: 28),
+                    onPressed: () {
+                      final searchQuery = _searchController.text.trim();
+                      showDialog(
+                        context: context,
+                        builder: (context) => ProductForm(
+                          initialBarcode: searchQuery.isNotEmpty ? searchQuery : null,
+                        ),
+                      );
+                    },
+                    tooltip: 'add_product'.tr(),
+                  )
+                : ElevatedButton.icon(
+                    onPressed: () {
+                      final searchQuery = _searchController.text.trim();
+                      showDialog(
+                        context: context,
+                        builder: (context) => ProductForm(
+                          initialBarcode: searchQuery.isNotEmpty ? searchQuery : null,
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.add, color: Colors.white),
+                    label: Text('add_product'.tr(), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: theme.colorScheme.primary,
+                    ),
                   ),
-                );
-              },
-              icon: const Icon(Icons.add, color: Colors.white),
-              label: Text('add_product'.tr(), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: theme.colorScheme.primary,
-              ),
-            ),
           )
       ],
       child: Column(

@@ -4,7 +4,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/sales_history_cubit.dart';
-import '../../domain/entities/sale_entity.dart';
 import '../../../customers/presentation/bloc/customer_bloc.dart';
 import '../../../../widgets/responsive_layout.dart';
 import '../../../../widgets/stat_card.dart';
@@ -30,7 +29,6 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final isArabic = context.locale.languageCode == 'ar';
     final currencySymbol = 'currency_symbol'.tr();
 

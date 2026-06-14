@@ -36,6 +36,12 @@ class ActivityLogCubit extends Cubit<ActivityLogState> {
     }
   }
 
+  // Map plural filter keys to also match singular logged values
+  static const Map<String, List<String>> _categoryVariants = {
+    'customers': ['customers', 'customer'],
+    'suppliers': ['suppliers', 'supplier'],
+  };
+
   void filterByCategory(String? category) {
     emit(ActivityLogLoading());
     try {
@@ -43,8 +49,17 @@ class ActivityLogCubit extends Cubit<ActivityLogState> {
         final logs = _repository.getAllLogs();
         emit(ActivityLogLoaded(logs, activeCategory: null));
       } else {
-        final logs = _repository.getLogsByCategory(category);
-        emit(ActivityLogLoaded(logs, activeCategory: category));
+        // Get all category variants to match
+        final variants = _categoryVariants[category] ?? [category];
+        final List<ActivityLogEntity> allLogs = [];
+        for (final variant in variants) {
+          allLogs.addAll(_repository.getLogsByCategory(variant));
+        }
+        // Remove duplicates and sort by timestamp descending
+        final uniqueIds = <String>{};
+        final uniqueLogs = allLogs.where((log) => uniqueIds.add(log.id)).toList();
+        uniqueLogs.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+        emit(ActivityLogLoaded(uniqueLogs, activeCategory: category));
       }
     } catch (e) {
       emit(ActivityLogError(e.toString()));
