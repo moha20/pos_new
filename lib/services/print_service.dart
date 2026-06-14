@@ -149,7 +149,6 @@ class PrintService {
                         crossAxisAlignment: isAr ? pw.CrossAxisAlignment.end : pw.CrossAxisAlignment.start,
                         children: [
                           pw.Text(distributorText, style: _style(fontSize: 8, bold: true)),
-                          pw.Text(phoneText, style: _style(fontSize: 7)),
                         ],
                       ),
                     ],
