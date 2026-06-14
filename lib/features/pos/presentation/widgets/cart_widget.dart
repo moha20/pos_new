@@ -245,9 +245,19 @@ class CartWidget extends StatelessWidget {
                                         },
                                       ),
                                       const Spacer(),
-                                      Text(
-                                        '@ ${formatCurrency(item.unitPrice)}',
-                                        style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                                      InkWell(
+                                        onTap: () => _showEditPriceDialog(context, item),
+                                        borderRadius: BorderRadius.circular(4.r),
+                                        child: Padding(
+                                          padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
+                                          child: Text(
+                                            '@ ${formatCurrency(item.unitPrice)} ✎',
+                                            style: theme.textTheme.bodySmall?.copyWith(
+                                              color: theme.colorScheme.primary,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -375,6 +385,44 @@ class CartWidget extends StatelessWidget {
               onPressed: () {
                 final val = double.tryParse(controller.text) ?? 0.0;
                 context.read<POSBloc>().add(POSSetDiscount(val));
+                Navigator.pop(context);
+              },
+              child: Text('confirm'.tr()),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showEditPriceDialog(BuildContext context, CartItem item) {
+    final isArabic = context.locale.languageCode == 'ar';
+    final controller = TextEditingController(text: item.unitPrice.toStringAsFixed(2));
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(isArabic ? 'تعديل سعر الوحدة (مؤقت)' : 'Edit Unit Price (Temporary)'),
+          content: TextField(
+            controller: controller,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            decoration: InputDecoration(
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r)),
+              prefixIcon: const Icon(Icons.edit),
+              labelText: isArabic ? 'السعر' : 'Price',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('cancel'.tr()),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final val = double.tryParse(controller.text) ?? 0.0;
+                if (val > 0) {
+                  context.read<POSBloc>().add(POSUpdateItemPrice(item.product.id, val));
+                }
                 Navigator.pop(context);
               },
               child: Text('confirm'.tr()),

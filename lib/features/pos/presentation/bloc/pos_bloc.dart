@@ -118,6 +118,12 @@ class POSUpdateItemPriceLevel extends POSEvent {
   POSUpdateItemPriceLevel(this.productId, this.level);
 }
 
+class POSUpdateItemPrice extends POSEvent {
+  final String productId;
+  final double unitPrice;
+  POSUpdateItemPrice(this.productId, this.unitPrice);
+}
+
 class POSSelectCustomer extends POSEvent {
   final CustomerEntity? customer;
   POSSelectCustomer(this.customer);
@@ -216,6 +222,16 @@ class POSBloc extends Bloc<POSEvent, POSState> {
         final item = list[idx];
         final newPrice = item.product.priceFor(event.level);
         list[idx] = item.copyWith(priceLevel: event.level, unitPrice: newPrice);
+        emit(state.copyWith(cartItems: list, status: POSStatus.cartUpdated));
+      }
+    });
+
+    on<POSUpdateItemPrice>((event, emit) {
+      final list = List<CartItem>.from(state.cartItems);
+      final idx = list.indexWhere((i) => i.product.id == event.productId);
+      if (idx >= 0) {
+        final item = list[idx];
+        list[idx] = item.copyWith(unitPrice: event.unitPrice);
         emit(state.copyWith(cartItems: list, status: POSStatus.cartUpdated));
       }
     });
