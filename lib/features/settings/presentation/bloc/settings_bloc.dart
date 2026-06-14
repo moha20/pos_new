@@ -15,6 +15,7 @@ class SaveSettings extends SettingsEvent {
   final String printerIp;
   final String themeType;
   final String themeMode;
+  final String whatsappPhone;
 
   SaveSettings({
     required this.companyName,
@@ -22,6 +23,7 @@ class SaveSettings extends SettingsEvent {
     required this.printerIp,
     required this.themeType,
     required this.themeMode,
+    required this.whatsappPhone,
   });
 }
 
@@ -43,6 +45,7 @@ class SettingsLoaded extends SettingsState {
   final String printerIp;
   final String themeType;
   final String themeMode;
+  final String whatsappPhone;
   final String? logoPath;
 
   SettingsLoaded({
@@ -51,6 +54,7 @@ class SettingsLoaded extends SettingsState {
     required this.printerIp,
     required this.themeType,
     required this.themeMode,
+    required this.whatsappPhone,
     this.logoPath,
   });
 }
@@ -70,6 +74,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     printerIp: prefs.getString('printer_ip') ?? '192.168.1.100',
     themeType: prefs.getString('theme_type') ?? 'copper',
     themeMode: prefs.getString('theme_mode') ?? 'light',
+    whatsappPhone: prefs.getString('whatsapp_phone') ?? '',
     logoPath: prefs.getString('logo_path'),
   )) {
     on<LoadSettings>((event, emit) {
@@ -79,6 +84,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
         final ip = prefs.getString('printer_ip') ?? '192.168.1.100';
         final theme = prefs.getString('theme_type') ?? 'copper';
         final mode = prefs.getString('theme_mode') ?? 'light';
+        final whatsapp = prefs.getString('whatsapp_phone') ?? '';
         final logo = prefs.getString('logo_path');
         emit(SettingsLoaded(
           companyName: company,
@@ -86,6 +92,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
           printerIp: ip,
           themeType: theme,
           themeMode: mode,
+          whatsappPhone: whatsapp,
           logoPath: logo,
         ));
       } catch (e) {
@@ -100,6 +107,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
         await prefs.setString('printer_ip', event.printerIp);
         await prefs.setString('theme_type', event.themeType);
         await prefs.setString('theme_mode', event.themeMode);
+        await prefs.setString('whatsapp_phone', event.whatsappPhone);
         final logo = prefs.getString('logo_path');
         emit(SettingsLoaded(
           companyName: event.companyName,
@@ -107,6 +115,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
           printerIp: event.printerIp,
           themeType: event.themeType,
           themeMode: event.themeMode,
+          whatsappPhone: event.whatsappPhone,
           logoPath: logo,
         ));
         try {
@@ -114,7 +123,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
           Gravity.find<ActivityLogService>().log(
             action: 'settings_updated',
             category: 'settings',
-            description: 'Updated settings: Company Name: ${event.companyName}, Tax: ${event.taxPercent}%, Printer IP: ${event.printerIp}, Theme: ${event.themeType}, Mode: ${event.themeMode}',
+            description: 'Updated settings: Company Name: ${event.companyName}, Tax: ${event.taxPercent}%, Printer IP: ${event.printerIp}, Theme: ${event.themeType}, Mode: ${event.themeMode}, WhatsApp: ${event.whatsappPhone}',
             userId: user?.username ?? 'system',
           );
         } catch (_) {}
@@ -135,12 +144,14 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
         final ip = prefs.getString('printer_ip') ?? '192.168.1.100';
         final theme = prefs.getString('theme_type') ?? 'copper';
         final mode = prefs.getString('theme_mode') ?? 'light';
+        final whatsapp = prefs.getString('whatsapp_phone') ?? '';
         emit(SettingsLoaded(
           companyName: company,
           taxPercent: tax,
           printerIp: ip,
           themeType: theme,
           themeMode: mode,
+          whatsappPhone: whatsapp,
           logoPath: event.logoPath,
         ));
         try {

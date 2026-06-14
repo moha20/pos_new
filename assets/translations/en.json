@@ -208,5 +208,6 @@
   "other": "Other...",
   "logo_management": "Logo Management",
   "logo_updated_success": "Logo updated successfully",
-  "logo_reset_success": "Logo reset to default successfully"
+  "logo_reset_success": "Logo reset to default successfully",
+  "whatsapp_phone": "WhatsApp Number for Invoices"
 }

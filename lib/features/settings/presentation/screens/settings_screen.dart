@@ -41,6 +41,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final _companyController = TextEditingController();
   final _taxController = TextEditingController();
   final _printerController = TextEditingController();
+  final _whatsappController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   String? _selectedTheme;
   String? _selectedMode;
@@ -77,6 +78,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _companyController.text = state.companyName;
               _taxController.text = state.taxPercent.toString();
               _printerController.text = state.printerIp;
+              _whatsappController.text = state.whatsappPhone;
             }
             _selectedTheme ??= state.themeType;
             _selectedMode ??= state.themeMode;
@@ -121,6 +123,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   ),
                                 ),
                               ],
+                            ),
+                            SizedBox(height: 12.h),
+                            TextFormField(
+                              controller: _whatsappController,
+                              keyboardType: TextInputType.phone,
+                              decoration: InputDecoration(
+                                labelText: 'whatsapp_phone'.tr(),
+                                hintText: 'e.g. 201001234567',
+                                prefixIcon: const Icon(Icons.phone),
+                                border: const OutlineInputBorder(),
+                              ),
                             ),
                             SizedBox(height: 16.h),
                             Row(
@@ -175,6 +188,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                                 printerIp: _printerController.text,
                                                 themeType: val,
                                                 themeMode: _selectedMode ?? 'light',
+                                                whatsappPhone: _whatsappController.text,
                                               ));
                                         }
                                       },
@@ -232,6 +246,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                                  printerIp: _printerController.text,
                                                  themeType: _selectedTheme ?? 'copper',
                                                  themeMode: val,
+                                                 whatsappPhone: _whatsappController.text,
                                                ));
                                          }
                                        },
@@ -250,6 +265,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                         printerIp: _printerController.text,
                                         themeType: _selectedTheme ?? 'copper',
                                         themeMode: _selectedMode ?? 'light',
+                                        whatsappPhone: _whatsappController.text,
                                       ));
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(content: Text('saved_successfully'.tr()), backgroundColor: Colors.green),

@@ -208,5 +208,6 @@
   "other": "أخرى...",
   "logo_management": "إدارة شعار التطبيق",
   "logo_updated_success": "تم تحديث الشعار بنجاح",
-  "logo_reset_success": "تم استعادة الشعار الافتراضي بنجاح"
+  "logo_reset_success": "تم استعادة الشعار الافتراضي بنجاح",
+  "whatsapp_phone": "رقم واتساب لإرسال الفواتير"
 }

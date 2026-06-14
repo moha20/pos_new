@@ -617,6 +617,11 @@ class PrintService {
       buffer.writeln('- *المتبقي:* ${sale.amountRemaining.toStringAsFixed(2)} $currencySymbol');
       buffer.writeln();
       buffer.writeln('شكراً لتعاملكم معنا!');
+      final prefs = Gravity.find<SharedPreferences>();
+      final whatsappPhone = prefs.getString('whatsapp_phone') ?? '';
+      if (whatsappPhone.isNotEmpty) {
+        buffer.writeln('للتواصل عبر واتساب: $whatsappPhone');
+      }
     } else {
       buffer.writeln('*Sales Receipt - Al Mohands Electrical Tools*');
       buffer.writeln('*Invoice No:* #${sale.invoiceNumber}');
@@ -642,6 +647,11 @@ class PrintService {
       buffer.writeln('- *Remaining:* ${sale.amountRemaining.toStringAsFixed(2)} $currencySymbol');
       buffer.writeln();
       buffer.writeln('Thank you for shopping with us!');
+      final prefs = Gravity.find<SharedPreferences>();
+      final whatsappPhone = prefs.getString('whatsapp_phone') ?? '';
+      if (whatsappPhone.isNotEmpty) {
+        buffer.writeln('Contact us via WhatsApp: $whatsappPhone');
+      }
     }
 
     final textMsg = buffer.toString();
