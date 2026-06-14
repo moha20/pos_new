@@ -247,15 +247,26 @@ class CartWidget extends StatelessWidget {
                                       const Spacer(),
                                       InkWell(
                                         onTap: () => _showEditPriceDialog(context, item),
-                                        borderRadius: BorderRadius.circular(4.r),
+                                        borderRadius: BorderRadius.circular(6.r),
                                         child: Padding(
-                                          padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
-                                          child: Text(
-                                            '@ ${formatCurrency(item.unitPrice)} ✎',
-                                            style: theme.textTheme.bodySmall?.copyWith(
-                                              color: theme.colorScheme.primary,
-                                              fontWeight: FontWeight.bold,
-                                            ),
+                                          padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 4.h),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Text(
+                                                '@ ${formatCurrency(item.unitPrice)}',
+                                                style: theme.textTheme.bodySmall?.copyWith(
+                                                  color: theme.colorScheme.primary,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                              SizedBox(width: 4.w),
+                                              Icon(
+                                                Icons.edit_rounded,
+                                                size: 11.sp,
+                                                color: theme.colorScheme.primary,
+                                              ),
+                                            ],
                                           ),
                                         ),
                                       ),
@@ -362,12 +373,14 @@ class CartWidget extends StatelessWidget {
   }
 
   void _showDiscountDialog(BuildContext context) {
+    final theme = Theme.of(context);
     final controller = TextEditingController(text: context.read<POSBloc>().state.discount.toString());
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('discount'.tr()),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+          title: Text('discount'.tr(), style: const TextStyle(fontWeight: FontWeight.bold)),
           content: TextField(
             controller: controller,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -387,7 +400,12 @@ class CartWidget extends StatelessWidget {
                 context.read<POSBloc>().add(POSSetDiscount(val));
                 Navigator.pop(context);
               },
-              child: Text('confirm'.tr()),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: theme.colorScheme.primary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+              ),
+              child: Text('confirm'.tr(), style: const TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
         );
@@ -396,21 +414,40 @@ class CartWidget extends StatelessWidget {
   }
 
   void _showEditPriceDialog(BuildContext context, CartItem item) {
+    final theme = Theme.of(context);
     final isArabic = context.locale.languageCode == 'ar';
     final controller = TextEditingController(text: item.unitPrice.toStringAsFixed(2));
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text(isArabic ? 'تعديل سعر الوحدة (مؤقت)' : 'Edit Unit Price (Temporary)'),
-          content: TextField(
-            controller: controller,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: InputDecoration(
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r)),
-              prefixIcon: const Icon(Icons.edit),
-              labelText: isArabic ? 'السعر' : 'Price',
-            ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+          title: Text(
+            isArabic ? 'تعديل سعر الوحدة (مؤقت)' : 'Edit Unit Price (Temporary)',
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                isArabic 
+                    ? 'هذا التعديل يسري فقط على هذه العملية ولا يغير السعر الأصلي للمنتج في المخزن.'
+                    : 'This price update is temporary for this sale and does not modify the persistent product retail price.',
+                style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurface.withOpacity(0.6)),
+              ),
+              SizedBox(height: 16.h),
+              TextField(
+                controller: controller,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                autofocus: true,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r)),
+                  prefixIcon: const Icon(Icons.edit),
+                  labelText: isArabic ? 'السعر' : 'Price',
+                ),
+              ),
+            ],
           ),
           actions: [
             TextButton(
@@ -425,7 +462,12 @@ class CartWidget extends StatelessWidget {
                 }
                 Navigator.pop(context);
               },
-              child: Text('confirm'.tr()),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: theme.colorScheme.primary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+              ),
+              child: Text('confirm'.tr(), style: const TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
         );
@@ -574,7 +616,12 @@ class CartWidget extends StatelessWidget {
                         );
                     Navigator.pop(dlgContext);
                   },
-                  child: Text('confirm'.tr()),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: theme.colorScheme.primary,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+                  ),
+                  child: Text('confirm'.tr(), style: const TextStyle(fontWeight: FontWeight.bold)),
                 ),
               ],
             );
