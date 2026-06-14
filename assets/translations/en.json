@@ -209,5 +209,9 @@
   "logo_management": "Logo Management",
   "logo_updated_success": "Logo updated successfully",
   "logo_reset_success": "Logo reset to default successfully",
-  "whatsapp_phone": "WhatsApp Number for Invoices"
+  "whatsapp_phone": "WhatsApp Number for Invoices",
+  "preview_draft": "Preview Draft",
+  "draft_options": "Draft Options",
+  "draft_options_desc": "Preview or share the invoice before saving it to get customer approval.",
+  "whatsapp_share": "WhatsApp Share"
 }

@@ -60,7 +60,10 @@ class PrintService {
     final textDirection = isAr ? pw.TextDirection.rtl : pw.TextDirection.ltr;
     
     // Localized Labels
-    final title = isAr ? 'بيان مبيعات' : 'Sales Receipt';
+    final isDraft = sale.id == 'draft' || (sale.note?.contains('DRAFT') ?? false);
+    final title = isDraft
+        ? (isAr ? 'مسودة فاتورة (معاينة)' : 'Draft Invoice Preview')
+        : (isAr ? 'بيان مبيعات' : 'Sales Receipt');
     final dateLabel = isAr ? 'التاريخ: ' : 'Date: ';
     final invLabel = isAr ? 'رقم البيان: ' : 'Invoice No: ';
     final custLabel = isAr ? 'العميل: ' : 'Customer: ';
@@ -151,6 +154,23 @@ class PrintService {
                     ],
                   ),
                   pw.Divider(thickness: 1),
+                  if (isDraft) ...[
+                    pw.Container(
+                      padding: const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                      decoration: const pw.BoxDecoration(
+                        color: PdfColor.fromInt(0xFFFFF3CD), // Amber 100
+                        borderRadius: pw.BorderRadius.all(pw.Radius.circular(4)),
+                      ),
+                      alignment: pw.Alignment.center,
+                      child: pw.Text(
+                        isAr
+                            ? 'معاينة مسودة - هذه ليست فاتورة نهائية ولم يتم حفظها في النظام'
+                            : 'DRAFT PREVIEW - NOT A FINAL INVOICE, NOT SAVED IN SYSTEM',
+                        style: _style(fontSize: 8, bold: true, color: PdfColor.fromInt(0xFF856404)), // Amber 900
+                      ),
+                    ),
+                    pw.SizedBox(height: 4),
+                  ],
                   pw.SizedBox(height: 4),
 
                   // 2. Customer & Date Info Box
@@ -592,7 +612,12 @@ class PrintService {
 
     // 1. Build Formatted Invoice Message
     final buffer = StringBuffer();
+    final isDraft = sale.id == 'draft' || (sale.note?.contains('DRAFT') ?? false);
     if (isArabic) {
+      if (isDraft) {
+        buffer.writeln('*[معاينة مسودة غير محفوظة]*');
+        buffer.writeln();
+      }
       buffer.writeln('*بيان مبيعات - المهندس للأدوات الكهربائية*');
       buffer.writeln('*رقم الفاتورة:* #${sale.invoiceNumber}');
       buffer.writeln('*التاريخ:* ${DateFormat('yyyy-MM-dd HH:mm').format(sale.createdAt)}');
@@ -623,6 +648,10 @@ class PrintService {
         buffer.writeln('للتواصل عبر واتساب: $whatsappPhone');
       }
     } else {
+      if (isDraft) {
+        buffer.writeln('*[DRAFT INVOICE PREVIEW - NOT SAVED]*');
+        buffer.writeln();
+      }
       buffer.writeln('*Sales Receipt - Al Mohands Electrical Tools*');
       buffer.writeln('*Invoice No:* #${sale.invoiceNumber}');
       buffer.writeln('*Date:* ${DateFormat('yyyy-MM-dd HH:mm').format(sale.createdAt)}');

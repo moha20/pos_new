@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/pos_bloc.dart';
+import '../../domain/entities/sale_entity.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../customers/domain/entities/customer_entity.dart';
 import '../../../customers/presentation/bloc/customer_bloc.dart';
@@ -335,18 +336,42 @@ class CartWidget extends StatelessWidget {
                   ),
                 ),
                 
-                // Checkout Buttons
-                ElevatedButton(
-                  onPressed: state.cartItems.isEmpty
-                      ? null
-                      : () => _showCheckoutDialog(context, state, user?.name ?? 'cashier'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: theme.colorScheme.primary,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
-                  ),
-                  child: Text('checkout'.tr(), style: const TextStyle(fontWeight: FontWeight.bold)),
+                // Checkout & Preview Buttons
+                Row(
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: OutlinedButton.icon(
+                        onPressed: state.cartItems.isEmpty
+                            ? null
+                            : () => _showDraftOptionsDialog(context, state, user?.name ?? 'cashier'),
+                        icon: const Icon(Icons.visibility_outlined),
+                        label: Text('preview_draft'.tr(), style: const TextStyle(fontWeight: FontWeight.bold)),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                          side: BorderSide(color: theme.colorScheme.primary),
+                          foregroundColor: theme.colorScheme.primary,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      flex: 3,
+                      child: ElevatedButton(
+                        onPressed: state.cartItems.isEmpty
+                            ? null
+                            : () => _showCheckoutDialog(context, state, user?.name ?? 'cashier'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: theme.colorScheme.primary,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                        ),
+                        child: Text('checkout'.tr(), style: const TextStyle(fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -626,6 +651,163 @@ class CartWidget extends StatelessWidget {
               ],
             );
           },
+        );
+      },
+    );
+  }
+
+  void _showDraftOptionsDialog(BuildContext context, POSState state, String cashierName) {
+    final theme = Theme.of(context);
+    final isArabic = context.locale.languageCode == 'ar';
+    final printService = Gravity.find<PrintService>();
+
+    final draftSale = SaleEntity(
+      id: 'draft',
+      invoiceNumber: state.invoiceNumber.replaceAll('#', '') + (isArabic ? ' (معاينة)' : ' (DRAFT)'),
+      createdAt: DateTime.now(),
+      items: state.cartItems.map((i) => SaleItemEntity(
+        productId: i.product.id,
+        productName: i.product.name,
+        barcode: i.product.barcode,
+        qty: i.qty,
+        unitPrice: i.unitPrice,
+        totalPrice: i.totalPrice,
+        priceLevel: i.priceLevel,
+      )).toList(),
+      subtotal: state.subtotal,
+      discount: state.discount,
+      tax: state.taxAmount,
+      total: state.total,
+      paymentMethod: 'cash',
+      customerId: state.selectedCustomer?.id,
+      cashierId: cashierName,
+      note: 'DRAFT',
+      amountPaid: state.total,
+      amountRemaining: 0.0,
+    );
+
+    showDialog(
+      context: context,
+      builder: (dlgContext) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+          title: Row(
+            children: [
+              Icon(Icons.description_outlined, color: theme.colorScheme.primary),
+              SizedBox(width: 8.w),
+              Text(
+                'draft_options'.tr(),
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'draft_options_desc'.tr(),
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurface.withOpacity(0.7),
+                ),
+              ),
+              SizedBox(height: 20.h),
+              // Card 1: PDF Print Preview
+              InkWell(
+                onTap: () {
+                  Navigator.pop(dlgContext);
+                  printService.printInvoice(
+                    context,
+                    draftSale,
+                    'Al Mohands Electrical Tools / المهندس للأدوات الكهربائية',
+                    context.locale.languageCode,
+                    customer: state.selectedCustomer,
+                  );
+                },
+                borderRadius: BorderRadius.circular(12.r),
+                child: Container(
+                  padding: EdgeInsets.all(12.r),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: theme.colorScheme.primary.withOpacity(0.3)),
+                    borderRadius: BorderRadius.circular(12.r),
+                    color: theme.colorScheme.primary.withOpacity(0.05),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.picture_as_pdf_outlined, color: theme.colorScheme.primary, size: 28.r),
+                      SizedBox(width: 12.w),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'invoice_preview'.tr(),
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.sp, color: theme.colorScheme.primary),
+                            ),
+                            SizedBox(height: 2.h),
+                            Text(
+                              isArabic ? 'عرض الفاتورة بتنسيق PDF وطباعتها' : 'View invoice PDF and print it',
+                              style: TextStyle(fontSize: 10.sp, color: theme.colorScheme.onSurface.withOpacity(0.6)),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(height: 12.h),
+              // Card 2: WhatsApp Share
+              InkWell(
+                onTap: () {
+                  Navigator.pop(dlgContext);
+                  printService.shareToWhatsApp(
+                    context,
+                    draftSale,
+                    customerName: state.selectedCustomer?.name,
+                    customerPhone: state.selectedCustomer?.phone,
+                  );
+                },
+                borderRadius: BorderRadius.circular(12.r),
+                child: Container(
+                  padding: EdgeInsets.all(12.r),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.green.withOpacity(0.3)),
+                    borderRadius: BorderRadius.circular(12.r),
+                    color: Colors.green.withOpacity(0.05),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.share_outlined, color: Colors.green, size: 28.r),
+                      SizedBox(width: 12.w),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'whatsapp_share'.tr(),
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.sp, color: Colors.green),
+                            ),
+                            SizedBox(height: 2.h),
+                            Text(
+                              isArabic ? 'إرسال الفاتورة عبر واتساب للعميل' : 'Send invoice via WhatsApp to customer',
+                              style: TextStyle(fontSize: 10.sp, color: theme.colorScheme.onSurface.withOpacity(0.6)),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dlgContext),
+              child: Text('cancel'.tr()),
+            ),
+          ],
         );
       },
     );
