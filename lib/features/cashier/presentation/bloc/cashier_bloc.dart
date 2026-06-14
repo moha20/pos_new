@@ -69,6 +69,11 @@ class DeleteExpenseEvent extends CashierEvent {
   DeleteExpenseEvent(this.id);
 }
 
+class DeleteMultipleExpensesEvent extends CashierEvent {
+  final List<String> ids;
+  DeleteMultipleExpensesEvent(this.ids);
+}
+
 // Bloc
 class CashierBloc extends Bloc<CashierEvent, CashierState> {
   final CashierRepository cashierRepository;
@@ -175,6 +180,35 @@ class CashierBloc extends Bloc<CashierEvent, CashierState> {
             description: 'Deleted expense: $expenseReason',
             userId: user?.username ?? 'system',
             referenceId: event.id,
+          );
+        } catch (_) {}
+      } catch (e) {
+        emit(state.copyWith(status: CashierStatus.error, message: e.toString()));
+      }
+    });
+
+    on<DeleteMultipleExpensesEvent>((event, emit) async {
+      emit(state.copyWith(status: CashierStatus.loading));
+      try {
+        final List<String> deletedDetails = [];
+        for (final id in event.ids) {
+          try {
+            final existing = state.expenses.firstWhere((exp) => exp.id == id);
+            deletedDetails.add('${existing.description} (${existing.amount.toStringAsFixed(2)} EGP)');
+          } catch (_) {
+            deletedDetails.add(id);
+          }
+          await cashierRepository.deleteExpense(id);
+        }
+        add(LoadCashier());
+        try {
+          final user = Gravity.find<AuthBloc>().currentUser;
+          Gravity.find<ActivityLogService>().log(
+            action: 'expense_deleted',
+            category: 'cashier',
+            description: 'Deleted expenses: ${deletedDetails.join(", ")}',
+            userId: user?.username ?? 'system',
+            referenceId: event.ids.join(","),
           );
         } catch (_) {}
       } catch (e) {

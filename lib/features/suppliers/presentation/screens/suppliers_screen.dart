@@ -20,6 +20,7 @@ class SuppliersScreen extends StatefulWidget {
 
 class _SuppliersScreenState extends State<SuppliersScreen> {
   final _searchController = TextEditingController();
+  final Set<String> _selectedSupplierIds = {};
 
   @override
   void initState() {
@@ -34,6 +35,16 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
     return ResponsiveLayout(
       title: 'suppliers'.tr(),
       actions: [
+        if (_selectedSupplierIds.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: ElevatedButton.icon(
+              onPressed: () => _confirmDeleteSelected(context),
+              icon: const Icon(Icons.delete_sweep, color: Colors.white),
+              label: Text('${'delete'.tr()} (${_selectedSupplierIds.length})'),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            ),
+          ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: ElevatedButton.icon(
@@ -141,7 +152,7 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: DataTable(
-                        showCheckboxColumn: false,
+                        showCheckboxColumn: true,
                         columns: [
                           DataColumn(label: Text('supplier_name'.tr())),
                           DataColumn(label: Text('phone'.tr())),
@@ -153,10 +164,15 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
                         ],
                         rows: suppliers.map((s) {
                           return DataRow(
+                            selected: _selectedSupplierIds.contains(s.id),
                             onSelectChanged: (selected) {
-                              if (selected == true) {
-                                _showSupplierHistory(context, s);
-                              }
+                              setState(() {
+                                if (selected == true) {
+                                  _selectedSupplierIds.add(s.id);
+                                } else {
+                                  _selectedSupplierIds.remove(s.id);
+                                }
+                              });
                             },
                             cells: [
                               DataCell(Text(s.name)),
@@ -176,6 +192,11 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
                               DataCell(
                                 Row(
                                   children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.history, color: Colors.teal),
+                                      tooltip: context.locale.languageCode == 'ar' ? 'سجل المعاملات' : 'History',
+                                      onPressed: () => _showSupplierHistory(context, s),
+                                    ),
                                     IconButton(
                                       icon: const Icon(Icons.edit, color: Colors.blue),
                                       onPressed: () {
@@ -226,6 +247,42 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
             ElevatedButton(
               onPressed: () {
                 context.read<SupplierBloc>().add(DeleteSupplierEvent(id));
+                setState(() {
+                  _selectedSupplierIds.remove(id);
+                });
+                Navigator.pop(context);
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              child: Text('delete'.tr()),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _confirmDeleteSelected(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('confirm'.tr()),
+          content: Text(
+            context.locale.languageCode == 'ar'
+                ? 'هل أنت متأكد من حذف ${_selectedSupplierIds.length} من الموردين المحددين؟'
+                : 'Are you sure you want to delete ${_selectedSupplierIds.length} selected supplier(s)?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('cancel'.tr()),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                context.read<SupplierBloc>().add(DeleteMultipleSuppliersEvent(_selectedSupplierIds.toList()));
+                setState(() {
+                  _selectedSupplierIds.clear();
+                });
                 Navigator.pop(context);
               },
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),

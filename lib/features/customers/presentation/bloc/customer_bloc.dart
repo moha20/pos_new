@@ -30,6 +30,11 @@ class DeleteCustomerEvent extends CustomerEvent {
   DeleteCustomerEvent(this.id);
 }
 
+class DeleteMultipleCustomersEvent extends CustomerEvent {
+  final List<String> ids;
+  DeleteMultipleCustomersEvent(this.ids);
+}
+
 // States
 abstract class CustomerState {}
 
@@ -140,6 +145,36 @@ class CustomerBloc extends Bloc<CustomerEvent, CustomerState> {
             description: 'Deleted customer: $custName',
             userId: user?.username ?? 'system',
             referenceId: event.id,
+          );
+        } catch (_) {}
+      } catch (e) {
+        emit(CustomerError(e.toString()));
+      }
+    });
+
+    on<DeleteMultipleCustomersEvent>((event, emit) async {
+      emit(CustomerLoading());
+      try {
+        final List<String> deletedNames = [];
+        for (final id in event.ids) {
+          try {
+            final existing = _allCustomers.firstWhere((c) => c.id == id);
+            deletedNames.add(existing.name);
+          } catch (_) {
+            deletedNames.add(id);
+          }
+          await customerRepository.deleteCustomer(id);
+        }
+        _allCustomers = await customerRepository.getCustomers();
+        emit(CustomerLoaded(_allCustomers, _allCustomers));
+        try {
+          final user = Gravity.find<AuthBloc>().currentUser;
+          Gravity.find<ActivityLogService>().log(
+            action: 'customer_deleted',
+            category: 'customer',
+            description: 'Deleted customers: ${deletedNames.join(", ")}',
+            userId: user?.username ?? 'system',
+            referenceId: event.ids.join(","),
           );
         } catch (_) {}
       } catch (e) {

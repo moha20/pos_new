@@ -30,6 +30,11 @@ class DeleteProductEvent extends InventoryEvent {
   DeleteProductEvent(this.id);
 }
 
+class DeleteMultipleProductsEvent extends InventoryEvent {
+  final List<String> ids;
+  DeleteMultipleProductsEvent(this.ids);
+}
+
 // States
 abstract class InventoryState {}
 
@@ -142,6 +147,36 @@ class InventoryBloc extends Bloc<InventoryEvent, InventoryState> {
             description: 'Deleted product: $prodName',
             userId: user?.username ?? 'system',
             referenceId: event.id,
+          );
+        } catch (_) {}
+      } catch (e) {
+        emit(InventoryError(e.toString()));
+      }
+    });
+
+    on<DeleteMultipleProductsEvent>((event, emit) async {
+      emit(InventoryLoading());
+      try {
+        final List<String> deletedNames = [];
+        for (final id in event.ids) {
+          try {
+            final existing = _allProducts.firstWhere((p) => p.id == id);
+            deletedNames.add(existing.name);
+          } catch (_) {
+            deletedNames.add(id);
+          }
+          await productRepository.deleteProduct(id);
+        }
+        _allProducts = await productRepository.getProducts();
+        emit(InventoryLoaded(_allProducts, _allProducts));
+        try {
+          final user = Gravity.find<AuthBloc>().currentUser;
+          Gravity.find<ActivityLogService>().log(
+            action: 'product_deleted',
+            category: 'inventory',
+            description: 'Deleted products: ${deletedNames.join(", ")}',
+            userId: user?.username ?? 'system',
+            referenceId: event.ids.join(","),
           );
         } catch (_) {}
       } catch (e) {

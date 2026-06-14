@@ -20,6 +20,7 @@ class InventoryScreen extends StatefulWidget {
 
 class _InventoryScreenState extends State<InventoryScreen> {
   final _searchController = TextEditingController();
+  final Set<String> _selectedProductIds = {};
 
   @override
   void initState() {
@@ -38,6 +39,18 @@ class _InventoryScreenState extends State<InventoryScreen> {
     return ResponsiveLayout(
       title: 'inventory'.tr(),
       actions: [
+        if (_selectedProductIds.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: ElevatedButton.icon(
+              onPressed: () => _confirmDeleteSelected(context),
+              icon: const Icon(Icons.delete_sweep, color: Colors.white),
+              label: Text('${'delete'.tr()} (${_selectedProductIds.length})'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+              ),
+            ),
+          ),
         if (canModify)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -95,6 +108,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: DataTable(
+                        showCheckboxColumn: true,
                         columns: [
                           DataColumn(label: Text('product_name'.tr())),
                           DataColumn(label: Text('barcode'.tr())),
@@ -115,6 +129,18 @@ class _InventoryScreenState extends State<InventoryScreen> {
                           }
 
                           return DataRow(
+                            selected: _selectedProductIds.contains(p.id),
+                            onSelectChanged: canModify
+                                ? (selected) {
+                                    setState(() {
+                                      if (selected == true) {
+                                        _selectedProductIds.add(p.id);
+                                      } else {
+                                        _selectedProductIds.remove(p.id);
+                                      }
+                                    });
+                                  }
+                                : null,
                             cells: [
                               DataCell(
                                 Row(
@@ -251,6 +277,42 @@ class _InventoryScreenState extends State<InventoryScreen> {
             ElevatedButton(
               onPressed: () {
                 context.read<InventoryBloc>().add(DeleteProductEvent(id));
+                setState(() {
+                  _selectedProductIds.remove(id);
+                });
+                Navigator.pop(context);
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              child: Text('delete'.tr()),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _confirmDeleteSelected(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('confirm'.tr()),
+          content: Text(
+            context.locale.languageCode == 'ar'
+                ? 'هل أنت متأكد من حذف ${_selectedProductIds.length} من المنتجات المحددة؟'
+                : 'Are you sure you want to delete ${_selectedProductIds.length} selected product(s)?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('cancel'.tr()),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                context.read<InventoryBloc>().add(DeleteMultipleProductsEvent(_selectedProductIds.toList()));
+                setState(() {
+                  _selectedProductIds.clear();
+                });
                 Navigator.pop(context);
               },
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),

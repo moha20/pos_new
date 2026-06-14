@@ -23,6 +23,7 @@ class _CashierScreenState extends State<CashierScreen> {
   final _expenseAmountController = TextEditingController();
   String _expenseCategory = 'شراء بضاعة / Stock Purchase';
   final _formKey = GlobalKey<FormState>();
+  final Set<String> _selectedExpenseIds = {};
 
   @override
   void initState() {
@@ -139,11 +140,25 @@ class _CashierScreenState extends State<CashierScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text('expenses'.tr(), style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                    ElevatedButton.icon(
-                      onPressed: () => _showAddExpenseDialog(context, state.activeShiftId),
-                      icon: const Icon(Icons.add, color: Colors.white),
-                      label: Text('add_expense'.tr(), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                      style: ElevatedButton.styleFrom(backgroundColor: theme.colorScheme.primary),
+                    Row(
+                      children: [
+                        if (_selectedExpenseIds.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                            child: ElevatedButton.icon(
+                              onPressed: () => _confirmDeleteSelectedExpenses(context),
+                              icon: const Icon(Icons.delete_sweep, color: Colors.white),
+                              label: Text('${'delete'.tr()} (${_selectedExpenseIds.length})'),
+                              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                            ),
+                          ),
+                        ElevatedButton.icon(
+                          onPressed: () => _showAddExpenseDialog(context, state.activeShiftId),
+                          icon: const Icon(Icons.add, color: Colors.white),
+                          label: Text('add_expense'.tr(), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                          style: ElevatedButton.styleFrom(backgroundColor: theme.colorScheme.primary),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -158,6 +173,7 @@ class _CashierScreenState extends State<CashierScreen> {
                             child: SingleChildScrollView(
                               scrollDirection: Axis.horizontal,
                               child: DataTable(
+                                showCheckboxColumn: true,
                                 columns: [
                                   DataColumn(label: Text('expense_description'.tr())),
                                   DataColumn(label: Text('amount'.tr())),
@@ -167,6 +183,16 @@ class _CashierScreenState extends State<CashierScreen> {
                                 ],
                                 rows: state.expenses.map((e) {
                                   return DataRow(
+                                    selected: _selectedExpenseIds.contains(e.id),
+                                    onSelectChanged: (selected) {
+                                      setState(() {
+                                        if (selected == true) {
+                                          _selectedExpenseIds.add(e.id);
+                                        } else {
+                                          _selectedExpenseIds.remove(e.id);
+                                        }
+                                      });
+                                    },
                                     cells: [
                                       DataCell(Text(e.description)),
                                       DataCell(Text('${e.amount.toStringAsFixed(2)} EGP', style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold))),
@@ -175,9 +201,7 @@ class _CashierScreenState extends State<CashierScreen> {
                                       DataCell(
                                         IconButton(
                                           icon: const Icon(Icons.delete, color: Colors.red),
-                                          onPressed: () {
-                                            context.read<CashierBloc>().add(DeleteExpenseEvent(e.id));
-                                          },
+                                          onPressed: () => _confirmDeleteExpense(context, e.id),
                                         ),
                                       ),
                                     ],
@@ -321,5 +345,67 @@ class _CashierScreenState extends State<CashierScreen> {
     if (mounted) {
       context.read<CashierBloc>().add(CloseShiftEvent(expectedCash));
     }
+  }
+
+  void _confirmDeleteExpense(BuildContext context, String id) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('confirm'.tr()),
+          content: Text('confirm_delete'.tr()),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('cancel'.tr()),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                context.read<CashierBloc>().add(DeleteExpenseEvent(id));
+                setState(() {
+                  _selectedExpenseIds.remove(id);
+                });
+                Navigator.pop(context);
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              child: Text('delete'.tr()),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _confirmDeleteSelectedExpenses(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('confirm'.tr()),
+          content: Text(
+            context.locale.languageCode == 'ar'
+                ? 'هل أنت متأكد من حذف ${_selectedExpenseIds.length} من المصروفات المحددة؟'
+                : 'Are you sure you want to delete ${_selectedExpenseIds.length} selected expense(s)?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('cancel'.tr()),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                context.read<CashierBloc>().add(DeleteMultipleExpensesEvent(_selectedExpenseIds.toList()));
+                setState(() {
+                  _selectedExpenseIds.clear();
+                });
+                Navigator.pop(context);
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              child: Text('delete'.tr()),
+            ),
+          ],
+        );
+      },
+    );
   }
 }

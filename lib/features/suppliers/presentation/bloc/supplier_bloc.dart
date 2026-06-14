@@ -30,6 +30,11 @@ class DeleteSupplierEvent extends SupplierEvent {
   DeleteSupplierEvent(this.id);
 }
 
+class DeleteMultipleSuppliersEvent extends SupplierEvent {
+  final List<String> ids;
+  DeleteMultipleSuppliersEvent(this.ids);
+}
+
 // States
 abstract class SupplierState {}
 
@@ -140,6 +145,36 @@ class SupplierBloc extends Bloc<SupplierEvent, SupplierState> {
             description: 'Deleted supplier: $suppName',
             userId: user?.username ?? 'system',
             referenceId: event.id,
+          );
+        } catch (_) {}
+      } catch (e) {
+        emit(SupplierError(e.toString()));
+      }
+    });
+
+    on<DeleteMultipleSuppliersEvent>((event, emit) async {
+      emit(SupplierLoading());
+      try {
+        final List<String> deletedNames = [];
+        for (final id in event.ids) {
+          try {
+            final existing = _allSuppliers.firstWhere((s) => s.id == id);
+            deletedNames.add(existing.name);
+          } catch (_) {
+            deletedNames.add(id);
+          }
+          await supplierRepository.deleteSupplier(id);
+        }
+        _allSuppliers = await supplierRepository.getSuppliers();
+        emit(SupplierLoaded(_allSuppliers, _allSuppliers));
+        try {
+          final user = Gravity.find<AuthBloc>().currentUser;
+          Gravity.find<ActivityLogService>().log(
+            action: 'supplier_deleted',
+            category: 'supplier',
+            description: 'Deleted suppliers: ${deletedNames.join(", ")}',
+            userId: user?.username ?? 'system',
+            referenceId: event.ids.join(","),
           );
         } catch (_) {}
       } catch (e) {

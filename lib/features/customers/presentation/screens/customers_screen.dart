@@ -22,6 +22,7 @@ class CustomersScreen extends StatefulWidget {
 
 class _CustomersScreenState extends State<CustomersScreen> {
   final _searchController = TextEditingController();
+  final Set<String> _selectedCustomerIds = {};
 
   @override
   void initState() {
@@ -37,6 +38,16 @@ class _CustomersScreenState extends State<CustomersScreen> {
     return ResponsiveLayout(
       title: 'customers'.tr(),
       actions: [
+        if (_selectedCustomerIds.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: ElevatedButton.icon(
+              onPressed: () => _confirmDeleteSelected(context),
+              icon: const Icon(Icons.delete_sweep, color: Colors.white),
+              label: Text('${'delete'.tr()} (${_selectedCustomerIds.length})'),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            ),
+          ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: ElevatedButton.icon(
@@ -144,7 +155,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: DataTable(
-                        showCheckboxColumn: false,
+                        showCheckboxColumn: true,
                         columns: [
                           DataColumn(label: Text('customer_name'.tr())),
                           DataColumn(label: Text('phone'.tr())),
@@ -157,10 +168,15 @@ class _CustomersScreenState extends State<CustomersScreen> {
                         ],
                         rows: customers.map((c) {
                           return DataRow(
+                            selected: _selectedCustomerIds.contains(c.id),
                             onSelectChanged: (selected) {
-                              if (selected == true) {
-                                _showCustomerHistory(context, c);
-                              }
+                              setState(() {
+                                if (selected == true) {
+                                  _selectedCustomerIds.add(c.id);
+                                } else {
+                                  _selectedCustomerIds.remove(c.id);
+                                }
+                              });
                             },
                             cells: [
                               DataCell(Text(c.name)),
@@ -189,6 +205,11 @@ class _CustomersScreenState extends State<CustomersScreen> {
                               DataCell(
                                 Row(
                                   children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.history, color: Colors.teal),
+                                      tooltip: context.locale.languageCode == 'ar' ? 'سجل المعاملات' : 'History',
+                                      onPressed: () => _showCustomerHistory(context, c),
+                                    ),
                                     IconButton(
                                       icon: const Icon(Icons.edit, color: Colors.blue),
                                       onPressed: () {
@@ -254,6 +275,42 @@ class _CustomersScreenState extends State<CustomersScreen> {
             ElevatedButton(
               onPressed: () {
                 context.read<CustomerBloc>().add(DeleteCustomerEvent(id));
+                setState(() {
+                  _selectedCustomerIds.remove(id);
+                });
+                Navigator.pop(context);
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              child: Text('delete'.tr()),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _confirmDeleteSelected(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('confirm'.tr()),
+          content: Text(
+            context.locale.languageCode == 'ar'
+                ? 'هل أنت متأكد من حذف ${_selectedCustomerIds.length} من العملاء المحددين؟'
+                : 'Are you sure you want to delete ${_selectedCustomerIds.length} selected customer(s)?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('cancel'.tr()),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                context.read<CustomerBloc>().add(DeleteMultipleCustomersEvent(_selectedCustomerIds.toList()));
+                setState(() {
+                  _selectedCustomerIds.clear();
+                });
                 Navigator.pop(context);
               },
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
