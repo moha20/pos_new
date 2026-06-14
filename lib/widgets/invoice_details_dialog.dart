@@ -4,6 +4,8 @@ import 'package:easy_localization/easy_localization.dart';
 import '../features/pos/domain/entities/sale_entity.dart';
 import '../services/print_service.dart';
 import '../core/di/di.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../features/customers/presentation/bloc/customer_bloc.dart';
 
 void showInvoiceDetailsDialog(
   BuildContext context,
@@ -228,6 +230,43 @@ void showInvoiceDetailsDialog(
                             label: Text(
                               'share'.tr(),
                               style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.teal,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10.r),
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 8.w),
+                          ElevatedButton.icon(
+                            onPressed: () async {
+                              final printService = Gravity.find<PrintService>();
+                              String? customerPhone;
+                              if (sale.customerId != null) {
+                                try {
+                                  final customerBloc = context.read<CustomerBloc>();
+                                  if (customerBloc.state is CustomerLoaded) {
+                                    final customers = (customerBloc.state as CustomerLoaded).allCustomers;
+                                    final match = customers.firstWhere((c) => c.id == sale.customerId);
+                                    customerPhone = match.phone;
+                                  }
+                                } catch (_) {}
+                              }
+                              await printService.shareToWhatsApp(
+                                context,
+                                sale,
+                                customerName: customerName,
+                                customerPhone: customerPhone,
+                              );
+                            },
+                            icon: const Icon(Icons.chat_rounded, color: Colors.white),
+                            label: const Text(
+                              'WhatsApp',
+                              style: TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
                               ),

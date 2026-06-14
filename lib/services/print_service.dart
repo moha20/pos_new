@@ -2,7 +2,9 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter/services.dart' show rootBundle, Clipboard, ClipboardData;
+import 'package:url_launcher/url_launcher.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
@@ -458,6 +460,253 @@ class PrintService {
       bytes: pdfBytes,
       filename: 'invoice_${sale.invoiceNumber}.pdf',
     );
+  }
+
+  Future<void> shareToWhatsApp(
+    BuildContext context,
+    SaleEntity sale, {
+    String? customerName,
+    String? customerPhone,
+  }) async {
+    final isArabic = context.locale.languageCode == 'ar';
+    final theme = Theme.of(context);
+    final phoneController = TextEditingController(text: customerPhone ?? '');
+
+    String resolvedCustName = customerName ?? '';
+    if (resolvedCustName.isEmpty) {
+      resolvedCustName = isArabic ? 'عميل نقدي' : 'Cash Customer';
+    }
+
+    await showDialog(
+      context: context,
+      builder: (dialogContext) {
+        bool shareViaWeb = true; // Default to WhatsApp Web as requested
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+              title: Row(
+                children: [
+                  const Icon(Icons.share, color: Colors.green),
+                  SizedBox(width: 8.w),
+                  Text(
+                    isArabic ? 'مشاركة عبر واتساب' : 'Share via WhatsApp',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    isArabic
+                        ? 'أدخل رقم هاتف العميل (اختياري، مع رمز الدولة مثل 2010...)'
+                        : 'Enter customer phone number (Optional, e.g., 2010...)',
+                    style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurface.withOpacity(0.6)),
+                  ),
+                  SizedBox(height: 12.h),
+                  TextField(
+                    controller: phoneController,
+                    keyboardType: TextInputType.phone,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r)),
+                      prefixIcon: const Icon(Icons.phone),
+                      labelText: isArabic ? 'رقم الهاتف' : 'Phone Number',
+                      hintText: '201001234567',
+                    ),
+                  ),
+                  SizedBox(height: 16.h),
+                  // Option: WhatsApp Web vs App
+                  Row(
+                    children: [
+                      Expanded(
+                        child: RadioListTile<bool>(
+                          value: true,
+                          groupValue: shareViaWeb,
+                          title: Text(isArabic ? 'واتساب ويب' : 'WhatsApp Web', style: TextStyle(fontSize: 12.sp)),
+                          contentPadding: EdgeInsets.zero,
+                          onChanged: (val) {
+                            if (val != null) setState(() => shareViaWeb = val);
+                          },
+                        ),
+                      ),
+                      Expanded(
+                        child: RadioListTile<bool>(
+                          value: false,
+                          groupValue: shareViaWeb,
+                          title: Text(isArabic ? 'تطبيق واتساب' : 'WhatsApp App', style: TextStyle(fontSize: 12.sp)),
+                          contentPadding: EdgeInsets.zero,
+                          onChanged: (val) {
+                            if (val != null) setState(() => shareViaWeb = val);
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  child: Text('cancel'.tr()),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    Navigator.pop(dialogContext);
+                    await _performWhatsAppShare(
+                      context,
+                      sale,
+                      resolvedCustName,
+                      phoneController.text.trim(),
+                      shareViaWeb,
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+                  ),
+                  child: Text(
+                    isArabic ? 'مشاركة' : 'Share',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _performWhatsAppShare(
+    BuildContext context,
+    SaleEntity sale,
+    String customerName,
+    String phone,
+    bool shareViaWeb,
+  ) async {
+    final isArabic = context.locale.languageCode == 'ar';
+    final currencySymbol = isArabic ? 'ج.م' : 'EGP';
+
+    // 1. Build Formatted Invoice Message
+    final buffer = StringBuffer();
+    if (isArabic) {
+      buffer.writeln('*بيان مبيعات - المهندس للأدوات الكهربائية*');
+      buffer.writeln('*رقم الفاتورة:* #${sale.invoiceNumber}');
+      buffer.writeln('*التاريخ:* ${DateFormat('yyyy-MM-dd HH:mm').format(sale.createdAt)}');
+      buffer.writeln('*العميل:* $customerName');
+      buffer.writeln('*الكاشير:* ${sale.cashierId}');
+      buffer.writeln();
+      buffer.writeln('*المنتجات:*');
+      for (final item in sale.items) {
+        buffer.writeln('• ${item.productName} (الكمية: ${item.qty}) - ${(item.totalPrice).toStringAsFixed(2)} $currencySymbol');
+      }
+      buffer.writeln();
+      buffer.writeln('*الملخص المالي:*');
+      buffer.writeln('- المجموع الفرعي: ${sale.subtotal.toStringAsFixed(2)} $currencySymbol');
+      if (sale.discount > 0) {
+        buffer.writeln('- الخصم: -${sale.discount.toStringAsFixed(2)} $currencySymbol');
+      }
+      if (sale.tax > 0) {
+        buffer.writeln('- الضريبة: ${sale.tax.toStringAsFixed(2)} $currencySymbol');
+      }
+      buffer.writeln('- *صافي الفاتورة:* ${sale.total.toStringAsFixed(2)} $currencySymbol');
+      buffer.writeln('- المدفوع: ${sale.amountPaid.toStringAsFixed(2)} $currencySymbol');
+      buffer.writeln('- *المتبقي:* ${sale.amountRemaining.toStringAsFixed(2)} $currencySymbol');
+      buffer.writeln();
+      buffer.writeln('شكراً لتعاملكم معنا!');
+    } else {
+      buffer.writeln('*Sales Receipt - Al Mohands Electrical Tools*');
+      buffer.writeln('*Invoice No:* #${sale.invoiceNumber}');
+      buffer.writeln('*Date:* ${DateFormat('yyyy-MM-dd HH:mm').format(sale.createdAt)}');
+      buffer.writeln('*Customer:* $customerName');
+      buffer.writeln('*Cashier:* ${sale.cashierId}');
+      buffer.writeln();
+      buffer.writeln('*Items:*');
+      for (final item in sale.items) {
+        buffer.writeln('• ${item.productName} (Qty: ${item.qty}) - ${(item.totalPrice).toStringAsFixed(2)} $currencySymbol');
+      }
+      buffer.writeln();
+      buffer.writeln('*Financial Summary:*');
+      buffer.writeln('- Subtotal: ${sale.subtotal.toStringAsFixed(2)} $currencySymbol');
+      if (sale.discount > 0) {
+        buffer.writeln('- Discount: -${sale.discount.toStringAsFixed(2)} $currencySymbol');
+      }
+      if (sale.tax > 0) {
+        buffer.writeln('- Tax: ${sale.tax.toStringAsFixed(2)} $currencySymbol');
+      }
+      buffer.writeln('- *Net Invoice:* ${sale.total.toStringAsFixed(2)} $currencySymbol');
+      buffer.writeln('- Amount Paid: ${sale.amountPaid.toStringAsFixed(2)} $currencySymbol');
+      buffer.writeln('- *Remaining:* ${sale.amountRemaining.toStringAsFixed(2)} $currencySymbol');
+      buffer.writeln();
+      buffer.writeln('Thank you for shopping with us!');
+    }
+
+    final textMsg = buffer.toString();
+
+    // 2. Copy to clipboard automatically for convenient backup/manual pasting
+    await Clipboard.setData(ClipboardData(text: textMsg));
+
+    // 3. Format phone number (remove leading +, remove spaces/dashes)
+    var formattedPhone = phone.replaceAll(RegExp(r'[^0-9]'), '');
+    if (formattedPhone.startsWith('01') && formattedPhone.length == 11) {
+      formattedPhone = '2$formattedPhone';
+    }
+
+    // 4. Construct WhatsApp url
+    String urlString;
+    final encodedText = Uri.encodeComponent(textMsg);
+
+    if (shareViaWeb) {
+      if (formattedPhone.isNotEmpty) {
+        urlString = 'https://web.whatsapp.com/send?phone=$formattedPhone&text=$encodedText';
+      } else {
+        urlString = 'https://web.whatsapp.com/send?text=$encodedText';
+      }
+    } else {
+      if (formattedPhone.isNotEmpty) {
+        urlString = 'https://wa.me/$formattedPhone?text=$encodedText';
+      } else {
+        urlString = 'https://wa.me/?text=$encodedText';
+      }
+    }
+
+    final uri = Uri.parse(urlString);
+
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        throw 'Could not launch $urlString';
+      }
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              isArabic
+                  ? 'تم نسخ تفاصيل الفاتورة وتوجيهك إلى واتساب...'
+                  : 'Invoice summary copied to clipboard and opening WhatsApp...',
+            ),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              isArabic
+                  ? 'تعذر فتح واتساب تلقائياً، ولكن تم نسخ الفاتورة للحافظة.'
+                  : 'Could not open WhatsApp, but invoice summary was copied to clipboard.',
+            ),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+    }
   }
 
   Future<void> printZReport(

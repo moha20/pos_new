@@ -226,7 +226,7 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
                                             IconButton(
                                               icon: const Icon(
                                                 Icons.share,
-                                                color: Colors.green,
+                                                color: Colors.teal,
                                               ),
                                               tooltip: 'share'.tr(),
                                               onPressed: () async {
@@ -237,6 +237,34 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
                                                   sale,
                                                   'Al Mohands Electrical Tools / المهندس للأدوات الكهربائية',
                                                   context.locale.languageCode,
+                                                );
+                                              },
+                                            ),
+                                            IconButton(
+                                              icon: const Icon(
+                                                Icons.chat_rounded,
+                                                color: Colors.green,
+                                              ),
+                                              tooltip: 'WhatsApp',
+                                              onPressed: () async {
+                                                final printService =
+                                                    Gravity.find<PrintService>();
+                                                String? customerPhone;
+                                                if (sale.customerId != null) {
+                                                  try {
+                                                    final customerBloc = context.read<CustomerBloc>();
+                                                    if (customerBloc.state is CustomerLoaded) {
+                                                      final customers = (customerBloc.state as CustomerLoaded).allCustomers;
+                                                      final match = customers.firstWhere((c) => c.id == sale.customerId);
+                                                      customerPhone = match.phone;
+                                                    }
+                                                  } catch (_) {}
+                                                }
+                                                await printService.shareToWhatsApp(
+                                                  context,
+                                                  sale,
+                                                  customerName: customerName,
+                                                  customerPhone: customerPhone,
                                                 );
                                               },
                                             ),
