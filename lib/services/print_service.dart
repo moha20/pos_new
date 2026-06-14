@@ -435,6 +435,31 @@ class PrintService {
     );
   }
 
+  Future<void> shareInvoice(
+    BuildContext context,
+    SaleEntity sale,
+    String companyName,
+    String lang, {
+    CustomerEntity? customer,
+  }) async {
+    await _loadFonts();
+    final logoImage = await _getLogoImage();
+    if (!context.mounted) return;
+    final doc = await _buildInvoicePdf(
+      context,
+      sale,
+      companyName,
+      lang,
+      logoImage,
+      customer: customer,
+    );
+    final pdfBytes = await doc.save();
+    await Printing.sharePdf(
+      bytes: pdfBytes,
+      filename: 'invoice_${sale.invoiceNumber}.pdf',
+    );
+  }
+
   Future<void> printZReport(
     BuildContext context, {
     required double startingCash,

@@ -203,21 +203,44 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
                                       ),
                                       DataCell(Text(sale.paymentMethod.tr())),
                                       DataCell(
-                                        IconButton(
-                                          icon: const Icon(
-                                            Icons.print,
-                                            color: Colors.blue,
-                                          ),
-                                          onPressed: () async {
-                                            final printService =
-                                                Gravity.find<PrintService>();
-                                            await printService.printInvoice(
-                                              context,
-                                              sale,
-                                              'Al Mohands Electrical Tools / المهندس للأدوات الكهربائية',
-                                              context.locale.languageCode,
-                                            );
-                                          },
+                                        Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            IconButton(
+                                              icon: const Icon(
+                                                Icons.print,
+                                                color: Colors.blue,
+                                              ),
+                                              tooltip: 'print'.tr(),
+                                              onPressed: () async {
+                                                final printService =
+                                                    Gravity.find<PrintService>();
+                                                await printService.printInvoice(
+                                                  context,
+                                                  sale,
+                                                  'Al Mohands Electrical Tools / المهندس للأدوات الكهربائية',
+                                                  context.locale.languageCode,
+                                                );
+                                              },
+                                            ),
+                                            IconButton(
+                                              icon: const Icon(
+                                                Icons.share,
+                                                color: Colors.green,
+                                              ),
+                                              tooltip: 'share'.tr(),
+                                              onPressed: () async {
+                                                final printService =
+                                                    Gravity.find<PrintService>();
+                                                await printService.shareInvoice(
+                                                  context,
+                                                  sale,
+                                                  'Al Mohands Electrical Tools / المهندس للأدوات الكهربائية',
+                                                  context.locale.languageCode,
+                                                );
+                                              },
+                                            ),
+                                          ],
                                         ),
                                       ),
                                     ],

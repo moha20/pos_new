@@ -212,30 +212,60 @@ void showInvoiceDetailsDialog(
                           color: theme.colorScheme.secondary,
                         ),
                       ),
-                      ElevatedButton.icon(
-                        onPressed: () async {
-                          final printService = Gravity.find<PrintService>();
-                          await printService.printInvoice(
-                            context,
-                            sale,
-                            'Al Mohands Electrical Tools / المهندس للأدوات الكهربائية',
-                            context.locale.languageCode,
-                          );
-                        },
-                        icon: const Icon(Icons.print, color: Colors.white),
-                        label: Text(
-                          'print'.tr(),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
+                      Row(
+                        children: [
+                          ElevatedButton.icon(
+                            onPressed: () async {
+                              final printService = Gravity.find<PrintService>();
+                              await printService.shareInvoice(
+                                context,
+                                sale,
+                                'Al Mohands Electrical Tools / المهندس للأدوات الكهربائية',
+                                context.locale.languageCode,
+                              );
+                            },
+                            icon: const Icon(Icons.share, color: Colors.white),
+                            label: Text(
+                              'share'.tr(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10.r),
+                              ),
+                            ),
                           ),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: theme.colorScheme.primary,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10.r),
+                          SizedBox(width: 8.w),
+                          ElevatedButton.icon(
+                            onPressed: () async {
+                              final printService = Gravity.find<PrintService>();
+                              await printService.printInvoice(
+                                context,
+                                sale,
+                                'Al Mohands Electrical Tools / المهندس للأدوات الكهربائية',
+                                context.locale.languageCode,
+                              );
+                            },
+                            icon: const Icon(Icons.print, color: Colors.white),
+                            label: Text(
+                              'print'.tr(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: theme.colorScheme.primary,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10.r),
+                              ),
+                            ),
                           ),
-                        ),
+                        ],
                       ),
                     ],
                   ),
