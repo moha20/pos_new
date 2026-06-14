@@ -102,6 +102,7 @@ class PrintService {
     final phoneText = prefs.getString('company_phone') ?? (isAr ? 'ت: ٠١١١٥٥٢٥٩٤٢ / ٠١٢٢٥٥٩٥٢٧١' : 'Tel: 01115525942 / 01225595271');
     
     final distributorText = prefs.getString('company_distributor') ?? (isAr ? 'موزع معتمد - مصطفى محمود' : 'Authorized Distributor - Mostafa Mahmoud');
+    final companyNameText = prefs.getString('company_name') ?? companyName;
     final tafqeetText = isAr ? tafqeet(sale.total) : 'Only ${sale.total.toStringAsFixed(2)} EGP';
 
     pdf.addPage(
@@ -142,6 +143,8 @@ class PrintService {
                           ),
                           pw.SizedBox(height: 2),
                           pw.Text(title, style: _style(fontSize: 9, bold: true)),
+                          pw.SizedBox(height: 2),
+                          pw.Text(companyNameText, style: _style(fontSize: 8, bold: true)),
                         ],
                       ),
                       // Left/Right side depending on layout direction
