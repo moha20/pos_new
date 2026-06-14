@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -161,7 +163,28 @@ class _POSScreenState extends State<POSScreen> {
           child: Icon(Icons.broken_image, color: Colors.red),
         ),
       );
+    } else if (path.startsWith('data:image/')) {
+      try {
+        final base64String = path.split(',').last;
+        final bytes = base64.decode(base64String);
+        return Image.memory(
+          bytes,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) => const Center(
+            child: Icon(Icons.broken_image, color: Colors.red),
+          ),
+        );
+      } catch (_) {
+        return const Center(
+          child: Icon(Icons.broken_image, color: Colors.red),
+        );
+      }
     } else {
+      if (kIsWeb) {
+        return const Center(
+          child: Icon(Icons.image, color: Colors.grey),
+        );
+      }
       return Image.file(
         File(path),
         fit: BoxFit.cover,

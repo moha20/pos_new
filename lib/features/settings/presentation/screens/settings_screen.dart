@@ -5,7 +5,9 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:path_provider/path_provider.dart';
+import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import '../bloc/settings_bloc.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/domain/entities/user_entity.dart';
@@ -721,28 +723,47 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['jpg', 'jpeg', 'png'],
+        withData: true,
       );
 
-      if (result != null && result.files.single.path != null) {
-        final selectedPath = result.files.single.path!;
-        
-        // Copy to app documents directory
-        final appDocDir = await getApplicationDocumentsDirectory();
-        final fileName = 'app_logo_${DateTime.now().millisecondsSinceEpoch}.${selectedPath.split('.').last}';
-        final newPath = '${appDocDir.path}/$fileName';
-        
-        // Copy the file
-        final file = File(selectedPath);
-        await file.copy(newPath);
-        
-        if (context.mounted) {
-          context.read<SettingsBloc>().add(SaveLogo(newPath));
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('logo_updated_success'.tr()),
-              backgroundColor: Colors.green,
-            ),
-          );
+      if (result != null) {
+        if (kIsWeb) {
+          final bytes = result.files.single.bytes;
+          if (bytes != null) {
+            final extension = result.files.single.name.split('.').last.toLowerCase();
+            final base64String = base64Encode(bytes);
+            final dataUri = 'data:image/$extension;base64,$base64String';
+            if (context.mounted) {
+              context.read<SettingsBloc>().add(SaveLogo(dataUri));
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('logo_updated_success'.tr()),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            }
+          }
+        } else if (result.files.single.path != null) {
+          final selectedPath = result.files.single.path!;
+          
+          // Copy to app documents directory
+          final appDocDir = await getApplicationDocumentsDirectory();
+          final fileName = 'app_logo_${DateTime.now().millisecondsSinceEpoch}.${selectedPath.split('.').last}';
+          final newPath = '${appDocDir.path}/$fileName';
+          
+          // Copy the file
+          final file = File(selectedPath);
+          await file.copy(newPath);
+          
+          if (context.mounted) {
+            context.read<SettingsBloc>().add(SaveLogo(newPath));
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('logo_updated_success'.tr()),
+                backgroundColor: Colors.green,
+              ),
+            );
+          }
         }
       }
     } catch (e) {

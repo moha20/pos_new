@@ -1,133 +1,140 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:hive/hive.dart';
 import '../core/db/hive_config.dart';
 import 'activity_log_service.dart';
 import '../core/di/di.dart';
 import '../features/auth/presentation/bloc/auth_bloc.dart';
+import 'file_helper.dart';
 
 class BackupService {
-  /// Local Backup: Export all Hive boxes to a JSON file at a user-chosen destination
+  Map<String, dynamic> _boxToMap(Box box) {
+    final map = <String, dynamic>{};
+    box.toMap().forEach((key, value) {
+      map[key.toString()] = value;
+    });
+    return map;
+  }
+
+  /// Local Backup: Export Hive database contents to a JSON file
   Future<String?> backupLocal() async {
     try {
-      // Collect all data from all boxes
-      final backupData = <String, dynamic>{
-        'version': 1,
-        'timestamp': DateTime.now().toIso8601String(),
-        'users': _boxToList(HiveConfig.usersBox),
-        'products': _boxToList(HiveConfig.productsBox),
-        'customers': _boxToList(HiveConfig.customersBox),
-        'suppliers': _boxToList(HiveConfig.suppliersBox),
-        'sales': _boxToList(HiveConfig.salesBox),
-        'expenses': _boxToList(HiveConfig.expensesBox),
-        'activity_logs': _boxToList(HiveConfig.activityLogsBox),
+      final backupData = {
+        'users': _boxToMap(HiveConfig.usersBox),
+        'products': _boxToMap(HiveConfig.productsBox),
+        'customers': _boxToMap(HiveConfig.customersBox),
+        'suppliers': _boxToMap(HiveConfig.suppliersBox),
+        'sales': _boxToMap(HiveConfig.salesBox),
+        'expenses': _boxToMap(HiveConfig.expensesBox),
+        'activity_logs': _boxToMap(HiveConfig.activityLogsBox),
       };
-
-      final jsonString = const JsonEncoder.withIndent('  ').convert(backupData);
 
       final dateStr = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
       final defaultFileName = 'almohandis_pos_backup_$dateStr.json';
+      final jsonStr = jsonEncode(backupData);
 
-      // Open native save file dialog
-      final outputPath = await FilePicker.platform.saveFile(
-        dialogTitle: 'Select Backup Destination / اختر مكان حفظ النسخة الاحتياطية',
-        fileName: defaultFileName,
-        type: FileType.any,
-      );
-
-      if (outputPath == null) {
-        return 'cancelled';
-      }
-
-      // Write JSON to file
-      await File(outputPath).writeAsString(jsonString);
-
-      // Log activity
-      try {
-        final currentUsername = Gravity.find<AuthBloc>().currentUser?.username ?? 'admin';
-        Gravity.find<ActivityLogService>().log(
-          category: 'settings',
-          action: 'database_backup',
-          description: 'Created database backup at: $outputPath',
-          userId: currentUsername,
+      if (kIsWeb) {
+        await saveFileWeb(jsonStr, defaultFileName);
+        _logBackup('web_download');
+        return 'success:downloads/$defaultFileName';
+      } else {
+        // Native save
+        final outputPath = await FilePicker.platform.saveFile(
+          dialogTitle: 'Select Backup Destination / اختر مكان حفظ النسخة الاحتياطية',
+          fileName: defaultFileName,
+          type: FileType.any,
         );
-      } catch (_) {}
 
-      return 'success:$outputPath';
+        if (outputPath == null) {
+          return 'cancelled';
+        }
+
+        final file = File(outputPath);
+        await file.writeAsString(jsonStr);
+        _logBackup(outputPath);
+        return 'success:$outputPath';
+      }
     } catch (e) {
       return 'error:${e.toString()}';
     }
   }
 
-  /// Local Restore: Load a backup JSON file and replace all Hive box data
+  /// Local Restore: Replace the active Hive database contents with data from a JSON backup file
   Future<String?> restoreLocal() async {
     try {
-      // Pick the backup file (.json)
       final result = await FilePicker.platform.pickFiles(
         dialogTitle: 'Select Backup File to Restore / اختر ملف النسخة الاحتياطية للاستعادة',
         type: FileType.custom,
         allowedExtensions: ['json'],
+        withData: true,
       );
 
-      if (result == null || result.files.single.path == null) {
+      if (result == null) {
         return 'cancelled';
       }
 
-      final backupPath = result.files.single.path!;
-      final backupFile = File(backupPath);
-      if (!backupFile.existsSync()) {
-        return 'backup_file_not_found';
+      final bytes = result.files.single.bytes;
+      if (bytes == null) {
+        return 'error:no_data_read';
       }
 
-      final jsonString = await backupFile.readAsString();
-      final backupData = json.decode(jsonString) as Map<String, dynamic>;
+      final jsonStr = utf8.decode(bytes);
+      final backupData = jsonDecode(jsonStr) as Map<String, dynamic>;
 
-      // Clear and restore each box
-      await _restoreBox(HiveConfig.usersBox, backupData['users'] as List?);
-      await _restoreBox(HiveConfig.productsBox, backupData['products'] as List?);
-      await _restoreBox(HiveConfig.customersBox, backupData['customers'] as List?);
-      await _restoreBox(HiveConfig.suppliersBox, backupData['suppliers'] as List?);
-      await _restoreBox(HiveConfig.salesBox, backupData['sales'] as List?);
-      await _restoreBox(HiveConfig.expensesBox, backupData['expenses'] as List?);
-      await _restoreBox(HiveConfig.activityLogsBox, backupData['activity_logs'] as List?);
+      // Verify backup structure
+      if (!backupData.containsKey('users') || !backupData.containsKey('products')) {
+        return 'error:invalid_backup_format';
+      }
 
-      // Log activity in restored database
-      try {
-        final currentUsername = Gravity.find<AuthBloc>().currentUser?.username ?? 'admin';
-        Gravity.find<ActivityLogService>().log(
-          category: 'settings',
-          action: 'database_restore',
-          description: 'Restored database from: $backupPath',
-          userId: currentUsername,
-        );
-      } catch (_) {}
+      // Restore each box
+      await _restoreBox(HiveConfig.usersBox, backupData['users']);
+      await _restoreBox(HiveConfig.productsBox, backupData['products']);
+      await _restoreBox(HiveConfig.customersBox, backupData['customers']);
+      await _restoreBox(HiveConfig.suppliersBox, backupData['suppliers']);
+      await _restoreBox(HiveConfig.salesBox, backupData['sales']);
+      await _restoreBox(HiveConfig.expensesBox, backupData['expenses']);
+      await _restoreBox(HiveConfig.activityLogsBox, backupData['activity_logs']);
 
+      _logRestore(result.files.single.name);
       return 'success';
     } catch (e) {
       return 'error:${e.toString()}';
     }
   }
 
-  /// Convert a Hive box to a list of {key, value} entries for JSON serialization
-  List<Map<String, dynamic>> _boxToList(dynamic box) {
-    final list = <Map<String, dynamic>>[];
-    for (final key in box.keys) {
-      list.add({
-        'key': key.toString(),
-        'value': box.get(key),
-      });
+  Future<void> _restoreBox(Box box, dynamic data) async {
+    if (data is Map) {
+      await box.clear();
+      for (final entry in data.entries) {
+        await box.put(entry.key, entry.value);
+      }
     }
-    return list;
   }
 
-  /// Restore a Hive box from a list of {key, value} entries
-  Future<void> _restoreBox(dynamic box, List? entries) async {
-    await box.clear();
-    if (entries == null) return;
-    for (final entry in entries) {
-      final map = entry as Map<String, dynamic>;
-      await box.put(map['key'], map['value']);
-    }
+  void _logBackup(String path) {
+    try {
+      final currentUsername = Gravity.find<AuthBloc>().currentUser?.username ?? 'admin';
+      Gravity.find<ActivityLogService>().log(
+        category: 'settings',
+        action: 'database_backup',
+        description: 'Created database backup at: $path',
+        userId: currentUsername,
+      );
+    } catch (_) {}
+  }
+
+  void _logRestore(String name) {
+    try {
+      final currentUsername = Gravity.find<AuthBloc>().currentUser?.username ?? 'admin';
+      Gravity.find<ActivityLogService>().log(
+        category: 'settings',
+        action: 'database_restore',
+        description: 'Restored database from: $name',
+        userId: currentUsername,
+      );
+    } catch (_) {}
   }
 }

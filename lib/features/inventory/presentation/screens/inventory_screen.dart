@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -133,11 +135,27 @@ class _InventoryScreenState extends State<InventoryScreen> {
                                                   fit: BoxFit.cover,
                                                   errorBuilder: (c, e, s) => const Icon(Icons.broken_image, size: 18, color: Colors.red),
                                                 )
-                                              : Image.file(
-                                                  File(p.imagePath!),
-                                                  fit: BoxFit.cover,
-                                                  errorBuilder: (c, e, s) => const Icon(Icons.broken_image, size: 18, color: Colors.red),
-                                                ))
+                                              : (p.imagePath!.startsWith('data:image/')
+                                                  ? Builder(builder: (context) {
+                                                      try {
+                                                        final base64String = p.imagePath!.split(',').last;
+                                                        final bytes = base64.decode(base64String);
+                                                        return Image.memory(
+                                                          bytes,
+                                                          fit: BoxFit.cover,
+                                                          errorBuilder: (c, e, s) => const Icon(Icons.broken_image, size: 18, color: Colors.red),
+                                                        );
+                                                      } catch (_) {
+                                                        return const Icon(Icons.broken_image, size: 18, color: Colors.red);
+                                                      }
+                                                    })
+                                                  : (kIsWeb
+                                                      ? const Icon(Icons.image, size: 18, color: Colors.grey)
+                                                      : Image.file(
+                                                          File(p.imagePath!),
+                                                          fit: BoxFit.cover,
+                                                          errorBuilder: (c, e, s) => const Icon(Icons.broken_image, size: 18, color: Colors.red),
+                                                        ))))
                                           : Container(
                                               decoration: BoxDecoration(
                                                 gradient: LinearGradient(
