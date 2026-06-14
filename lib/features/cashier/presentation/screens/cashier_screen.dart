@@ -148,8 +148,11 @@ class _CashierScreenState extends State<CashierScreen> {
                             child: ElevatedButton.icon(
                               onPressed: () => _confirmDeleteSelectedExpenses(context),
                               icon: const Icon(Icons.delete_sweep, color: Colors.white),
-                              label: Text('${'delete'.tr()} (${_selectedExpenseIds.length})'),
-                              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                              label: Text('${'delete'.tr()} (${_selectedExpenseIds.length})', style: const TextStyle(color: Colors.white)),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red,
+                                foregroundColor: Colors.white,
+                              ),
                             ),
                           ),
                         ElevatedButton.icon(
@@ -367,8 +370,11 @@ class _CashierScreenState extends State<CashierScreen> {
                 });
                 Navigator.pop(context);
               },
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              child: Text('delete'.tr()),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+              ),
+              child: Text('delete'.tr(), style: const TextStyle(color: Colors.white)),
             ),
           ],
         );
@@ -400,8 +406,11 @@ class _CashierScreenState extends State<CashierScreen> {
                 });
                 Navigator.pop(context);
               },
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              child: Text('delete'.tr()),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+              ),
+              child: Text('delete'.tr(), style: const TextStyle(color: Colors.white)),
             ),
           ],
         );

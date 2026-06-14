@@ -45,9 +45,10 @@ class _InventoryScreenState extends State<InventoryScreen> {
             child: ElevatedButton.icon(
               onPressed: () => _confirmDeleteSelected(context),
               icon: const Icon(Icons.delete_sweep, color: Colors.white),
-              label: Text('${'delete'.tr()} (${_selectedProductIds.length})'),
+              label: Text('${'delete'.tr()} (${_selectedProductIds.length})', style: const TextStyle(color: Colors.white)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
               ),
             ),
           ),
@@ -282,8 +283,11 @@ class _InventoryScreenState extends State<InventoryScreen> {
                 });
                 Navigator.pop(context);
               },
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              child: Text('delete'.tr()),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+              ),
+              child: Text('delete'.tr(), style: const TextStyle(color: Colors.white)),
             ),
           ],
         );
@@ -315,8 +319,11 @@ class _InventoryScreenState extends State<InventoryScreen> {
                 });
                 Navigator.pop(context);
               },
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              child: Text('delete'.tr()),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+              ),
+              child: Text('delete'.tr(), style: const TextStyle(color: Colors.white)),
             ),
           ],
         );

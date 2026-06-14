@@ -41,8 +41,11 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
             child: ElevatedButton.icon(
               onPressed: () => _confirmDeleteSelected(context),
               icon: const Icon(Icons.delete_sweep, color: Colors.white),
-              label: Text('${'delete'.tr()} (${_selectedSupplierIds.length})'),
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              label: Text('${'delete'.tr()} (${_selectedSupplierIds.length})', style: const TextStyle(color: Colors.white)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+              ),
             ),
           ),
         Padding(
@@ -252,8 +255,11 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
                 });
                 Navigator.pop(context);
               },
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              child: Text('delete'.tr()),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+              ),
+              child: Text('delete'.tr(), style: const TextStyle(color: Colors.white)),
             ),
           ],
         );
@@ -285,8 +291,11 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
                 });
                 Navigator.pop(context);
               },
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              child: Text('delete'.tr()),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+              ),
+              child: Text('delete'.tr(), style: const TextStyle(color: Colors.white)),
             ),
           ],
         );
