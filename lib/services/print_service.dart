@@ -143,8 +143,6 @@ class PrintService {
                           ),
                           pw.SizedBox(height: 2),
                           pw.Text(title, style: _style(fontSize: 9, bold: true)),
-                          pw.SizedBox(height: 2),
-                          pw.Text(companyNameText, style: _style(fontSize: 8, bold: true)),
                         ],
                       ),
                       // Left/Right side depending on layout direction
@@ -152,6 +150,7 @@ class PrintService {
                         crossAxisAlignment: isAr ? pw.CrossAxisAlignment.end : pw.CrossAxisAlignment.start,
                         children: [
                           pw.Text(distributorText, style: _style(fontSize: 8, bold: true)),
+                          pw.Text(companyNameText, style: _style(fontSize: 7)),
                         ],
                       ),
                     ],
