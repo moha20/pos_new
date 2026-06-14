@@ -93,14 +93,15 @@ class PrintService {
         ? 'طباعة: ${DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now())}'
         : 'Print Time: ${DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now())}';
 
+    final prefs = Gravity.find<SharedPreferences>();
     final systemFooterText = isAr
         ? 'Mazaya Co. for Programming 01118152828 / شركة مزايا للبرمجيات'
         : 'Mazaya Co. for Programming 01118152828';
         
-    final addressText = isAr ? 'الهرم - مربوطة حمزة' : 'Haram - Marboutat Hamza';
-    final phoneText = isAr ? 'ت: ٠١١١٥٥٢٥٩٤٢ / ٠١٢٢٥٥٩٥٢٧١' : 'Tel: 01115525942 / 01225595271';
+    final addressText = prefs.getString('company_address') ?? (isAr ? 'الهرم - مربوطة حمزة' : 'Haram - Marboutat Hamza');
+    final phoneText = prefs.getString('company_phone') ?? (isAr ? 'ت: ٠١١١٥٥٢٥٩٤٢ / ٠١٢٢٥٥٩٥٢٧١' : 'Tel: 01115525942 / 01225595271');
     
-    final distributorText = isAr ? 'موزع معتمد - مصطفى محمود' : 'Authorized Distributor - Mostafa Mahmoud';
+    final distributorText = prefs.getString('company_distributor') ?? (isAr ? 'موزع معتمد - مصطفى محمود' : 'Authorized Distributor - Mostafa Mahmoud');
     final tafqeetText = isAr ? tafqeet(sale.total) : 'Only ${sale.total.toStringAsFixed(2)} EGP';
 
     pdf.addPage(
@@ -613,12 +614,14 @@ class PrintService {
     // 1. Build Formatted Invoice Message
     final buffer = StringBuffer();
     final isDraft = sale.id == 'draft' || (sale.note?.contains('DRAFT') ?? false);
+    final prefs = Gravity.find<SharedPreferences>();
+    final companyNameText = prefs.getString('company_name') ?? (isArabic ? 'المهندس للأدوات الكهربائية' : 'Al Mohands Electrical Tools');
     if (isArabic) {
       if (isDraft) {
         buffer.writeln('*[معاينة مسودة غير محفوظة]*');
         buffer.writeln();
       }
-      buffer.writeln('*بيان مبيعات - المهندس للأدوات الكهربائية*');
+      buffer.writeln('*بيان مبيعات - $companyNameText*');
       buffer.writeln('*رقم الفاتورة:* #${sale.invoiceNumber}');
       buffer.writeln('*التاريخ:* ${DateFormat('yyyy-MM-dd HH:mm').format(sale.createdAt)}');
       buffer.writeln('*العميل:* $customerName');
@@ -652,7 +655,7 @@ class PrintService {
         buffer.writeln('*[DRAFT INVOICE PREVIEW - NOT SAVED]*');
         buffer.writeln();
       }
-      buffer.writeln('*Sales Receipt - Al Mohands Electrical Tools*');
+      buffer.writeln('*Sales Receipt - $companyNameText*');
       buffer.writeln('*Invoice No:* #${sale.invoiceNumber}');
       buffer.writeln('*Date:* ${DateFormat('yyyy-MM-dd HH:mm').format(sale.createdAt)}');
       buffer.writeln('*Customer:* $customerName');

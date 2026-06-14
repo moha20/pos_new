@@ -213,5 +213,8 @@
   "preview_draft": "معاينة المسودة",
   "draft_options": "خيارات المسودة",
   "draft_options_desc": "قم بمعاينة أو مشاركة مسودة الفاتورة مع العميل للحصول على موافقته قبل حفظها.",
-  "whatsapp_share": "مشاركة واتساب"
+  "whatsapp_share": "مشاركة واتساب",
+  "company_address": "عنوان الشركة",
+  "company_phone": "هاتف الشركة",
+  "company_distributor": "معلومات الموزع"
 }

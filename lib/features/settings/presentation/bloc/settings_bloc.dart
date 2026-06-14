@@ -16,6 +16,9 @@ class SaveSettings extends SettingsEvent {
   final String themeType;
   final String themeMode;
   final String whatsappPhone;
+  final String companyAddress;
+  final String companyPhone;
+  final String companyDistributor;
 
   SaveSettings({
     required this.companyName,
@@ -24,6 +27,9 @@ class SaveSettings extends SettingsEvent {
     required this.themeType,
     required this.themeMode,
     required this.whatsappPhone,
+    required this.companyAddress,
+    required this.companyPhone,
+    required this.companyDistributor,
   });
 }
 
@@ -46,6 +52,9 @@ class SettingsLoaded extends SettingsState {
   final String themeType;
   final String themeMode;
   final String whatsappPhone;
+  final String companyAddress;
+  final String companyPhone;
+  final String companyDistributor;
   final String? logoPath;
 
   SettingsLoaded({
@@ -55,6 +64,9 @@ class SettingsLoaded extends SettingsState {
     required this.themeType,
     required this.themeMode,
     required this.whatsappPhone,
+    required this.companyAddress,
+    required this.companyPhone,
+    required this.companyDistributor,
     this.logoPath,
   });
 }
@@ -75,6 +87,9 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     themeType: prefs.getString('theme_type') ?? 'copper',
     themeMode: prefs.getString('theme_mode') ?? 'light',
     whatsappPhone: prefs.getString('whatsapp_phone') ?? '',
+    companyAddress: prefs.getString('company_address') ?? 'الهرم - مربوطة حمزة',
+    companyPhone: prefs.getString('company_phone') ?? '٠١١١٥٥٢٥٩٤٢ / ٠١٢٢٥٥٩٥٢٧١',
+    companyDistributor: prefs.getString('company_distributor') ?? 'موزع معتمد - مصطفى محمود',
     logoPath: prefs.getString('logo_path'),
   )) {
     on<LoadSettings>((event, emit) {
@@ -85,6 +100,9 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
         final theme = prefs.getString('theme_type') ?? 'copper';
         final mode = prefs.getString('theme_mode') ?? 'light';
         final whatsapp = prefs.getString('whatsapp_phone') ?? '';
+        final address = prefs.getString('company_address') ?? 'الهرم - مربوطة حمزة';
+        final phone = prefs.getString('company_phone') ?? '٠١١١٥٥٢٥٩٤٢ / ٠١٢٢٥٥٩٥٢٧١';
+        final distributor = prefs.getString('company_distributor') ?? 'موزع معتمد - مصطفى محمود';
         final logo = prefs.getString('logo_path');
         emit(SettingsLoaded(
           companyName: company,
@@ -93,6 +111,9 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
           themeType: theme,
           themeMode: mode,
           whatsappPhone: whatsapp,
+          companyAddress: address,
+          companyPhone: phone,
+          companyDistributor: distributor,
           logoPath: logo,
         ));
       } catch (e) {
@@ -108,6 +129,9 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
         await prefs.setString('theme_type', event.themeType);
         await prefs.setString('theme_mode', event.themeMode);
         await prefs.setString('whatsapp_phone', event.whatsappPhone);
+        await prefs.setString('company_address', event.companyAddress);
+        await prefs.setString('company_phone', event.companyPhone);
+        await prefs.setString('company_distributor', event.companyDistributor);
         final logo = prefs.getString('logo_path');
         emit(SettingsLoaded(
           companyName: event.companyName,
@@ -116,6 +140,9 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
           themeType: event.themeType,
           themeMode: event.themeMode,
           whatsappPhone: event.whatsappPhone,
+          companyAddress: event.companyAddress,
+          companyPhone: event.companyPhone,
+          companyDistributor: event.companyDistributor,
           logoPath: logo,
         ));
         try {
@@ -123,7 +150,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
           Gravity.find<ActivityLogService>().log(
             action: 'settings_updated',
             category: 'settings',
-            description: 'Updated settings: Company Name: ${event.companyName}, Tax: ${event.taxPercent}%, Printer IP: ${event.printerIp}, Theme: ${event.themeType}, Mode: ${event.themeMode}, WhatsApp: ${event.whatsappPhone}',
+            description: 'Updated settings: Company Name: ${event.companyName}, Tax: ${event.taxPercent}%, Printer IP: ${event.printerIp}, Theme: ${event.themeType}, Mode: ${event.themeMode}, WhatsApp: ${event.whatsappPhone}, Address: ${event.companyAddress}, Phone: ${event.companyPhone}, Distributor: ${event.companyDistributor}',
             userId: user?.username ?? 'system',
           );
         } catch (_) {}
@@ -145,6 +172,9 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
         final theme = prefs.getString('theme_type') ?? 'copper';
         final mode = prefs.getString('theme_mode') ?? 'light';
         final whatsapp = prefs.getString('whatsapp_phone') ?? '';
+        final address = prefs.getString('company_address') ?? 'الهرم - مربوطة حمزة';
+        final phone = prefs.getString('company_phone') ?? '٠١١١٥٥٢٥٩٤٢ / ٠١٢٢٥٥٩٥٢٧١';
+        final distributor = prefs.getString('company_distributor') ?? 'موزع معتمد - مصطفى محمود';
         emit(SettingsLoaded(
           companyName: company,
           taxPercent: tax,
@@ -152,6 +182,9 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
           themeType: theme,
           themeMode: mode,
           whatsappPhone: whatsapp,
+          companyAddress: address,
+          companyPhone: phone,
+          companyDistributor: distributor,
           logoPath: event.logoPath,
         ));
         try {

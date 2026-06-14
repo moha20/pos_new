@@ -213,5 +213,8 @@
   "preview_draft": "Preview Draft",
   "draft_options": "Draft Options",
   "draft_options_desc": "Preview or share the invoice before saving it to get customer approval.",
-  "whatsapp_share": "WhatsApp Share"
+  "whatsapp_share": "WhatsApp Share",
+  "company_address": "Company Address",
+  "company_phone": "Company Phone",
+  "company_distributor": "Distributor Info"
 }

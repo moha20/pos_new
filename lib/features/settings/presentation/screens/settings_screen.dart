@@ -42,6 +42,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final _taxController = TextEditingController();
   final _printerController = TextEditingController();
   final _whatsappController = TextEditingController();
+  final _addressController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _distributorController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   String? _selectedTheme;
   String? _selectedMode;
@@ -79,6 +82,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _taxController.text = state.taxPercent.toString();
               _printerController.text = state.printerIp;
               _whatsappController.text = state.whatsappPhone;
+              _addressController.text = state.companyAddress;
+              _phoneController.text = state.companyPhone;
+              _distributorController.text = state.companyDistributor;
             }
             _selectedTheme ??= state.themeType;
             _selectedMode ??= state.themeMode;
@@ -100,6 +106,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           children: [
                             TextFormField(
                               controller: _companyController,
+                              enabled: isAdmin,
                               decoration: InputDecoration(labelText: 'company_name'.tr(), border: const OutlineInputBorder()),
                               validator: (v) => v == null || v.isEmpty ? 'no_data'.tr() : null,
                             ),
@@ -109,6 +116,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 Expanded(
                                   child: TextFormField(
                                     controller: _taxController,
+                                    enabled: isAdmin,
                                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
                                     decoration: InputDecoration(labelText: 'tax_percent'.tr(), border: const OutlineInputBorder()),
                                     validator: (v) => v == null || double.tryParse(v) == null ? 'no_data'.tr() : null,
@@ -118,6 +126,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 Expanded(
                                   child: TextFormField(
                                     controller: _printerController,
+                                    enabled: isAdmin,
                                     decoration: InputDecoration(labelText: 'printer_ip'.tr(), border: const OutlineInputBorder()),
                                     validator: (v) => v == null || v.isEmpty ? 'no_data'.tr() : null,
                                   ),
@@ -127,6 +136,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             SizedBox(height: 12.h),
                             TextFormField(
                               controller: _whatsappController,
+                              enabled: isAdmin,
                               keyboardType: TextInputType.phone,
                               decoration: InputDecoration(
                                 labelText: 'whatsapp_phone'.tr(),
@@ -134,6 +144,39 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 prefixIcon: const Icon(Icons.phone),
                                 border: const OutlineInputBorder(),
                               ),
+                            ),
+                            SizedBox(height: 12.h),
+                            TextFormField(
+                              controller: _addressController,
+                              enabled: isAdmin,
+                              decoration: InputDecoration(
+                                labelText: 'company_address'.tr(),
+                                prefixIcon: const Icon(Icons.location_on_outlined),
+                                border: const OutlineInputBorder(),
+                              ),
+                              validator: (v) => v == null || v.isEmpty ? 'no_data'.tr() : null,
+                            ),
+                            SizedBox(height: 12.h),
+                            TextFormField(
+                              controller: _phoneController,
+                              enabled: isAdmin,
+                              decoration: InputDecoration(
+                                labelText: 'company_phone'.tr(),
+                                prefixIcon: const Icon(Icons.phone_android_outlined),
+                                border: const OutlineInputBorder(),
+                              ),
+                              validator: (v) => v == null || v.isEmpty ? 'no_data'.tr() : null,
+                            ),
+                            SizedBox(height: 12.h),
+                            TextFormField(
+                              controller: _distributorController,
+                              enabled: isAdmin,
+                              decoration: InputDecoration(
+                                labelText: 'company_distributor'.tr(),
+                                prefixIcon: const Icon(Icons.business_outlined),
+                                border: const OutlineInputBorder(),
+                              ),
+                              validator: (v) => v == null || v.isEmpty ? 'no_data'.tr() : null,
                             ),
                             SizedBox(height: 16.h),
                             Row(
@@ -177,7 +220,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                           child: Text('logo_blue_official'.tr()),
                                         ),
                                       ],
-                                      onChanged: (val) {
+                                       onChanged: !isAdmin ? null : (val) {
                                         if (val != null) {
                                           setState(() {
                                             _selectedTheme = val;
@@ -189,6 +232,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                                 themeType: val,
                                                 themeMode: _selectedMode ?? 'light',
                                                 whatsappPhone: _whatsappController.text,
+                                                companyAddress: _addressController.text,
+                                                companyPhone: _phoneController.text,
+                                                companyDistributor: _distributorController.text,
                                               ));
                                         }
                                       },
@@ -235,51 +281,59 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                            child: Text('system_mode'.tr()),
                                          ),
                                        ],
-                                       onChanged: (val) {
-                                         if (val != null) {
-                                           setState(() {
-                                             _selectedMode = val;
-                                           });
-                                           context.read<SettingsBloc>().add(SaveSettings(
-                                                 companyName: _companyController.text,
-                                                 taxPercent: double.tryParse(_taxController.text) ?? 14.0,
-                                                 printerIp: _printerController.text,
-                                                 themeType: _selectedTheme ?? 'copper',
-                                                 themeMode: val,
-                                                 whatsappPhone: _whatsappController.text,
-                                               ));
-                                         }
-                                       },
+                                        onChanged: !isAdmin ? null : (val) {
+                                          if (val != null) {
+                                            setState(() {
+                                              _selectedMode = val;
+                                            });
+                                            context.read<SettingsBloc>().add(SaveSettings(
+                                                  companyName: _companyController.text,
+                                                  taxPercent: double.tryParse(_taxController.text) ?? 14.0,
+                                                  printerIp: _printerController.text,
+                                                  themeType: _selectedTheme ?? 'copper',
+                                                  themeMode: val,
+                                                  whatsappPhone: _whatsappController.text,
+                                                  companyAddress: _addressController.text,
+                                                  companyPhone: _phoneController.text,
+                                                  companyDistributor: _distributorController.text,
+                                                ));
+                                          }
+                                        },
                                      ),
                                    ),
                                  ),
                               ],
                             ),
-                            SizedBox(height: 16.h),
-                            ElevatedButton(
-                              onPressed: () {
-                                if (_formKey.currentState!.validate()) {
-                                  context.read<SettingsBloc>().add(SaveSettings(
-                                        companyName: _companyController.text,
-                                        taxPercent: double.parse(_taxController.text),
-                                        printerIp: _printerController.text,
-                                        themeType: _selectedTheme ?? 'copper',
-                                        themeMode: _selectedMode ?? 'light',
-                                        whatsappPhone: _whatsappController.text,
-                                      ));
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('saved_successfully'.tr()), backgroundColor: Colors.green),
-                                  );
-                                }
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: theme.colorScheme.primary,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                            if (isAdmin) ...[
+                              SizedBox(height: 16.h),
+                              ElevatedButton(
+                                onPressed: () {
+                                  if (_formKey.currentState!.validate()) {
+                                    context.read<SettingsBloc>().add(SaveSettings(
+                                          companyName: _companyController.text,
+                                          taxPercent: double.parse(_taxController.text),
+                                          printerIp: _printerController.text,
+                                          themeType: _selectedTheme ?? 'copper',
+                                          themeMode: _selectedMode ?? 'light',
+                                          whatsappPhone: _whatsappController.text,
+                                          companyAddress: _addressController.text,
+                                          companyPhone: _phoneController.text,
+                                          companyDistributor: _distributorController.text,
+                                        ));
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('saved_successfully'.tr()), backgroundColor: Colors.green),
+                                    );
+                                  }
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: theme.colorScheme.primary,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                                ),
+                                child: Text('save'.tr(), style: const TextStyle(fontWeight: FontWeight.bold)),
                               ),
-                              child: Text('save'.tr(), style: const TextStyle(fontWeight: FontWeight.bold)),
-                            ),
+                            ],
                           ],
                         ),
                       ),
