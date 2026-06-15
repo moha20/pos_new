@@ -16,6 +16,7 @@ import 'features/reports/presentation/bloc/reports_bloc.dart';
 import 'features/settings/presentation/bloc/settings_bloc.dart';
 import 'features/activity_log/presentation/bloc/activity_log_cubit.dart';
 import 'features/returns/presentation/bloc/returns_cubit.dart';
+import 'features/balance/presentation/bloc/balance_cubit.dart';
 import 'core/di/di.dart';
 
 class App extends StatelessWidget {
@@ -53,6 +54,7 @@ class App extends StatelessWidget {
         ),
         BlocProvider(create: (_) => Gravity.find<ActivityLogCubit>()),
         BlocProvider(create: (_) => Gravity.find<ReturnsCubit>()),
+        BlocProvider(create: (_) => Gravity.find<BalanceCubit>()..loadPayments()),
       ],
       child: BlocBuilder<LocaleCubit, Locale>(
         builder: (context, locale) {

@@ -166,6 +166,44 @@ class CartWidget extends StatelessWidget {
                   ),
                   SizedBox(height: 12.h),
 
+                  // Customer balance warning banner
+                  if (state.selectedCustomer != null &&
+                      state.selectedCustomer!.balance > 0)
+                    Container(
+                      margin: EdgeInsets.only(bottom: 8.h),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 12.w,
+                        vertical: 8.h,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(8.r),
+                        border: Border.all(
+                          color: Colors.red.withOpacity(0.3),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.warning_amber_rounded,
+                            color: Colors.red.shade700,
+                            size: 18,
+                          ),
+                          SizedBox(width: 8.w),
+                          Expanded(
+                            child: Text(
+                              '${'previous_balance'.tr()}: ${state.selectedCustomer!.balance.toStringAsFixed(2)} $currencySymbol',
+                              style: TextStyle(
+                                color: Colors.red.shade700,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12.sp,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
                   // Cart items list
                   Expanded(
                     child: state.cartItems.isEmpty
@@ -756,6 +794,88 @@ class CartWidget extends StatelessWidget {
                       textAlign: TextAlign.center,
                     ),
                     SizedBox(height: 16.h),
+
+                    // Previous balance summary (when customer has existing debt)
+                    if (hasCustomer && state.selectedCustomer!.balance > 0) ...[
+                      Container(
+                        padding: EdgeInsets.all(12.r),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.withOpacity(0.06),
+                          borderRadius: BorderRadius.circular(10.r),
+                          border: Border.all(
+                            color: Colors.orange.withOpacity(0.3),
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'previous_balance'.tr(),
+                                  style: TextStyle(
+                                    fontSize: 12.sp,
+                                    color: Colors.orange.shade800,
+                                  ),
+                                ),
+                                Text(
+                                  '${state.selectedCustomer!.balance.toStringAsFixed(2)} EGP',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12.sp,
+                                    color: Colors.orange.shade900,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 4.h),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'new_debt'.tr(),
+                                  style: TextStyle(
+                                    fontSize: 12.sp,
+                                    color: Colors.red.shade700,
+                                  ),
+                                ),
+                                Text(
+                                  '${remaining.toStringAsFixed(2)} EGP',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12.sp,
+                                    color: Colors.red.shade800,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Divider(height: 12.h),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'total_after_sale'.tr(),
+                                  style: TextStyle(
+                                    fontSize: 13.sp,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.red,
+                                  ),
+                                ),
+                                Text(
+                                  '${(state.selectedCustomer!.balance + remaining).toStringAsFixed(2)} EGP',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 14.sp,
+                                    color: Colors.red,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: 12.h),
+                    ],
 
                     // Amount Paid Field
                     TextFormField(

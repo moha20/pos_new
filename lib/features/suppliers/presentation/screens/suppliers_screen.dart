@@ -10,6 +10,7 @@ import '../../../../widgets/responsive_layout.dart';
 import '../../../../widgets/stat_card.dart';
 import '../../../../core/di/di.dart';
 import '../../../activity_log/domain/repositories/activity_log_repository.dart';
+import '../../../balance/presentation/widgets/pay_balance_dialog.dart';
 
 class SuppliersScreen extends StatefulWidget {
   const SuppliersScreen({super.key});
@@ -200,6 +201,22 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
                                       tooltip: context.locale.languageCode == 'ar' ? 'سجل المعاملات' : 'History',
                                       onPressed: () => _showSupplierHistory(context, s),
                                     ),
+                                    if (s.balance > 0)
+                                      IconButton(
+                                        icon: const Icon(Icons.payment, color: Colors.green),
+                                        tooltip: 'pay_balance'.tr(),
+                                        onPressed: () {
+                                          showDialog(
+                                            context: context,
+                                            builder: (_) => PayBalanceDialog(
+                                              type: 'supplier',
+                                              targetId: s.id,
+                                              targetName: s.name,
+                                              currentBalance: s.balance,
+                                            ),
+                                          );
+                                        },
+                                      ),
                                     IconButton(
                                       icon: const Icon(Icons.edit, color: Colors.blue),
                                       onPressed: () {

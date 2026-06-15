@@ -44,6 +44,10 @@ import 'features/activity_log/presentation/bloc/activity_log_cubit.dart';
 import 'services/activity_log_service.dart';
 import 'features/returns/presentation/bloc/returns_cubit.dart';
 
+import 'features/balance/domain/repositories/payment_repository.dart';
+import 'features/balance/data/repositories/payment_repository_impl.dart';
+import 'features/balance/presentation/bloc/balance_cubit.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
@@ -73,6 +77,9 @@ void main() async {
   Gravity.put<ActivityLogRepository>(ActivityLogRepositoryImpl(HiveConfig.activityLogsBox));
   Gravity.put<ActivityLogService>(ActivityLogService(Gravity.find<ActivityLogRepository>()));
 
+  // Balance / Payment
+  Gravity.put<PaymentRepository>(PaymentRepositoryImpl(HiveConfig.paymentsBox));
+
   // 5. Register Presentation BLoC state singletons
   Gravity.put<AuthBloc>(AuthBloc(Gravity.find<AuthRepository>()));
   Gravity.put<InventoryBloc>(InventoryBloc(Gravity.find<ProductRepository>()));
@@ -87,7 +94,12 @@ void main() async {
   );
   Gravity.put<SalesHistoryCubit>(SalesHistoryCubit(Gravity.find<SaleRepository>()));
   Gravity.put<CashierBloc>(CashierBloc(Gravity.find<CashierRepository>()));
-  Gravity.put<ReportsBloc>(ReportsBloc(Gravity.find<SaleRepository>()));
+  Gravity.put<ReportsBloc>(
+    ReportsBloc(
+      Gravity.find<SaleRepository>(),
+      Gravity.find<CashierRepository>(),
+    ),
+  );
   Gravity.put<SettingsBloc>(SettingsBloc(Gravity.find<SharedPreferences>()));
   Gravity.put<ActivityLogCubit>(ActivityLogCubit(Gravity.find<ActivityLogRepository>()));
   Gravity.put<ReturnsCubit>(ReturnsCubit(
@@ -96,6 +108,11 @@ void main() async {
     supplierRepository: Gravity.find<SupplierRepository>(),
     saleRepository: Gravity.find<SaleRepository>(),
     activityLogService: Gravity.find<ActivityLogService>(),
+  ));
+  Gravity.put<BalanceCubit>(BalanceCubit(
+    paymentRepository: Gravity.find<PaymentRepository>(),
+    customerRepository: Gravity.find<CustomerRepository>(),
+    supplierRepository: Gravity.find<SupplierRepository>(),
   ));
 
   runApp(

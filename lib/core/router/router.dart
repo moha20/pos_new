@@ -12,6 +12,7 @@ import '../../features/cashier/presentation/screens/cashier_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../../features/activity_log/presentation/screens/activity_log_screen.dart';
 import '../../features/returns/presentation/screens/returns_screen.dart';
+import '../../features/balance/presentation/screens/balance_screen.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/login',
@@ -109,6 +110,13 @@ final GoRouter appRouter = GoRouter(
       pageBuilder: (context, state) => NoTransitionPage(
         key: state.pageKey,
         child: const ReturnsScreen(),
+      ),
+    ),
+    GoRoute(
+      path: '/balance',
+      pageBuilder: (context, state) => NoTransitionPage(
+        key: state.pageKey,
+        child: const BalanceScreen(),
       ),
     ),
   ],

@@ -12,6 +12,7 @@ import '../../../../widgets/invoice_details_dialog.dart';
 import '../../../pos/domain/repositories/sale_repository.dart';
 import '../../../pos/domain/entities/sale_entity.dart';
 import '../../../../core/di/di.dart';
+import '../../../balance/presentation/widgets/pay_balance_dialog.dart';
 
 class CustomersScreen extends StatefulWidget {
   const CustomersScreen({super.key});
@@ -213,6 +214,22 @@ class _CustomersScreenState extends State<CustomersScreen> {
                                       tooltip: context.locale.languageCode == 'ar' ? 'سجل المعاملات' : 'History',
                                       onPressed: () => _showCustomerHistory(context, c),
                                     ),
+                                    if (c.balance > 0)
+                                      IconButton(
+                                        icon: const Icon(Icons.payment, color: Colors.green),
+                                        tooltip: 'pay_balance'.tr(),
+                                        onPressed: () {
+                                          showDialog(
+                                            context: context,
+                                            builder: (_) => PayBalanceDialog(
+                                              type: 'customer',
+                                              targetId: c.id,
+                                              targetName: c.name,
+                                              currentBalance: c.balance,
+                                            ),
+                                          );
+                                        },
+                                      ),
                                     IconButton(
                                       icon: const Icon(Icons.edit, color: Colors.blue),
                                       onPressed: () {

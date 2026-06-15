@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import '../../../pos/domain/repositories/sale_repository.dart';
+import '../../../cashier/domain/repositories/cashier_repository.dart';
 
 // Events
 abstract class ReportsEvent {}
@@ -23,6 +24,11 @@ class ReportsLoaded extends ReportsState {
   final double avgSale;
   final Map<String, double> tierSplit; // 'retail', 'salesman', 'company', 'wholesale' -> double
   final Map<String, double> dailySalesHistory; // 'YYYY-MM-DD' -> double
+  final double todayExpenses;
+  final double weeklyExpenses;
+  final double monthlyExpenses;
+  final double totalExpenses;
+  final Map<String, double> expenseCategorySplit; // 'category' -> double
 
   ReportsLoaded({
     required this.todaySales,
@@ -33,6 +39,11 @@ class ReportsLoaded extends ReportsState {
     required this.avgSale,
     required this.tierSplit,
     required this.dailySalesHistory,
+    required this.todayExpenses,
+    required this.weeklyExpenses,
+    required this.monthlyExpenses,
+    required this.totalExpenses,
+    required this.expenseCategorySplit,
   });
 }
 
@@ -44,12 +55,14 @@ class ReportsError extends ReportsState {
 // Bloc
 class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
   final SaleRepository saleRepository;
+  final CashierRepository cashierRepository;
 
-  ReportsBloc(this.saleRepository) : super(ReportsInitial()) {
+  ReportsBloc(this.saleRepository, this.cashierRepository) : super(ReportsInitial()) {
     on<LoadReportsEvent>((event, emit) async {
       emit(ReportsLoading());
       try {
         final sales = await saleRepository.getSales();
+        final expenses = await cashierRepository.getExpenses();
         final now = DateTime.now();
         final todayStart = DateTime(now.year, now.month, now.day);
         final weekAgo = todayStart.subtract(const Duration(days: 7));
@@ -94,6 +107,37 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
           }
         }
 
+        // Calculate expenses metrics
+        double todayExpenses = 0.0;
+        double weeklyExpenses = 0.0;
+        double monthlyExpenses = 0.0;
+        double totalExpenses = 0.0;
+
+        final Map<String, double> expenseCategorySplit = {
+          'شراء بضاعة / Stock Purchase': 0.0,
+          'فواتير ومنافع / Bills': 0.0,
+          'رواتب / Salaries': 0.0,
+          'صيانة ونظافة / Maintenance': 0.0,
+          'نثريات / Miscellaneous': 0.0,
+        };
+
+        for (final expense in expenses) {
+          totalExpenses += expense.amount;
+          
+          if (expense.date.isAfter(todayStart)) {
+            todayExpenses += expense.amount;
+          }
+          if (expense.date.isAfter(weekAgo)) {
+            weeklyExpenses += expense.amount;
+          }
+          if (expense.date.isAfter(monthAgo)) {
+            monthlyExpenses += expense.amount;
+          }
+
+          final cat = expense.category;
+          expenseCategorySplit[cat] = (expenseCategorySplit[cat] ?? 0.0) + expense.amount;
+        }
+
         double avgSale = invoicesCount > 0 ? totalRevenue / invoicesCount : 0.0;
 
         emit(ReportsLoaded(
@@ -105,6 +149,11 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
           avgSale: avgSale,
           tierSplit: tierSplit,
           dailySalesHistory: dailySalesHistory,
+          todayExpenses: todayExpenses,
+          weeklyExpenses: weeklyExpenses,
+          monthlyExpenses: monthlyExpenses,
+          totalExpenses: totalExpenses,
+          expenseCategorySplit: expenseCategorySplit,
         ));
       } catch (e) {
         emit(ReportsError(e.toString()));

@@ -41,6 +41,11 @@ class AppSidebar extends StatelessWidget {
         route: '/suppliers',
       ),
       _SidebarItem(
+        icon: Icons.account_balance_wallet,
+        labelKey: 'balance',
+        route: '/balance',
+      ),
+      _SidebarItem(
         icon: Icons.bar_chart,
         labelKey: 'reports',
         route: '/reports',
