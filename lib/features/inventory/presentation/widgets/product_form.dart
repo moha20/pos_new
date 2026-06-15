@@ -80,7 +80,7 @@ class _ProductFormState extends State<ProductForm> {
           priceController: TextEditingController(),
           nameFocus: FocusNode(),
           priceFocus: FocusNode(),
-        )
+        ),
       ];
     }
   }
@@ -125,7 +125,8 @@ class _ProductFormState extends State<ProductForm> {
       return Image.network(
         path,
         fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) => const Center(child: Icon(Icons.broken_image, color: Colors.red)),
+        errorBuilder: (context, error, stackTrace) =>
+            const Center(child: Icon(Icons.broken_image, color: Colors.red)),
       );
     } else if (path.startsWith('data:image/')) {
       try {
@@ -134,19 +135,23 @@ class _ProductFormState extends State<ProductForm> {
         return Image.memory(
           bytes,
           fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) => const Center(child: Icon(Icons.broken_image, color: Colors.red)),
+          errorBuilder: (context, error, stackTrace) =>
+              const Center(child: Icon(Icons.broken_image, color: Colors.red)),
         );
       } catch (_) {
         return const Center(child: Icon(Icons.broken_image, color: Colors.red));
       }
     } else {
       if (kIsWeb) {
-        return const Center(child: Icon(Icons.image, size: 28, color: Colors.grey));
+        return const Center(
+          child: Icon(Icons.image, size: 28, color: Colors.grey),
+        );
       }
       return Image.file(
         File(path),
         fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) => const Center(child: Icon(Icons.broken_image, color: Colors.red)),
+        errorBuilder: (context, error, stackTrace) =>
+            const Center(child: Icon(Icons.broken_image, color: Colors.red)),
       );
     }
   }
@@ -170,11 +175,16 @@ class _ProductFormState extends State<ProductForm> {
             children: [
               // Header title
               Text(
-                widget.product == null ? 'add_product'.tr() : 'edit_product'.tr(),
-                style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, color: theme.colorScheme.primary),
+                widget.product == null
+                    ? 'add_product'.tr()
+                    : 'edit_product'.tr(),
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.primary,
+                ),
               ),
               SizedBox(height: 16.h),
-              
+
               Expanded(
                 child: SingleChildScrollView(
                   child: Column(
@@ -199,7 +209,8 @@ class _ProductFormState extends State<ProductForm> {
                                 ),
                               ),
                               textInputAction: TextInputAction.next,
-                              onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
+                              onFieldSubmitted: (_) =>
+                                  FocusScope.of(context).nextFocus(),
                               onChanged: (val) {
                                 setState(() {});
                               },
@@ -216,7 +227,13 @@ class _ProductFormState extends State<ProductForm> {
                             clipBehavior: Clip.antiAlias,
                             child: _imagePathController.text.isNotEmpty
                                 ? _buildPreviewImage(_imagePathController.text)
-                                : const Center(child: Icon(Icons.image, size: 28, color: Colors.grey)),
+                                : const Center(
+                                    child: Icon(
+                                      Icons.image,
+                                      size: 28,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
                           ),
                         ],
                       ),
@@ -226,11 +243,19 @@ class _ProductFormState extends State<ProductForm> {
                       TextFormField(
                         controller: _nameController,
                         focusNode: _nameFocusNode,
-                        autofocus: widget.product == null && widget.initialBarcode != null && widget.initialBarcode!.isNotEmpty,
+                        autofocus:
+                            widget.product == null &&
+                            widget.initialBarcode != null &&
+                            widget.initialBarcode!.isNotEmpty,
                         textInputAction: TextInputAction.next,
-                        onFieldSubmitted: (_) => FocusScope.of(context).requestFocus(_unitFocusNode),
-                        decoration: InputDecoration(labelText: 'product_name'.tr(), border: const OutlineInputBorder()),
-                        validator: (v) => v == null || v.isEmpty ? 'no_data'.tr() : null,
+                        onFieldSubmitted: (_) =>
+                            FocusScope.of(context).requestFocus(_unitFocusNode),
+                        decoration: InputDecoration(
+                          labelText: 'product_name'.tr(),
+                          border: const OutlineInputBorder(),
+                        ),
+                        validator: (v) =>
+                            v == null || v.isEmpty ? 'no_data'.tr() : null,
                       ),
                       SizedBox(height: 12.h),
                       Row(
@@ -239,15 +264,20 @@ class _ProductFormState extends State<ProductForm> {
                             child: TextFormField(
                               controller: _barcodeController,
                               focusNode: _barcodeFocusNode,
-                              autofocus: widget.product == null && (widget.initialBarcode == null || widget.initialBarcode!.isEmpty),
+                              autofocus:
+                                  widget.product == null &&
+                                  (widget.initialBarcode == null ||
+                                      widget.initialBarcode!.isEmpty),
                               decoration: InputDecoration(
-                                labelText: 'barcode'.tr(), 
+                                labelText: 'barcode'.tr(),
                                 border: const OutlineInputBorder(),
                                 suffixIcon: IconButton(
                                   icon: const Icon(Icons.qr_code_scanner),
                                   onPressed: () async {
-                                    final barcodeService = Gravity.find<BarcodeService>();
-                                    final code = await barcodeService.scanBarcode(context);
+                                    final barcodeService =
+                                        Gravity.find<BarcodeService>();
+                                    final code = await barcodeService
+                                        .scanBarcode(context);
                                     if (code != null && code.isNotEmpty) {
                                       _barcodeController.text = code;
                                       setState(() {});
@@ -258,9 +288,13 @@ class _ProductFormState extends State<ProductForm> {
                               ),
                               textInputAction: TextInputAction.next,
                               onFieldSubmitted: (_) {
-                                FocusScope.of(context).requestFocus(_nameFocusNode);
+                                FocusScope.of(
+                                  context,
+                                ).requestFocus(_nameFocusNode);
                               },
-                              validator: (v) => v == null || v.isEmpty ? 'no_data'.tr() : null,
+                              validator: (v) => v == null || v.isEmpty
+                                  ? 'no_data'.tr()
+                                  : null,
                             ),
                           ),
                           SizedBox(width: 12.w),
@@ -269,9 +303,15 @@ class _ProductFormState extends State<ProductForm> {
                               controller: _unitController,
                               focusNode: _unitFocusNode,
                               textInputAction: TextInputAction.next,
-                              onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
-                              decoration: InputDecoration(labelText: 'unit'.tr(), border: const OutlineInputBorder()),
-                              validator: (v) => v == null || v.isEmpty ? 'no_data'.tr() : null,
+                              onFieldSubmitted: (_) =>
+                                  FocusScope.of(context).nextFocus(),
+                              decoration: InputDecoration(
+                                labelText: 'unit'.tr(),
+                                border: const OutlineInputBorder(),
+                              ),
+                              validator: (v) => v == null || v.isEmpty
+                                  ? 'no_data'.tr()
+                                  : null,
                             ),
                           ),
                         ],
@@ -283,9 +323,15 @@ class _ProductFormState extends State<ProductForm> {
                             child: TextFormField(
                               controller: _categoryController,
                               textInputAction: TextInputAction.next,
-                              onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
-                              decoration: InputDecoration(labelText: 'category'.tr(), border: const OutlineInputBorder()),
-                              validator: (v) => v == null || v.isEmpty ? 'no_data'.tr() : null,
+                              onFieldSubmitted: (_) =>
+                                  FocusScope.of(context).nextFocus(),
+                              decoration: InputDecoration(
+                                labelText: 'category'.tr(),
+                                border: const OutlineInputBorder(),
+                              ),
+                              validator: (v) => v == null || v.isEmpty
+                                  ? 'no_data'.tr()
+                                  : null,
                             ),
                           ),
                           SizedBox(width: 12.w),
@@ -293,9 +339,15 @@ class _ProductFormState extends State<ProductForm> {
                             child: TextFormField(
                               controller: _brandController,
                               textInputAction: TextInputAction.next,
-                              onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
-                              decoration: InputDecoration(labelText: 'brand'.tr(), border: const OutlineInputBorder()),
-                              validator: (v) => v == null || v.isEmpty ? 'no_data'.tr() : null,
+                              onFieldSubmitted: (_) =>
+                                  FocusScope.of(context).nextFocus(),
+                              decoration: InputDecoration(
+                                labelText: 'brand'.tr(),
+                                border: const OutlineInputBorder(),
+                              ),
+                              validator: (v) => v == null || v.isEmpty
+                                  ? 'no_data'.tr()
+                                  : null,
                             ),
                           ),
                         ],
@@ -308,9 +360,16 @@ class _ProductFormState extends State<ProductForm> {
                               controller: _stockController,
                               keyboardType: TextInputType.number,
                               textInputAction: TextInputAction.next,
-                              onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
-                              decoration: InputDecoration(labelText: 'stock'.tr(), border: const OutlineInputBorder()),
-                              validator: (v) => v == null || int.tryParse(v) == null ? 'no_data'.tr() : null,
+                              onFieldSubmitted: (_) =>
+                                  FocusScope.of(context).nextFocus(),
+                              decoration: InputDecoration(
+                                labelText: 'stock'.tr(),
+                                border: const OutlineInputBorder(),
+                              ),
+                              validator: (v) =>
+                                  v == null || int.tryParse(v) == null
+                                  ? 'no_data'.tr()
+                                  : null,
                             ),
                           ),
                           SizedBox(width: 12.w),
@@ -326,8 +385,14 @@ class _ProductFormState extends State<ProductForm> {
                                   FocusScope.of(context).nextFocus();
                                 }
                               },
-                              decoration: InputDecoration(labelText: 'low_stock'.tr(), border: const OutlineInputBorder()),
-                              validator: (v) => v == null || int.tryParse(v) == null ? 'no_data'.tr() : null,
+                              decoration: InputDecoration(
+                                labelText: 'low_stock'.tr(),
+                                border: const OutlineInputBorder(),
+                              ),
+                              validator: (v) =>
+                                  v == null || int.tryParse(v) == null
+                                  ? 'no_data'.tr()
+                                  : null,
                             ),
                           ),
                           if (!isCashier) ...[
@@ -335,7 +400,10 @@ class _ProductFormState extends State<ProductForm> {
                             Expanded(
                               child: TextFormField(
                                 controller: _costPriceController,
-                                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                      decimal: true,
+                                    ),
                                 textInputAction: TextInputAction.next,
                                 onFieldSubmitted: (_) {
                                   if (_priceRows.isNotEmpty) {
@@ -344,37 +412,48 @@ class _ProductFormState extends State<ProductForm> {
                                     FocusScope.of(context).nextFocus();
                                   }
                                 },
-                                decoration: InputDecoration(labelText: 'cost_price'.tr(), border: const OutlineInputBorder()),
+                                decoration: InputDecoration(
+                                  labelText: 'cost_price'.tr(),
+                                  border: const OutlineInputBorder(),
+                                ),
                                 onChanged: (_) => _validatePricingRelations(),
-                                validator: (v) => v == null || double.tryParse(v) == null ? 'no_data'.tr() : null,
+                                validator: (v) =>
+                                    v == null || double.tryParse(v) == null
+                                    ? 'no_data'.tr()
+                                    : null,
                               ),
                             ),
                           ],
                         ],
                       ),
                       SizedBox(height: 20.h),
-                      
+
                       // Price tiers header
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
                             '${'price_tiers'.tr()} / Prices',
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14.sp),
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14.sp,
+                            ),
                           ),
                           TextButton.icon(
                             onPressed: () {
                               setState(() {
-                                _priceRows.add(PriceInputRow(
-                                  nameController: TextEditingController(),
-                                  priceController: TextEditingController(),
-                                  nameFocus: FocusNode(),
-                                  priceFocus: FocusNode(),
-                                ));
+                                _priceRows.add(
+                                  PriceInputRow(
+                                    nameController: TextEditingController(),
+                                    priceController: TextEditingController(),
+                                    nameFocus: FocusNode(),
+                                    priceFocus: FocusNode(),
+                                  ),
+                                );
                               });
                             },
                             icon: const Icon(Icons.add),
-                            label: Text('add_price'.tr() + ' / Add Price'),
+                            label: Text('${'add_price'.tr()} / Add Price'),
                           ),
                         ],
                       ),
@@ -396,13 +475,21 @@ class _ProductFormState extends State<ProductForm> {
                                   controller: row.nameController,
                                   focusNode: row.nameFocus,
                                   textInputAction: TextInputAction.next,
-                                  onFieldSubmitted: (_) => row.priceFocus.requestFocus(),
+                                  onFieldSubmitted: (_) =>
+                                      row.priceFocus.requestFocus(),
                                   decoration: InputDecoration(
-                                    labelText: '${'price_name'.tr()} / Price Name',
+                                    labelText:
+                                        '${'price_name'.tr()} / Price Name',
                                     border: const OutlineInputBorder(),
-                                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 12,
+                                    ),
                                   ),
-                                  validator: (v) => v == null || v.trim().isEmpty ? 'no_data'.tr() : null,
+                                  validator: (v) =>
+                                      v == null || v.trim().isEmpty
+                                      ? 'no_data'.tr()
+                                      : null,
                                 ),
                               ),
                               SizedBox(width: 8.w),
@@ -412,11 +499,15 @@ class _ProductFormState extends State<ProductForm> {
                                 child: TextFormField(
                                   controller: row.priceController,
                                   focusNode: row.priceFocus,
-                                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                  keyboardType:
+                                      const TextInputType.numberWithOptions(
+                                        decimal: true,
+                                      ),
                                   textInputAction: TextInputAction.next,
                                   onFieldSubmitted: (_) {
                                     if (index < _priceRows.length - 1) {
-                                      _priceRows[index + 1].nameFocus.requestFocus();
+                                      _priceRows[index + 1].nameFocus
+                                          .requestFocus();
                                     } else {
                                       FocusScope.of(context).nextFocus();
                                     }
@@ -424,20 +515,31 @@ class _ProductFormState extends State<ProductForm> {
                                   decoration: InputDecoration(
                                     labelText: '${'price'.tr()} / Price',
                                     border: const OutlineInputBorder(),
-                                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 12,
+                                    ),
                                   ),
                                   onChanged: (_) => _validatePricingRelations(),
-                                  validator: (v) => v == null || double.tryParse(v) == null ? 'no_data'.tr() : null,
+                                  validator: (v) =>
+                                      v == null || double.tryParse(v) == null
+                                      ? 'no_data'.tr()
+                                      : null,
                                 ),
                               ),
                               // Delete Button
                               if (_priceRows.length > 1) ...[
                                 SizedBox(width: 4.w),
                                 IconButton(
-                                  icon: const Icon(Icons.delete, color: Colors.red),
+                                  icon: const Icon(
+                                    Icons.delete,
+                                    color: Colors.red,
+                                  ),
                                   onPressed: () {
                                     setState(() {
-                                      final removed = _priceRows.removeAt(index);
+                                      final removed = _priceRows.removeAt(
+                                        index,
+                                      );
                                       removed.dispose();
                                     });
                                     _validatePricingRelations();
@@ -448,7 +550,7 @@ class _ProductFormState extends State<ProductForm> {
                           );
                         },
                       ),
-                      
+
                       // Warn banner
                       if (_warningMessage != null) ...[
                         SizedBox(height: 12.h),
@@ -461,11 +563,15 @@ class _ProductFormState extends State<ProductForm> {
                           ),
                           child: Text(
                             _warningMessage!,
-                            style: TextStyle(color: Colors.amber, fontSize: 11.sp, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                              color: Colors.amber,
+                              fontSize: 11.sp,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ],
-                      
+
                       SizedBox(height: 12.h),
                       SwitchListTile(
                         title: const Text('Active'),
@@ -476,7 +582,7 @@ class _ProductFormState extends State<ProductForm> {
                   ),
                 ),
               ),
-              
+
               // Action Buttons
               SizedBox(height: 16.h),
               Row(
@@ -501,10 +607,14 @@ class _ProductFormState extends State<ProductForm> {
                           minStock: int.parse(_minStockController.text),
                           unit: _unitController.text,
                           isActive: _isActive,
-                          imagePath: _imagePathController.text.isNotEmpty ? _imagePathController.text : null,
+                          imagePath: _imagePathController.text.isNotEmpty
+                              ? _imagePathController.text
+                              : null,
                           prices: _priceRows.map((row) {
                             final name = row.nameController.text.trim();
-                            final price = double.tryParse(row.priceController.text) ?? 0.0;
+                            final price =
+                                double.tryParse(row.priceController.text) ??
+                                0.0;
                             return PriceTierEntity(
                               level: name,
                               labelAr: name,
@@ -517,7 +627,9 @@ class _ProductFormState extends State<ProductForm> {
                         if (widget.product == null) {
                           context.read<InventoryBloc>().add(AddProductEvent(p));
                         } else {
-                          context.read<InventoryBloc>().add(UpdateProductEvent(p));
+                          context.read<InventoryBloc>().add(
+                            UpdateProductEvent(p),
+                          );
                         }
 
                         Navigator.pop(context);

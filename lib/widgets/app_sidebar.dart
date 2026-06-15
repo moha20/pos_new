@@ -19,11 +19,7 @@ class AppSidebar extends StatelessWidget {
     final user = authBloc.currentUser;
 
     final List<_SidebarItem> items = [
-      _SidebarItem(
-        icon: Icons.point_of_sale,
-        labelKey: 'pos',
-        route: '/pos',
-      ),
+      _SidebarItem(icon: Icons.point_of_sale, labelKey: 'pos', route: '/pos'),
       _SidebarItem(
         icon: Icons.receipt_long,
         labelKey: 'sales_history',
@@ -90,7 +86,10 @@ class AppSidebar extends StatelessWidget {
         children: [
           // Logo & Header
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 20.0,
+            ),
             child: Column(
               children: [
                 Container(
@@ -107,16 +106,11 @@ class AppSidebar extends StatelessWidget {
                         offset: const Offset(0, 2),
                       ),
                     ],
-                    border: Border.all(
-                      color: Colors.grey.shade200,
-                      width: 1.w,
-                    ),
+                    border: Border.all(color: Colors.grey.shade200, width: 1.w),
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(8.r),
-                    child: AppLogo(
-                      fit: BoxFit.contain,
-                    ),
+                    child: const AppLogo(fit: BoxFit.contain),
                   ),
                 ),
                 SizedBox(height: 12.h),
@@ -138,19 +132,27 @@ class AppSidebar extends StatelessWidget {
                   padding: const EdgeInsets.only(bottom: 4.0),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: isSelected ? theme.colorScheme.primary : Colors.transparent,
+                      color: isSelected
+                          ? theme.colorScheme.primary
+                          : Colors.transparent,
                       borderRadius: BorderRadius.circular(12.r),
                     ),
                     child: ListTile(
                       leading: Icon(
                         item.icon,
-                        color: isSelected ? Colors.white : theme.colorScheme.onSurface.withOpacity(0.7),
+                        color: isSelected
+                            ? Colors.white
+                            : theme.colorScheme.onSurface.withOpacity(0.7),
                       ),
                       title: Text(
                         item.labelKey.tr(),
                         style: TextStyle(
-                          color: isSelected ? Colors.white : theme.colorScheme.onSurface,
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                          color: isSelected
+                              ? Colors.white
+                              : theme.colorScheme.onSurface,
+                          fontWeight: isSelected
+                              ? FontWeight.bold
+                              : FontWeight.normal,
                         ),
                       ),
                       tileColor: Colors.transparent,
@@ -174,10 +176,15 @@ class AppSidebar extends StatelessWidget {
                   Row(
                     children: [
                       CircleAvatar(
-                        backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+                        backgroundColor: theme.colorScheme.primary.withOpacity(
+                          0.1,
+                        ),
                         child: Text(
                           user.name.substring(0, 1).toUpperCase(),
-                          style: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            color: theme.colorScheme.primary,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                       SizedBox(width: 12.w),
@@ -187,13 +194,17 @@ class AppSidebar extends StatelessWidget {
                           children: [
                             Text(
                               user.name,
-                              style: const TextStyle(fontWeight: FontWeight.bold),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
                               overflow: TextOverflow.ellipsis,
                             ),
                             Text(
                               user.role.tr(),
                               style: theme.textTheme.bodySmall?.copyWith(
-                                color: theme.colorScheme.onSurface.withOpacity(0.6),
+                                color: theme.colorScheme.onSurface.withOpacity(
+                                  0.6,
+                                ),
                               ),
                             ),
                           ],
@@ -219,7 +230,7 @@ class AppSidebar extends StatelessWidget {
                         ),
                       ),
                     ),
-                  )
+                  ),
                 ],
               ),
             ),

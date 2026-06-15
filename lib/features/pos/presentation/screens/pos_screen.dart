@@ -53,7 +53,9 @@ class _POSScreenState extends State<POSScreen> {
                   decoration: InputDecoration(
                     hintText: 'search'.tr(),
                     prefixIcon: const Icon(Icons.search),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r)),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                   ),
                   onChanged: (val) {
@@ -71,7 +73,9 @@ class _POSScreenState extends State<POSScreen> {
                   padding: EdgeInsets.all(12.r),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12.r),
-                    side: BorderSide(color: theme.dividerColor.withOpacity(0.15)),
+                    side: BorderSide(
+                      color: theme.dividerColor.withOpacity(0.15),
+                    ),
                   ),
                 ),
               ),
@@ -79,11 +83,22 @@ class _POSScreenState extends State<POSScreen> {
               ElevatedButton.icon(
                 onPressed: () => _triggerBarcodeScanner(context),
                 icon: const Icon(Icons.qr_code_scanner, color: Colors.white),
-                label: Text('barcode'.tr(), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                label: Text(
+                  'barcode'.tr(),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: theme.colorScheme.primary,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 16,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
                 ),
               ),
             ],
@@ -98,7 +113,9 @@ class _POSScreenState extends State<POSScreen> {
                 return const Center(child: CircularProgressIndicator());
               }
               if (invState is InventoryLoaded) {
-                final products = invState.filteredProducts.where((p) => p.isActive).toList();
+                final products = invState.filteredProducts
+                    .where((p) => p.isActive)
+                    .toList();
                 if (products.isEmpty) {
                   return Center(child: Text('no_data'.tr()));
                 }
@@ -150,7 +167,10 @@ class _POSScreenState extends State<POSScreen> {
               : Column(
                   children: [
                     Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 12.w,
+                        vertical: 8.h,
+                      ),
                       child: SizedBox(
                         width: double.infinity,
                         child: SegmentedButton<int>(
@@ -204,9 +224,8 @@ class _POSScreenState extends State<POSScreen> {
       return Image.network(
         path,
         fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) => const Center(
-          child: Icon(Icons.broken_image, color: Colors.red),
-        ),
+        errorBuilder: (context, error, stackTrace) =>
+            const Center(child: Icon(Icons.broken_image, color: Colors.red)),
       );
     } else if (path.startsWith('data:image/')) {
       try {
@@ -215,27 +234,21 @@ class _POSScreenState extends State<POSScreen> {
         return Image.memory(
           bytes,
           fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) => const Center(
-            child: Icon(Icons.broken_image, color: Colors.red),
-          ),
+          errorBuilder: (context, error, stackTrace) =>
+              const Center(child: Icon(Icons.broken_image, color: Colors.red)),
         );
       } catch (_) {
-        return const Center(
-          child: Icon(Icons.broken_image, color: Colors.red),
-        );
+        return const Center(child: Icon(Icons.broken_image, color: Colors.red));
       }
     } else {
       if (kIsWeb) {
-        return const Center(
-          child: Icon(Icons.image, color: Colors.grey),
-        );
+        return const Center(child: Icon(Icons.image, color: Colors.grey));
       }
       return Image.file(
         File(path),
         fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) => const Center(
-          child: Icon(Icons.broken_image, color: Colors.red),
-        ),
+        errorBuilder: (context, error, stackTrace) =>
+            const Center(child: Icon(Icons.broken_image, color: Colors.red)),
       );
     }
   }
@@ -265,7 +278,11 @@ class _POSScreenState extends State<POSScreen> {
     );
   }
 
-  Widget _buildProductCard(BuildContext context, ProductEntity product, ThemeData theme) {
+  Widget _buildProductCard(
+    BuildContext context,
+    ProductEntity product,
+    ThemeData theme,
+  ) {
     final currencySymbol = 'currency_symbol'.tr();
     final isLowStock = product.isLowStock;
     final isOutOfStock = product.isOutOfStock;
@@ -281,7 +298,7 @@ class _POSScreenState extends State<POSScreen> {
     } else if (isLowStock) {
       cardBorderColor = Colors.orange;
       badgeColor = Colors.orange;
-      badgeText = 'low_stock'.tr() + ' (${product.stock})';
+      badgeText = '${'low_stock'.tr()} (${product.stock})';
     }
 
     return InkWell(
@@ -308,7 +325,8 @@ class _POSScreenState extends State<POSScreen> {
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 clipBehavior: Clip.antiAlias,
-                child: product.imagePath != null && product.imagePath!.isNotEmpty
+                child:
+                    product.imagePath != null && product.imagePath!.isNotEmpty
                     ? _buildProductImage(product.imagePath!)
                     : _buildProductPlaceholder(product.name, theme),
               ),
@@ -318,7 +336,10 @@ class _POSScreenState extends State<POSScreen> {
               Expanded(
                 child: Text(
                   product.name,
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.sp),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13.sp,
+                  ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -328,7 +349,10 @@ class _POSScreenState extends State<POSScreen> {
               // Category & Brand
               Text(
                 '${product.brand} • ${product.category}',
-                style: theme.textTheme.bodySmall?.copyWith(fontSize: 10.sp, color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                style: theme.textTheme.bodySmall?.copyWith(
+                  fontSize: 10.sp,
+                  color: theme.colorScheme.onSurface.withOpacity(0.5),
+                ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -369,7 +393,11 @@ class _POSScreenState extends State<POSScreen> {
     );
   }
 
-  Widget _buildProductListTile(BuildContext context, ProductEntity product, ThemeData theme) {
+  Widget _buildProductListTile(
+    BuildContext context,
+    ProductEntity product,
+    ThemeData theme,
+  ) {
     final currencySymbol = 'currency_symbol'.tr();
     final isLowStock = product.isLowStock;
     final isOutOfStock = product.isOutOfStock;
@@ -385,7 +413,7 @@ class _POSScreenState extends State<POSScreen> {
     } else if (isLowStock) {
       cardBorderColor = Colors.orange;
       badgeColor = Colors.orange;
-      badgeText = 'low_stock'.tr() + ' (${product.stock})';
+      badgeText = '${'low_stock'.tr()} (${product.stock})';
     }
 
     return Card(
@@ -413,7 +441,8 @@ class _POSScreenState extends State<POSScreen> {
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 clipBehavior: Clip.antiAlias,
-                child: product.imagePath != null && product.imagePath!.isNotEmpty
+                child:
+                    product.imagePath != null && product.imagePath!.isNotEmpty
                     ? _buildProductImage(product.imagePath!)
                     : _buildProductPlaceholder(product.name, theme),
               ),
@@ -426,7 +455,10 @@ class _POSScreenState extends State<POSScreen> {
                   children: [
                     Text(
                       product.name,
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.sp),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13.sp,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -453,7 +485,10 @@ class _POSScreenState extends State<POSScreen> {
                         ),
                         SizedBox(width: 12.w),
                         Container(
-                          padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 6),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 2,
+                            horizontal: 6,
+                          ),
                           decoration: BoxDecoration(
                             color: badgeColor.withOpacity(0.15),
                             borderRadius: BorderRadius.circular(6.r),
@@ -472,10 +507,13 @@ class _POSScreenState extends State<POSScreen> {
                   ],
                 ),
               ),
-              
+
               // Add button / icon
               IconButton(
-                icon: Icon(Icons.add_shopping_cart, color: isOutOfStock ? Colors.grey : theme.colorScheme.primary),
+                icon: Icon(
+                  Icons.add_shopping_cart,
+                  color: isOutOfStock ? Colors.grey : theme.colorScheme.primary,
+                ),
                 onPressed: isOutOfStock
                     ? null
                     : () {

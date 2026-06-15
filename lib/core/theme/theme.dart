@@ -16,7 +16,6 @@ class AppTheme {
       colorScheme: const ColorScheme.light(
         primary: primaryCopper,
         secondary: accentGold,
-        background: slateLight,
         surface: slateCardLight,
       ),
       scaffoldBackgroundColor: slateLight,
@@ -25,7 +24,10 @@ class AppTheme {
         elevation: 1,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(16)),
-          side: BorderSide(color: Color(0xFFE2E8F0), width: 1), // slate-200 border
+          side: BorderSide(
+            color: Color(0xFFE2E8F0),
+            width: 1,
+          ), // slate-200 border
         ),
       ),
       appBarTheme: const AppBarTheme(
@@ -39,7 +41,7 @@ class AppTheme {
       ),
       segmentedButtonTheme: SegmentedButtonThemeData(
         style: ButtonStyle(
-          shape: MaterialStateProperty.all(
+          shape: WidgetStateProperty.all(
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
           ),
         ),
@@ -64,14 +66,15 @@ class AppTheme {
       colorScheme: const ColorScheme.dark(
         primary: primaryCopper,
         secondary: accentGold,
-        background: slateDark,
         surface: slateCardDark,
       ),
       scaffoldBackgroundColor: slateDark,
       cardTheme: const CardThemeData(
         color: slateCardDark,
         elevation: 2,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(16))),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(16)),
+        ),
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: slateCardDark,
@@ -84,7 +87,7 @@ class AppTheme {
       ),
       segmentedButtonTheme: SegmentedButtonThemeData(
         style: ButtonStyle(
-          shape: MaterialStateProperty.all(
+          shape: WidgetStateProperty.all(
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
           ),
         ),
@@ -112,7 +115,6 @@ class AppTheme {
       colorScheme: const ColorScheme.light(
         primary: primaryBlue,
         secondary: secondaryBlue,
-        background: slateLight,
         surface: slateCardLight,
       ),
       scaffoldBackgroundColor: slateLight,
@@ -121,7 +123,10 @@ class AppTheme {
         elevation: 1,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(16)),
-          side: BorderSide(color: Color(0xFFE2E8F0), width: 1), // slate-200 border
+          side: BorderSide(
+            color: Color(0xFFE2E8F0),
+            width: 1,
+          ), // slate-200 border
         ),
       ),
       appBarTheme: const AppBarTheme(
@@ -135,7 +140,7 @@ class AppTheme {
       ),
       segmentedButtonTheme: SegmentedButtonThemeData(
         style: ButtonStyle(
-          shape: MaterialStateProperty.all(
+          shape: WidgetStateProperty.all(
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
           ),
         ),
@@ -160,14 +165,15 @@ class AppTheme {
       colorScheme: const ColorScheme.dark(
         primary: Color(0xFF64B5F6), // Bright contrast brand blue for dark theme
         secondary: secondaryBlue,
-        background: slateDark,
         surface: slateCardDark,
       ),
       scaffoldBackgroundColor: slateDark,
       cardTheme: const CardThemeData(
         color: slateCardDark,
         elevation: 2,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(16))),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(16)),
+        ),
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: slateCardDark,
@@ -180,7 +186,7 @@ class AppTheme {
       ),
       segmentedButtonTheme: SegmentedButtonThemeData(
         style: ButtonStyle(
-          shape: MaterialStateProperty.all(
+          shape: WidgetStateProperty.all(
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
           ),
         ),

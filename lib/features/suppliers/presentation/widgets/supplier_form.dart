@@ -56,38 +56,65 @@ class _SupplierFormState extends State<SupplierForm> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                  widget.supplier == null ? 'add_supplier'.tr() : 'edit_supplier'.tr(),
-                  style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, color: theme.colorScheme.primary),
+                  widget.supplier == null
+                      ? 'add_supplier'.tr()
+                      : 'edit_supplier'.tr(),
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.primary,
+                  ),
                 ),
                 SizedBox(height: 16.h),
                 TextFormField(
                   controller: _nameController,
-                  decoration: InputDecoration(labelText: 'supplier_name'.tr(), border: const OutlineInputBorder()),
-                  validator: (v) => v == null || v.isEmpty ? 'no_data'.tr() : null,
+                  decoration: InputDecoration(
+                    labelText: 'supplier_name'.tr(),
+                    border: const OutlineInputBorder(),
+                  ),
+                  validator: (v) =>
+                      v == null || v.isEmpty ? 'no_data'.tr() : null,
                 ),
                 SizedBox(height: 12.h),
                 TextFormField(
                   controller: _phoneController,
-                  decoration: InputDecoration(labelText: 'phone'.tr(), border: const OutlineInputBorder()),
-                  validator: (v) => v == null || v.isEmpty ? 'no_data'.tr() : null,
+                  decoration: InputDecoration(
+                    labelText: 'phone'.tr(),
+                    border: const OutlineInputBorder(),
+                  ),
+                  validator: (v) =>
+                      v == null || v.isEmpty ? 'no_data'.tr() : null,
                 ),
                 SizedBox(height: 12.h),
                 TextFormField(
                   controller: _companyController,
-                  decoration: InputDecoration(labelText: 'company_name'.tr(), border: const OutlineInputBorder()),
-                  validator: (v) => v == null || v.isEmpty ? 'no_data'.tr() : null,
+                  decoration: InputDecoration(
+                    labelText: 'company_name'.tr(),
+                    border: const OutlineInputBorder(),
+                  ),
+                  validator: (v) =>
+                      v == null || v.isEmpty ? 'no_data'.tr() : null,
                 ),
                 SizedBox(height: 12.h),
                 TextFormField(
                   controller: _totalOrdersController,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  decoration: InputDecoration(labelText: 'total_orders'.tr(), border: const OutlineInputBorder()),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  decoration: InputDecoration(
+                    labelText: 'total_orders'.tr(),
+                    border: const OutlineInputBorder(),
+                  ),
                 ),
                 SizedBox(height: 12.h),
                 TextFormField(
                   controller: _balanceController,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  decoration: InputDecoration(labelText: 'opening_balance'.tr() + ' (Remaining)', border: const OutlineInputBorder()),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  decoration: InputDecoration(
+                    labelText: '${'opening_balance'.tr()} (Remaining)',
+                    border: const OutlineInputBorder(),
+                  ),
                 ),
                 SizedBox(height: 24.h),
                 Row(
@@ -106,14 +133,21 @@ class _SupplierFormState extends State<SupplierForm> {
                             name: _nameController.text,
                             phone: _phoneController.text,
                             company: _companyController.text,
-                            totalOrders: double.tryParse(_totalOrdersController.text) ?? 0.0,
-                            balance: double.tryParse(_balanceController.text) ?? 0.0,
+                            totalOrders:
+                                double.tryParse(_totalOrdersController.text) ??
+                                0.0,
+                            balance:
+                                double.tryParse(_balanceController.text) ?? 0.0,
                           );
-  
+
                           if (widget.supplier == null) {
-                            context.read<SupplierBloc>().add(AddSupplierEvent(s));
+                            context.read<SupplierBloc>().add(
+                              AddSupplierEvent(s),
+                            );
                           } else {
-                            context.read<SupplierBloc>().add(UpdateSupplierEvent(s));
+                            context.read<SupplierBloc>().add(
+                              UpdateSupplierEvent(s),
+                            );
                           }
                           Navigator.pop(context);
                         }

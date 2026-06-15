@@ -57,36 +57,55 @@ class _CashierScreenState extends State<CashierScreen> {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Icon(Icons.lock_open, size: 48, color: theme.colorScheme.primary),
+                        Icon(
+                          Icons.lock_open,
+                          size: 48,
+                          color: theme.colorScheme.primary,
+                        ),
                         SizedBox(height: 16.h),
                         Text(
                           'open_shift'.tr(),
-                          style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
                           textAlign: TextAlign.center,
                         ),
                         SizedBox(height: 24.h),
                         TextField(
                           controller: _startingCashController,
-                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
                           decoration: InputDecoration(
                             labelText: 'starting_cash'.tr(),
                             prefixIcon: const Icon(Icons.payments),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r)),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12.r),
+                            ),
                           ),
                         ),
                         SizedBox(height: 24.h),
                         ElevatedButton(
                           onPressed: () {
-                            final cash = double.tryParse(_startingCashController.text) ?? 0.0;
-                            context.read<CashierBloc>().add(OpenShiftEvent(cash));
+                            final cash =
+                                double.tryParse(_startingCashController.text) ??
+                                0.0;
+                            context.read<CashierBloc>().add(
+                              OpenShiftEvent(cash),
+                            );
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: theme.colorScheme.primary,
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12.r),
+                            ),
                           ),
-                          child: Text('confirm'.tr(), style: const TextStyle(fontWeight: FontWeight.bold)),
+                          child: Text(
+                            'confirm'.tr(),
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
                         ),
                       ],
                     ),
@@ -114,20 +133,34 @@ class _CashierScreenState extends State<CashierScreen> {
                           children: [
                             Text(
                               'starting_cash'.tr(),
-                              style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurface.withOpacity(0.6)),
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.onSurface.withOpacity(
+                                  0.6,
+                                ),
+                              ),
                             ),
                             SizedBox(height: 4.h),
                             Text(
                               '${state.startingCash.toStringAsFixed(2)} EGP',
-                              style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                              style: theme.textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ],
                         ),
                         ElevatedButton.icon(
                           onPressed: () => _handleCloseShift(context, state),
                           icon: const Icon(Icons.lock, color: Colors.white),
-                          label: Text('close_shift'.tr(), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                          label: Text(
+                            'close_shift'.tr(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                          ),
                         ),
                       ],
                     ),
@@ -139,16 +172,30 @@ class _CashierScreenState extends State<CashierScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('expenses'.tr(), style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                    Text(
+                      'expenses'.tr(),
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     Row(
                       children: [
                         if (_selectedExpenseIds.isNotEmpty)
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8.0,
+                            ),
                             child: ElevatedButton.icon(
-                              onPressed: () => _confirmDeleteSelectedExpenses(context),
-                              icon: const Icon(Icons.delete_sweep, color: Colors.white),
-                              label: Text('${'delete'.tr()} (${_selectedExpenseIds.length})', style: const TextStyle(color: Colors.white)),
+                              onPressed: () =>
+                                  _confirmDeleteSelectedExpenses(context),
+                              icon: const Icon(
+                                Icons.delete_sweep,
+                                color: Colors.white,
+                              ),
+                              label: Text(
+                                '${'delete'.tr()} (${_selectedExpenseIds.length})',
+                                style: const TextStyle(color: Colors.white),
+                              ),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.red,
                                 foregroundColor: Colors.white,
@@ -156,10 +203,21 @@ class _CashierScreenState extends State<CashierScreen> {
                             ),
                           ),
                         ElevatedButton.icon(
-                          onPressed: () => _showAddExpenseDialog(context, state.activeShiftId),
+                          onPressed: () => _showAddExpenseDialog(
+                            context,
+                            state.activeShiftId,
+                          ),
                           icon: const Icon(Icons.add, color: Colors.white),
-                          label: Text('add_expense'.tr(), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                          style: ElevatedButton.styleFrom(backgroundColor: theme.colorScheme.primary),
+                          label: Text(
+                            'add_expense'.tr(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: theme.colorScheme.primary,
+                          ),
                         ),
                       ],
                     ),
@@ -178,7 +236,9 @@ class _CashierScreenState extends State<CashierScreen> {
                               child: DataTable(
                                 showCheckboxColumn: true,
                                 columns: [
-                                  DataColumn(label: Text('expense_description'.tr())),
+                                  DataColumn(
+                                    label: Text('expense_description'.tr()),
+                                  ),
                                   DataColumn(label: Text('amount'.tr())),
                                   DataColumn(label: Text('category'.tr())),
                                   DataColumn(label: Text('date'.tr())),
@@ -186,7 +246,9 @@ class _CashierScreenState extends State<CashierScreen> {
                                 ],
                                 rows: state.expenses.map((e) {
                                   return DataRow(
-                                    selected: _selectedExpenseIds.contains(e.id),
+                                    selected: _selectedExpenseIds.contains(
+                                      e.id,
+                                    ),
                                     onSelectChanged: (selected) {
                                       setState(() {
                                         if (selected == true) {
@@ -198,13 +260,32 @@ class _CashierScreenState extends State<CashierScreen> {
                                     },
                                     cells: [
                                       DataCell(Text(e.description)),
-                                      DataCell(Text('${e.amount.toStringAsFixed(2)} EGP', style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold))),
+                                      DataCell(
+                                        Text(
+                                          '${e.amount.toStringAsFixed(2)} EGP',
+                                          style: const TextStyle(
+                                            color: Colors.red,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
                                       DataCell(Text(e.category)),
-                                      DataCell(Text(e.date.toString().substring(0, 16))),
+                                      DataCell(
+                                        Text(
+                                          e.date.toString().substring(0, 16),
+                                        ),
+                                      ),
                                       DataCell(
                                         IconButton(
-                                          icon: const Icon(Icons.delete, color: Colors.red),
-                                          onPressed: () => _confirmDeleteExpense(context, e.id),
+                                          icon: const Icon(
+                                            Icons.delete,
+                                            color: Colors.red,
+                                          ),
+                                          onPressed: () =>
+                                              _confirmDeleteExpense(
+                                                context,
+                                                e.id,
+                                              ),
                                         ),
                                       ),
                                     ],
@@ -242,19 +323,30 @@ class _CashierScreenState extends State<CashierScreen> {
                   children: [
                     TextFormField(
                       controller: _expenseDescController,
-                      decoration: InputDecoration(labelText: 'expense_description'.tr(), border: const OutlineInputBorder()),
-                      validator: (v) => v == null || v.isEmpty ? 'no_data'.tr() : null,
+                      decoration: InputDecoration(
+                        labelText: 'expense_description'.tr(),
+                        border: const OutlineInputBorder(),
+                      ),
+                      validator: (v) =>
+                          v == null || v.isEmpty ? 'no_data'.tr() : null,
                     ),
                     SizedBox(height: 12.h),
                     TextFormField(
                       controller: _expenseAmountController,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      decoration: InputDecoration(labelText: 'amount'.tr(), border: const OutlineInputBorder()),
-                      validator: (v) => v == null || double.tryParse(v) == null ? 'no_data'.tr() : null,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      decoration: InputDecoration(
+                        labelText: 'amount'.tr(),
+                        border: const OutlineInputBorder(),
+                      ),
+                      validator: (v) => v == null || double.tryParse(v) == null
+                          ? 'no_data'.tr()
+                          : null,
                     ),
                     SizedBox(height: 12.h),
                     DropdownButtonFormField<String>(
-                      value: _expenseCategory,
+                      initialValue: _expenseCategory,
                       icon: Icon(
                         Icons.keyboard_arrow_down_rounded,
                         color: theme.colorScheme.primary,
@@ -262,11 +354,26 @@ class _CashierScreenState extends State<CashierScreen> {
                       dropdownColor: theme.cardColor,
                       borderRadius: BorderRadius.circular(12.r),
                       items: const [
-                        DropdownMenuItem(value: 'شراء بضاعة / Stock Purchase', child: Text('شراء بضاعة / Stock Purchase')),
-                        DropdownMenuItem(value: 'فواتير ومنافع / Bills', child: Text('فواتير ومنافع / Bills')),
-                        DropdownMenuItem(value: 'رواتب / Salaries', child: Text('رواتب / Salaries')),
-                        DropdownMenuItem(value: 'صيانة ونظافة / Maintenance', child: Text('صيانة ونظافة / Maintenance')),
-                        DropdownMenuItem(value: 'نثريات / Miscellaneous', child: Text('نثريات / Miscellaneous')),
+                        DropdownMenuItem(
+                          value: 'شراء بضاعة / Stock Purchase',
+                          child: Text('شراء بضاعة / Stock Purchase'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'فواتير ومنافع / Bills',
+                          child: Text('فواتير ومنافع / Bills'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'رواتب / Salaries',
+                          child: Text('رواتب / Salaries'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'صيانة ونظافة / Maintenance',
+                          child: Text('صيانة ونظافة / Maintenance'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'نثريات / Miscellaneous',
+                          child: Text('نثريات / Miscellaneous'),
+                        ),
                       ],
                       onChanged: (val) {
                         if (val != null) setState(() => _expenseCategory = val);
@@ -278,13 +385,21 @@ class _CashierScreenState extends State<CashierScreen> {
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12.r),
-                          borderSide: BorderSide(color: theme.dividerColor.withOpacity(0.2)),
+                          borderSide: BorderSide(
+                            color: theme.dividerColor.withOpacity(0.2),
+                          ),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12.r),
-                          borderSide: BorderSide(color: theme.colorScheme.primary, width: 2),
+                          borderSide: BorderSide(
+                            color: theme.colorScheme.primary,
+                            width: 2,
+                          ),
                         ),
-                        contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 12.w,
+                          vertical: 12.h,
+                        ),
                       ),
                     ),
                   ],
@@ -310,7 +425,9 @@ class _CashierScreenState extends State<CashierScreen> {
                       Navigator.pop(dlgContext);
                     }
                   },
-                  style: ElevatedButton.styleFrom(backgroundColor: theme.colorScheme.primary),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: theme.colorScheme.primary,
+                  ),
                   child: Text('confirm'.tr()),
                 ),
               ],
@@ -321,7 +438,10 @@ class _CashierScreenState extends State<CashierScreen> {
     );
   }
 
-  void _handleCloseShift(BuildContext context, CashierState cashierState) async {
+  void _handleCloseShift(
+    BuildContext context,
+    CashierState cashierState,
+  ) async {
     // 1. Gather financials from ReportsBloc
     final reportsState = context.read<ReportsBloc>().state;
     double todaySales = 0.0;
@@ -329,8 +449,12 @@ class _CashierScreenState extends State<CashierScreen> {
       todaySales = reportsState.todaySales;
     }
 
-    double totalExpenses = cashierState.expenses.fold(0.0, (sum, e) => sum + e.amount);
-    double expectedCash = cashierState.startingCash + todaySales - totalExpenses;
+    double totalExpenses = cashierState.expenses.fold(
+      0.0,
+      (sum, e) => sum + e.amount,
+    );
+    double expectedCash =
+        cashierState.startingCash + todaySales - totalExpenses;
 
     // 2. Print Z-Report
     final printService = Gravity.find<PrintService>();
@@ -374,7 +498,10 @@ class _CashierScreenState extends State<CashierScreen> {
                 backgroundColor: Colors.red,
                 foregroundColor: Colors.white,
               ),
-              child: Text('delete'.tr(), style: const TextStyle(color: Colors.white)),
+              child: Text(
+                'delete'.tr(),
+                style: const TextStyle(color: Colors.white),
+              ),
             ),
           ],
         );
@@ -400,7 +527,9 @@ class _CashierScreenState extends State<CashierScreen> {
             ),
             ElevatedButton(
               onPressed: () {
-                context.read<CashierBloc>().add(DeleteMultipleExpensesEvent(_selectedExpenseIds.toList()));
+                context.read<CashierBloc>().add(
+                  DeleteMultipleExpensesEvent(_selectedExpenseIds.toList()),
+                );
                 setState(() {
                   _selectedExpenseIds.clear();
                 });
@@ -410,7 +539,10 @@ class _CashierScreenState extends State<CashierScreen> {
                 backgroundColor: Colors.red,
                 foregroundColor: Colors.white,
               ),
-              child: Text('delete'.tr(), style: const TextStyle(color: Colors.white)),
+              child: Text(
+                'delete'.tr(),
+                style: const TextStyle(color: Colors.white),
+              ),
             ),
           ],
         );

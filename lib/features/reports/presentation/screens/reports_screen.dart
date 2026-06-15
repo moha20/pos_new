@@ -44,7 +44,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 children: [
                   // KPI cards grid
                   GridView.count(
-                    crossAxisCount: screenWidth > 900 ? 3 : (screenWidth > 600 ? 2 : 1),
+                    crossAxisCount: screenWidth > 900
+                        ? 3
+                        : (screenWidth > 600 ? 2 : 1),
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     crossAxisSpacing: 16,
@@ -90,15 +92,21 @@ class _ReportsScreenState extends State<ReportsScreen> {
                     ],
                   ),
                   SizedBox(height: 24.h),
-                  
+
                   // Charts Layout
                   MediaQuery.of(context).size.width > 900
                       ? Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Expanded(flex: 3, child: _buildBarChart(state, theme, isArabic)),
+                            Expanded(
+                              flex: 3,
+                              child: _buildBarChart(state, theme, isArabic),
+                            ),
                             SizedBox(width: 16.w),
-                            Expanded(flex: 2, child: _buildPieChart(state, theme, isArabic)),
+                            Expanded(
+                              flex: 2,
+                              child: _buildPieChart(state, theme, isArabic),
+                            ),
                           ],
                         )
                       : Column(
@@ -125,7 +133,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
     final history = state.dailySalesHistory.entries.toList();
     // Grab last 7 days sorted by date
     history.sort((a, b) => a.key.compareTo(b.key));
-    final displayHistory = history.length > 7 ? history.sublist(history.length - 7) : history;
+    final displayHistory = history.length > 7
+        ? history.sublist(history.length - 7)
+        : history;
 
     return Card(
       elevation: 2,
@@ -146,11 +156,15 @@ class _ReportsScreenState extends State<ReportsScreen> {
                   : BarChart(
                       BarChartData(
                         alignment: BarChartAlignment.spaceAround,
-                        barTouchData: BarTouchData(enabled: true),
+                        barTouchData: const BarTouchData(enabled: true),
                         titlesData: FlTitlesData(
                           show: true,
-                          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                          topTitles: const AxisTitles(
+                            sideTitles: SideTitles(showTitles: false),
+                          ),
+                          rightTitles: const AxisTitles(
+                            sideTitles: SideTitles(showTitles: false),
+                          ),
                           bottomTitles: AxisTitles(
                             sideTitles: SideTitles(
                               showTitles: true,
@@ -161,9 +175,15 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                   final dateStr = displayHistory[idx].key;
                                   final parts = dateStr.split('-');
                                   if (parts.length >= 3) {
-                                    return Text('${parts[2]}/${parts[1]}', style: TextStyle(fontSize: 9.sp));
+                                    return Text(
+                                      '${parts[2]}/${parts[1]}',
+                                      style: TextStyle(fontSize: 9.sp),
+                                    );
                                   }
-                                  return Text(dateStr, style: TextStyle(fontSize: 9.sp));
+                                  return Text(
+                                    dateStr,
+                                    style: TextStyle(fontSize: 9.sp),
+                                  );
                                 }
                                 return const SizedBox();
                               },
@@ -171,7 +191,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
                           ),
                         ),
                         borderData: FlBorderData(show: false),
-                        barGroups: List.generate(displayHistory.length, (index) {
+                        barGroups: List.generate(displayHistory.length, (
+                          index,
+                        ) {
                           return BarChartGroupData(
                             x: index,
                             barRods: [
@@ -212,10 +234,14 @@ class _ReportsScreenState extends State<ReportsScreen> {
     state.tierSplit.forEach((level, value) {
       if (value > 0) {
         String title = level;
-        if (level == 'retail') title = 'price_retail'.tr();
-        else if (level == 'salesman') title = 'price_salesman'.tr();
-        else if (level == 'company') title = 'price_company'.tr();
-        else if (level == 'wholesale') title = 'price_wholesale'.tr();
+        if (level == 'retail') {
+          title = 'price_retail'.tr();
+        } else if (level == 'salesman')
+          title = 'price_salesman'.tr();
+        else if (level == 'company')
+          title = 'price_company'.tr();
+        else if (level == 'wholesale')
+          title = 'price_wholesale'.tr();
 
         sections.add(
           PieChartSectionData(
@@ -223,7 +249,11 @@ class _ReportsScreenState extends State<ReportsScreen> {
             title: title,
             color: colors[colorIdx % colors.length],
             radius: 55,
-            titleStyle: TextStyle(fontSize: 10.sp, fontWeight: FontWeight.bold, color: Colors.white),
+            titleStyle: TextStyle(
+              fontSize: 10.sp,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
           ),
         );
         colorIdx++;

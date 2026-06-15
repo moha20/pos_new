@@ -38,7 +38,7 @@ class _CustomerFormState extends State<CustomerForm> {
       _priceLevel = c.priceLevel;
       _totalPurchasesController.text = c.totalPurchases.toStringAsFixed(2);
       _balanceController.text = c.balance.toStringAsFixed(2);
-      
+
       final standardTiers = ['retail', 'salesman', 'company', 'wholesale'];
       if (!standardTiers.contains(_priceLevel)) {
         _customPriceLevelController.text = _priceLevel;
@@ -77,43 +77,73 @@ class _CustomerFormState extends State<CustomerForm> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                  widget.customer == null ? 'add_customer'.tr() : 'edit_customer'.tr(),
-                  style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, color: theme.colorScheme.primary),
+                  widget.customer == null
+                      ? 'add_customer'.tr()
+                      : 'edit_customer'.tr(),
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.primary,
+                  ),
                 ),
                 SizedBox(height: 16.h),
                 TextFormField(
                   controller: _nameController,
-                  decoration: InputDecoration(labelText: 'customer_name'.tr(), border: const OutlineInputBorder()),
-                  validator: (v) => v == null || v.isEmpty ? 'no_data'.tr() : null,
+                  decoration: InputDecoration(
+                    labelText: 'customer_name'.tr(),
+                    border: const OutlineInputBorder(),
+                  ),
+                  validator: (v) =>
+                      v == null || v.isEmpty ? 'no_data'.tr() : null,
                 ),
                 SizedBox(height: 12.h),
                 TextFormField(
                   controller: _phoneController,
-                  decoration: InputDecoration(labelText: 'phone'.tr(), border: const OutlineInputBorder()),
-                  validator: (v) => v == null || v.isEmpty ? 'no_data'.tr() : null,
+                  decoration: InputDecoration(
+                    labelText: 'phone'.tr(),
+                    border: const OutlineInputBorder(),
+                  ),
+                  validator: (v) =>
+                      v == null || v.isEmpty ? 'no_data'.tr() : null,
                 ),
                 SizedBox(height: 12.h),
                 TextFormField(
                   controller: _addressController,
-                  decoration: InputDecoration(labelText: 'address'.tr(), border: const OutlineInputBorder()),
-                  validator: (v) => v == null || v.isEmpty ? 'no_data'.tr() : null,
+                  decoration: InputDecoration(
+                    labelText: 'address'.tr(),
+                    border: const OutlineInputBorder(),
+                  ),
+                  validator: (v) =>
+                      v == null || v.isEmpty ? 'no_data'.tr() : null,
                 ),
                 SizedBox(height: 12.h),
                 TextFormField(
                   controller: _totalPurchasesController,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  decoration: InputDecoration(labelText: 'total_purchases'.tr(), border: const OutlineInputBorder()),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  decoration: InputDecoration(
+                    labelText: 'total_purchases'.tr(),
+                    border: const OutlineInputBorder(),
+                  ),
                 ),
                 SizedBox(height: 12.h),
                 TextFormField(
                   controller: _balanceController,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  decoration: InputDecoration(labelText: 'opening_balance'.tr() + ' (Debt)', border: const OutlineInputBorder()),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  decoration: InputDecoration(
+                    labelText: '${'opening_balance'.tr()} (Debt)',
+                    border: const OutlineInputBorder(),
+                  ),
                 ),
                 SizedBox(height: 16.h),
-                
+
                 // Price Level Selection
-                Text('price_tier'.tr(), style: const TextStyle(fontWeight: FontWeight.bold)),
+                Text(
+                  'price_tier'.tr(),
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
                 SizedBox(height: 8.h),
                 Builder(
                   builder: (context) {
@@ -127,24 +157,34 @@ class _CustomerFormState extends State<CustomerForm> {
                       }
                     }
 
-                    final List<String> dropdownLevels = ['retail', 'salesman', 'company', 'wholesale'];
+                    final List<String> dropdownLevels = [
+                      'retail',
+                      'salesman',
+                      'company',
+                      'wholesale',
+                    ];
                     for (final lvl in customLevels) {
-                      if (!dropdownLevels.any((d) => d.toLowerCase() == lvl.toLowerCase())) {
+                      if (!dropdownLevels.any(
+                        (d) => d.toLowerCase() == lvl.toLowerCase(),
+                      )) {
                         dropdownLevels.add(lvl);
                       }
                     }
 
-                    if (_priceLevel != 'other' && !dropdownLevels.contains(_priceLevel)) {
+                    if (_priceLevel != 'other' &&
+                        !dropdownLevels.contains(_priceLevel)) {
                       dropdownLevels.add(_priceLevel);
                     }
 
-                    final dropdownValue = dropdownLevels.contains(_priceLevel) ? _priceLevel : 'other';
+                    final dropdownValue = dropdownLevels.contains(_priceLevel)
+                        ? _priceLevel
+                        : 'other';
 
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         DropdownButtonFormField<String>(
-                          value: dropdownValue,
+                          initialValue: dropdownValue,
                           icon: Icon(
                             Icons.keyboard_arrow_down_rounded,
                             color: theme.colorScheme.primary,
@@ -154,13 +194,23 @@ class _CustomerFormState extends State<CustomerForm> {
                           items: [
                             ...dropdownLevels.map((lvl) {
                               String label = lvl;
-                              if (lvl == 'retail') label = 'price_retail'.tr();
-                              else if (lvl == 'salesman') label = 'price_salesman'.tr();
-                              else if (lvl == 'company') label = 'price_company'.tr();
-                              else if (lvl == 'wholesale') label = 'price_wholesale'.tr();
-                              return DropdownMenuItem(value: lvl, child: Text(label));
+                              if (lvl == 'retail') {
+                                label = 'price_retail'.tr();
+                              } else if (lvl == 'salesman')
+                                label = 'price_salesman'.tr();
+                              else if (lvl == 'company')
+                                label = 'price_company'.tr();
+                              else if (lvl == 'wholesale')
+                                label = 'price_wholesale'.tr();
+                              return DropdownMenuItem(
+                                value: lvl,
+                                child: Text(label),
+                              );
                             }),
-                            DropdownMenuItem(value: 'other', child: Text('other'.tr())),
+                            DropdownMenuItem(
+                              value: 'other',
+                              child: Text('other'.tr()),
+                            ),
                           ],
                           onChanged: (val) {
                             if (val != null) {
@@ -177,13 +227,21 @@ class _CustomerFormState extends State<CustomerForm> {
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12.r),
-                              borderSide: BorderSide(color: theme.dividerColor.withOpacity(0.2)),
+                              borderSide: BorderSide(
+                                color: theme.dividerColor.withOpacity(0.2),
+                              ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12.r),
-                              borderSide: BorderSide(color: theme.colorScheme.primary, width: 2),
+                              borderSide: BorderSide(
+                                color: theme.colorScheme.primary,
+                                width: 2,
+                              ),
                             ),
-                            contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: 12.w,
+                              vertical: 12.h,
+                            ),
                           ),
                         ),
                         if (_isCustomPriceLevel) ...[
@@ -191,17 +249,22 @@ class _CustomerFormState extends State<CustomerForm> {
                           TextFormField(
                             controller: _customPriceLevelController,
                             decoration: InputDecoration(
-                              labelText: '${'custom_level'.tr()} / Custom Level Name',
+                              labelText:
+                                  '${'custom_level'.tr()} / Custom Level Name',
                               border: const OutlineInputBorder(),
                             ),
-                            validator: (v) => _isCustomPriceLevel && (v == null || v.trim().isEmpty) ? 'no_data'.tr() : null,
+                            validator: (v) =>
+                                _isCustomPriceLevel &&
+                                    (v == null || v.trim().isEmpty)
+                                ? 'no_data'.tr()
+                                : null,
                           ),
                         ],
                       ],
                     );
-                  }
+                  },
                 ),
-                
+
                 SizedBox(height: 24.h),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
@@ -219,16 +282,28 @@ class _CustomerFormState extends State<CustomerForm> {
                             name: _nameController.text,
                             phone: _phoneController.text,
                             address: _addressController.text,
-                            totalPurchases: double.tryParse(_totalPurchasesController.text) ?? 0.0,
-                            balance: double.tryParse(_balanceController.text) ?? 0.0,
-                            createdAt: widget.customer?.createdAt ?? DateTime.now(),
-                            priceLevel: _priceLevel == 'other' ? _customPriceLevelController.text.trim() : _priceLevel,
+                            totalPurchases:
+                                double.tryParse(
+                                  _totalPurchasesController.text,
+                                ) ??
+                                0.0,
+                            balance:
+                                double.tryParse(_balanceController.text) ?? 0.0,
+                            createdAt:
+                                widget.customer?.createdAt ?? DateTime.now(),
+                            priceLevel: _priceLevel == 'other'
+                                ? _customPriceLevelController.text.trim()
+                                : _priceLevel,
                           );
-  
+
                           if (widget.customer == null) {
-                            context.read<CustomerBloc>().add(AddCustomerEvent(c));
+                            context.read<CustomerBloc>().add(
+                              AddCustomerEvent(c),
+                            );
                           } else {
-                            context.read<CustomerBloc>().add(UpdateCustomerEvent(c));
+                            context.read<CustomerBloc>().add(
+                              UpdateCustomerEvent(c),
+                            );
                           }
                           Navigator.pop(context);
                         }

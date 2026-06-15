@@ -20,12 +20,17 @@ class InvoiceTemplate extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isArabic = context.locale.languageCode == 'ar';
-    final textDirection = isArabic ? ui.TextDirection.rtl : ui.TextDirection.ltr;
-    final alignment = isArabic ? CrossAxisAlignment.start : CrossAxisAlignment.start;
+    final textDirection = isArabic
+        ? ui.TextDirection.rtl
+        : ui.TextDirection.ltr;
+    final alignment = isArabic
+        ? CrossAxisAlignment.start
+        : CrossAxisAlignment.start;
 
     // Currency Formatter
     final currencySymbol = 'currency_symbol'.tr();
-    String formatCurrency(double val) => '${val.toStringAsFixed(2)} $currencySymbol';
+    String formatCurrency(double val) =>
+        '${val.toStringAsFixed(2)} $currencySymbol';
 
     return Directionality(
       textDirection: textDirection,
@@ -54,9 +59,7 @@ class InvoiceTemplate extends StatelessWidget {
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(4.r),
-                  child: AppLogo(
-                    fit: BoxFit.contain,
-                  ),
+                  child: const AppLogo(fit: BoxFit.contain),
                 ),
               ),
             ),
@@ -65,20 +68,24 @@ class InvoiceTemplate extends StatelessWidget {
               alignment: Alignment.center,
               child: Text(
                 'print_invoice'.tr(),
-                style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.primary),
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.primary,
+                ),
                 textAlign: TextAlign.center,
               ),
             ),
             SizedBox(height: 16.h),
             const Divider(thickness: 1.5),
-            
+
             // Metadata
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   '${'invoice_number'.tr()}: ${sale.invoiceNumber}',
-                  style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 Text(
                   sale.createdAt.toString().substring(0, 16),
@@ -87,72 +94,113 @@ class InvoiceTemplate extends StatelessWidget {
               ],
             ),
             SizedBox(height: 8.h),
-            Text('${'cashier_role'.tr()}: ${sale.cashierId}', style: theme.textTheme.bodySmall),
-            
+            Text(
+              '${'cashier_role'.tr()}: ${sale.cashierId}',
+              style: theme.textTheme.bodySmall,
+            ),
+
             if (sale.customerId != null) ...[
               SizedBox(height: 4.h),
               Text(
                 '${'customer_name'.tr()}: ${sale.customerId}',
-                style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
+                style: theme.textTheme.bodySmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ],
-            
+
             SizedBox(height: 16.h),
             const Divider(thickness: 1),
-            
+
             // Cart Items Header
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
                   flex: 3,
-                  child: Text('product_name'.tr(), style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold)),
+                  child: Text(
+                    'product_name'.tr(),
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
                 Expanded(
                   flex: 1,
-                  child: Text('stock'.tr(), style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+                  child: Text(
+                    'stock'.tr(),
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
                 Expanded(
                   flex: 1,
-                  child: Text('total'.tr(), style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold), textAlign: TextAlign.end),
+                  child: Text(
+                    'total'.tr(),
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.end,
+                  ),
                 ),
               ],
             ),
             const Divider(thickness: 1),
-            
+
             // Items List
-            ...sale.items.map((item) => Padding(
-              padding: const EdgeInsets.symmetric(vertical: 6.0),
-              child: Row(
-                children: [
-                  Expanded(
-                    flex: 3,
-                    child: Column(
-                      crossAxisAlignment: alignment,
-                      children: [
-                        Text(item.productName, style: theme.textTheme.bodyMedium),
-                        Text(
-                          '${item.priceLevel.tr()} @ ${formatCurrency(item.unitPrice)}',
-                          style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurface.withOpacity(0.6)),
-                        ),
-                      ],
+            ...sale.items.map(
+              (item) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      flex: 3,
+                      child: Column(
+                        crossAxisAlignment: alignment,
+                        children: [
+                          Text(
+                            item.productName,
+                            style: theme.textTheme.bodyMedium,
+                          ),
+                          Text(
+                            '${item.priceLevel.tr()} @ ${formatCurrency(item.unitPrice)}',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurface.withOpacity(
+                                0.6,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  Expanded(
-                    flex: 1,
-                    child: Text('x${item.qty}', style: theme.textTheme.bodyMedium, textAlign: TextAlign.center),
-                  ),
-                  Expanded(
-                    flex: 1,
-                    child: Text(formatCurrency(item.totalPrice), style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold), textAlign: TextAlign.end),
-                  ),
-                ],
+                    Expanded(
+                      flex: 1,
+                      child: Text(
+                        'x${item.qty}',
+                        style: theme.textTheme.bodyMedium,
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    Expanded(
+                      flex: 1,
+                      child: Text(
+                        formatCurrency(item.totalPrice),
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.end,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            )),
-            
+            ),
+
             const Divider(thickness: 1.5),
             SizedBox(height: 8.h),
-            
+
             // Summaries
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -165,17 +213,20 @@ class InvoiceTemplate extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('discount'.tr(), style: const TextStyle(color: Colors.red)),
-                Text('-${formatCurrency(sale.discount)}', style: const TextStyle(color: Colors.red)),
+                Text(
+                  'discount'.tr(),
+                  style: const TextStyle(color: Colors.red),
+                ),
+                Text(
+                  '-${formatCurrency(sale.discount)}',
+                  style: const TextStyle(color: Colors.red),
+                ),
               ],
             ),
             SizedBox(height: 4.h),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('tax'.tr()),
-                Text(formatCurrency(sale.tax)),
-              ],
+              children: [Text('tax'.tr()), Text(formatCurrency(sale.tax))],
             ),
             SizedBox(height: 8.h),
             const Divider(thickness: 1),
@@ -184,11 +235,17 @@ class InvoiceTemplate extends StatelessWidget {
               children: [
                 Text(
                   'total'.tr(),
-                  style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, color: theme.colorScheme.primary),
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.primary,
+                  ),
                 ),
                 Text(
                   formatCurrency(sale.total),
-                  style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, color: theme.colorScheme.primary),
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.primary,
+                  ),
                 ),
               ],
             ),
@@ -197,7 +254,12 @@ class InvoiceTemplate extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('payment_method'.tr(), style: theme.textTheme.bodySmall),
-                Text(sale.paymentMethod.tr(), style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold)),
+                Text(
+                  sale.paymentMethod.tr(),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ],
             ),
             SizedBox(height: 24.h),
@@ -205,7 +267,9 @@ class InvoiceTemplate extends StatelessWidget {
               alignment: Alignment.center,
               child: Text(
                 'thank_you_message'.tr(),
-                style: theme.textTheme.bodySmall?.copyWith(fontStyle: FontStyle.italic),
+                style: theme.textTheme.bodySmall?.copyWith(
+                  fontStyle: FontStyle.italic,
+                ),
                 textAlign: TextAlign.center,
               ),
             ),

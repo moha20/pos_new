@@ -45,24 +45,30 @@ class HiveConfig {
     if (usersBox.isEmpty) {
       // Seed users
       final adminId = generateId();
-      usersBox.put(adminId, UserModel(
-        id: adminId,
-        name: 'Admin Owner',
-        username: 'admin',
-        passwordHash: hashPassword('admin123'),
-        role: 'admin',
-        isActive: true,
-      ).toMap());
+      usersBox.put(
+        adminId,
+        UserModel(
+          id: adminId,
+          name: 'Admin Owner',
+          username: 'admin',
+          passwordHash: hashPassword('admin123'),
+          role: 'admin',
+          isActive: true,
+        ).toMap(),
+      );
 
-      final cashierId = generateId() + '1';
-      usersBox.put(cashierId, UserModel(
-        id: cashierId,
-        name: 'Cashier User',
-        username: 'cashier',
-        passwordHash: hashPassword('cashier123'),
-        role: 'cashier',
-        isActive: true,
-      ).toMap());
+      final cashierId = '${generateId()}1';
+      usersBox.put(
+        cashierId,
+        UserModel(
+          id: cashierId,
+          name: 'Cashier User',
+          username: 'cashier',
+          passwordHash: hashPassword('cashier123'),
+          role: 'cashier',
+          isActive: true,
+        ).toMap(),
+      );
 
       // Seed 10 products with multi-tier pricing
       final productsData = [
@@ -205,43 +211,69 @@ class HiveConfig {
           'salesman': 18.0,
           'company': 16.5,
           'wholesale': 14.5,
-        }
+        },
       ];
 
       for (final data in productsData) {
         final prodId = generateId() + data['barcode'].toString();
-        productsBox.put(prodId, ProductModel(
-          id: prodId,
-          name: data['name'] as String,
-          barcode: data['barcode'] as String,
-          category: data['category'] as String,
-          brand: data['brand'] as String,
-          costPrice: data['costPrice'] as double,
-          stock: data['stock'] as int,
-          minStock: data['minStock'] as int,
-          unit: data['unit'] as String,
-          isActive: true,
-          prices: [
-            PriceTierModel(level: 'retail', labelAr: 'تجزئة', labelEn: 'Retail', price: data['retail'] as double),
-            PriceTierModel(level: 'salesman', labelAr: 'مندوب', labelEn: 'Salesman', price: data['salesman'] as double),
-            PriceTierModel(level: 'company', labelAr: 'شركة', labelEn: 'Company', price: data['company'] as double),
-            PriceTierModel(level: 'wholesale', labelAr: 'جملة', labelEn: 'Wholesale', price: data['wholesale'] as double),
-          ],
-        ).toMap());
+        productsBox.put(
+          prodId,
+          ProductModel(
+            id: prodId,
+            name: data['name'] as String,
+            barcode: data['barcode'] as String,
+            category: data['category'] as String,
+            brand: data['brand'] as String,
+            costPrice: data['costPrice'] as double,
+            stock: data['stock'] as int,
+            minStock: data['minStock'] as int,
+            unit: data['unit'] as String,
+            isActive: true,
+            prices: [
+              PriceTierModel(
+                level: 'retail',
+                labelAr: 'تجزئة',
+                labelEn: 'Retail',
+                price: data['retail'] as double,
+              ),
+              PriceTierModel(
+                level: 'salesman',
+                labelAr: 'مندوب',
+                labelEn: 'Salesman',
+                price: data['salesman'] as double,
+              ),
+              PriceTierModel(
+                level: 'company',
+                labelAr: 'شركة',
+                labelEn: 'Company',
+                price: data['company'] as double,
+              ),
+              PriceTierModel(
+                level: 'wholesale',
+                labelAr: 'جملة',
+                labelEn: 'Wholesale',
+                price: data['wholesale'] as double,
+              ),
+            ],
+          ).toMap(),
+        );
       }
 
       // Seed 1 default Customer for quick Retail sales
-      final custId = generateId() + 'cust';
-      customersBox.put(custId, CustomerModel(
-        id: custId,
-        name: 'عميل نقدي / Cash Customer',
-        phone: '0000000000',
-        address: 'Local Store',
-        totalPurchases: 0.0,
-        balance: 0.0,
-        createdAt: DateTime.now(),
-        priceLevel: 'retail',
-      ).toMap());
+      final custId = '${generateId()}cust';
+      customersBox.put(
+        custId,
+        CustomerModel(
+          id: custId,
+          name: 'عميل نقدي / Cash Customer',
+          phone: '0000000000',
+          address: 'Local Store',
+          totalPurchases: 0.0,
+          balance: 0.0,
+          createdAt: DateTime.now(),
+          priceLevel: 'retail',
+        ).toMap(),
+      );
     }
   }
 }

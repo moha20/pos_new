@@ -26,15 +26,31 @@ class App extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (_) => LocaleCubit()),
-        BlocProvider(create: (_) => Gravity.find<AuthBloc>()..add(AuthCheckStatus())),
-        BlocProvider(create: (_) => Gravity.find<InventoryBloc>()..add(LoadInventory())),
-        BlocProvider(create: (_) => Gravity.find<CustomerBloc>()..add(LoadCustomers())),
-        BlocProvider(create: (_) => Gravity.find<SupplierBloc>()..add(LoadSuppliers())),
+        BlocProvider(
+          create: (_) => Gravity.find<AuthBloc>()..add(AuthCheckStatus()),
+        ),
+        BlocProvider(
+          create: (_) => Gravity.find<InventoryBloc>()..add(LoadInventory()),
+        ),
+        BlocProvider(
+          create: (_) => Gravity.find<CustomerBloc>()..add(LoadCustomers()),
+        ),
+        BlocProvider(
+          create: (_) => Gravity.find<SupplierBloc>()..add(LoadSuppliers()),
+        ),
         BlocProvider(create: (_) => Gravity.find<POSBloc>()..add(POSInit())),
-        BlocProvider(create: (_) => Gravity.find<SalesHistoryCubit>()..loadSales()),
-        BlocProvider(create: (_) => Gravity.find<CashierBloc>()..add(LoadCashier())),
-        BlocProvider(create: (_) => Gravity.find<ReportsBloc>()..add(LoadReportsEvent())),
-        BlocProvider(create: (_) => Gravity.find<SettingsBloc>()..add(LoadSettings())),
+        BlocProvider(
+          create: (_) => Gravity.find<SalesHistoryCubit>()..loadSales(),
+        ),
+        BlocProvider(
+          create: (_) => Gravity.find<CashierBloc>()..add(LoadCashier()),
+        ),
+        BlocProvider(
+          create: (_) => Gravity.find<ReportsBloc>()..add(LoadReportsEvent()),
+        ),
+        BlocProvider(
+          create: (_) => Gravity.find<SettingsBloc>()..add(LoadSettings()),
+        ),
         BlocProvider(create: (_) => Gravity.find<ActivityLogCubit>()),
         BlocProvider(create: (_) => Gravity.find<ReturnsCubit>()),
       ],
@@ -47,9 +63,12 @@ class App extends StatelessWidget {
               if (settingsState is SettingsLoaded) {
                 themeType = settingsState.themeType;
                 final mode = settingsState.themeMode;
-                if (mode == 'dark') activeThemeMode = ThemeMode.dark;
-                else if (mode == 'system') activeThemeMode = ThemeMode.system;
-                else activeThemeMode = ThemeMode.light;
+                if (mode == 'dark') {
+                  activeThemeMode = ThemeMode.dark;
+                } else if (mode == 'system')
+                  activeThemeMode = ThemeMode.system;
+                else
+                  activeThemeMode = ThemeMode.light;
               }
               final isBlue = themeType == 'logo_blue';
               return ScreenUtilInit(

@@ -30,12 +30,19 @@ class _LoginScreenState extends State<LoginScreen> {
         listener: (context, state) {
           if (state is AuthSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('saved_successfully'.tr()), backgroundColor: Colors.green),
+              SnackBar(
+                content: Text('saved_successfully'.tr()),
+                backgroundColor: Colors.green,
+              ),
             );
             context.go('/pos');
-          } else if (state is AuthFailure && state.message == 'invalid_credentials') {
+          } else if (state is AuthFailure &&
+              state.message == 'invalid_credentials') {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('error_occurred'.tr()), backgroundColor: Colors.red),
+              SnackBar(
+                content: Text('error_occurred'.tr()),
+                backgroundColor: Colors.red,
+              ),
             );
           }
         },
@@ -52,7 +59,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     color: Colors.black.withOpacity(isDark ? 0.4 : 0.06),
                     blurRadius: 16,
                     offset: const Offset(0, 8),
-                  )
+                  ),
                 ],
                 border: Border.all(
                   color: theme.colorScheme.primary.withOpacity(0.1),
@@ -71,7 +78,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: LanguageToggle(),
                     ),
                     SizedBox(height: 16.h),
-                    
+
                     // Logo Image
                     Center(
                       child: Container(
@@ -94,21 +101,21 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(8.r),
-                          child: AppLogo(
-                            fit: BoxFit.contain,
-                          ),
+                          child: const AppLogo(fit: BoxFit.contain),
                         ),
                       ),
                     ),
                     SizedBox(height: 24.h),
-                    
+
                     // Username input
                     TextFormField(
                       controller: _usernameController,
                       decoration: InputDecoration(
                         labelText: 'username'.tr(),
                         prefixIcon: const Icon(Icons.person),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r)),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
                       ),
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
@@ -118,7 +125,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       },
                     ),
                     SizedBox(height: 16.h),
-                    
+
                     // Password input
                     TextFormField(
                       controller: _passwordController,
@@ -126,7 +133,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       decoration: InputDecoration(
                         labelText: 'password'.tr(),
                         prefixIcon: const Icon(Icons.lock),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r)),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
                       ),
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
@@ -136,7 +145,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       },
                     ),
                     SizedBox(height: 24.h),
-                    
+
                     // Submit button
                     BlocBuilder<AuthBloc, AuthState>(
                       builder: (context, state) {
@@ -147,11 +156,11 @@ class _LoginScreenState extends State<LoginScreen> {
                               : () {
                                   if (_formKey.currentState!.validate()) {
                                     context.read<AuthBloc>().add(
-                                          AuthLoginRequested(
-                                            _usernameController.text,
-                                            _passwordController.text,
-                                          ),
-                                        );
+                                      AuthLoginRequested(
+                                        _usernameController.text,
+                                        _passwordController.text,
+                                      ),
+                                    );
                                   }
                                 },
                           style: ElevatedButton.styleFrom(
@@ -166,15 +175,21 @@ class _LoginScreenState extends State<LoginScreen> {
                               ? SizedBox(
                                   height: 20.h,
                                   width: 20.w,
-                                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                  child: const CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
                                 )
-                              : Text('login'.tr(), style: const TextStyle(fontWeight: FontWeight.bold)),
+                              : Text(
+                                  'login'.tr(),
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                         );
                       },
                     ),
                     SizedBox(height: 24.h),
-                    
-
                   ],
                 ),
               ),

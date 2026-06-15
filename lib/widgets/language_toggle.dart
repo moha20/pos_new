@@ -14,7 +14,9 @@ class LanguageToggle extends StatelessWidget {
         final isArabic = currentLocale.languageCode == 'ar';
         return Container(
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+            color: Theme.of(
+              context,
+            ).colorScheme.surfaceContainerHighest.withOpacity(0.5),
             borderRadius: BorderRadius.circular(30.r),
           ),
           padding: EdgeInsets.all(4.r),
@@ -65,7 +67,7 @@ class LanguageToggle extends StatelessWidget {
                     color: theme.colorScheme.primary.withOpacity(0.3),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
-                  )
+                  ),
                 ]
               : [],
         ),

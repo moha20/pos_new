@@ -3,7 +3,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
 import '../bloc/activity_log_cubit.dart';
 import '../../domain/entities/activity_log_entity.dart';
 import '../../../../widgets/responsive_layout.dart';
@@ -167,8 +166,12 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
                     label: Text(
                       (cat['key'] as String).tr(),
                       style: TextStyle(
-                        color: isSelected ? Colors.white : theme.colorScheme.onSurface,
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        color: isSelected
+                            ? Colors.white
+                            : theme.colorScheme.onSurface,
+                        fontWeight: isSelected
+                            ? FontWeight.bold
+                            : FontWeight.normal,
                         fontSize: 12.sp,
                       ),
                     ),
@@ -208,7 +211,10 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
                   borderRadius: BorderRadius.circular(12.r),
                   borderSide: BorderSide(color: theme.dividerColor),
                 ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
                 isDense: true,
               ),
               onChanged: (value) {
@@ -228,7 +234,10 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
 
                 if (state is ActivityLogError) {
                   return Center(
-                    child: Text(state.message, style: TextStyle(color: theme.colorScheme.error)),
+                    child: Text(
+                      state.message,
+                      style: TextStyle(color: theme.colorScheme.error),
+                    ),
                   );
                 }
 
@@ -238,7 +247,9 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
                   // Apply search filter
                   if (_searchQuery.isNotEmpty) {
                     logs = logs.where((log) {
-                      return log.description.toLowerCase().contains(_searchQuery) ||
+                      return log.description.toLowerCase().contains(
+                            _searchQuery,
+                          ) ||
                           log.action.toLowerCase().contains(_searchQuery) ||
                           log.userId.toLowerCase().contains(_searchQuery) ||
                           log.category.toLowerCase().contains(_searchQuery);
@@ -250,11 +261,17 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.history_toggle_off, size: 64, color: theme.disabledColor),
+                          Icon(
+                            Icons.history_toggle_off,
+                            size: 64,
+                            color: theme.disabledColor,
+                          ),
                           SizedBox(height: 12.h),
                           Text(
                             'no_data'.tr(),
-                            style: theme.textTheme.bodyLarge?.copyWith(color: theme.disabledColor),
+                            style: theme.textTheme.bodyLarge?.copyWith(
+                              color: theme.disabledColor,
+                            ),
                           ),
                         ],
                       ),
@@ -273,75 +290,163 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
                         dataRowMinHeight: 48,
                         dataRowMaxHeight: 60,
                         columns: [
-                          DataColumn(label: Text('date'.tr(), style: const TextStyle(fontWeight: FontWeight.bold))),
-                          DataColumn(label: Text('time'.tr(), style: const TextStyle(fontWeight: FontWeight.bold))),
-                          DataColumn(label: Text('user'.tr(), style: const TextStyle(fontWeight: FontWeight.bold))),
-                          DataColumn(label: Text('category'.tr(), style: const TextStyle(fontWeight: FontWeight.bold))),
-                          DataColumn(label: Text('action'.tr(), style: const TextStyle(fontWeight: FontWeight.bold))),
-                          DataColumn(label: Text('details'.tr(), style: const TextStyle(fontWeight: FontWeight.bold))),
-                        ],
-                        rows: logs.map((log) {
-                          final normalizedCat = _categoryAliases[log.category] ?? log.category;
-                          final catColor = _getCategoryColor(log.category);
-
-                          return DataRow(cells: [
-                            DataCell(Text(
-                              DateFormat('yyyy-MM-dd').format(log.timestamp),
-                              style: TextStyle(fontSize: 12.sp),
-                            )),
-                            DataCell(Text(
-                              DateFormat('HH:mm:ss').format(log.timestamp),
-                              style: TextStyle(fontSize: 12.sp, color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
-                            )),
-                            DataCell(Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                CircleAvatar(
-                                  radius: 12,
-                                  backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.1),
-                                  child: Text(
-                                    log.userId.isNotEmpty ? log.userId[0].toUpperCase() : '?',
-                                    style: TextStyle(fontSize: 10.sp, fontWeight: FontWeight.bold, color: theme.colorScheme.primary),
-                                  ),
-                                ),
-                                SizedBox(width: 6.w),
-                                Text(log.userId, style: TextStyle(fontSize: 12.sp)),
-                              ],
-                            )),
-                            DataCell(Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: catColor.withValues(alpha: 0.12),
-                                borderRadius: BorderRadius.circular(8.r),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(_getCategoryIcon(log.category), size: 14, color: catColor),
-                                  SizedBox(width: 4.w),
-                                  Text(
-                                    normalizedCat.tr(),
-                                    style: TextStyle(fontSize: 11.sp, fontWeight: FontWeight.bold, color: catColor),
-                                  ),
-                                ],
-                              ),
-                            )),
-                            DataCell(Text(
-                              _getActionLabel(log.action, isArabic),
-                              style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w600, color: catColor),
-                            )),
-                            DataCell(
-                              ConstrainedBox(
-                                constraints: const BoxConstraints(maxWidth: 300),
-                                child: Text(
-                                  log.description,
-                                  style: TextStyle(fontSize: 12.sp),
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 2,
-                                ),
+                          DataColumn(
+                            label: Text(
+                              'date'.tr(),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
-                          ]);
+                          ),
+                          DataColumn(
+                            label: Text(
+                              'time'.tr(),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              'user'.tr(),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              'category'.tr(),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              'action'.tr(),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              'details'.tr(),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                        rows: logs.map((log) {
+                          final normalizedCat =
+                              _categoryAliases[log.category] ?? log.category;
+                          final catColor = _getCategoryColor(log.category);
+
+                          return DataRow(
+                            cells: [
+                              DataCell(
+                                Text(
+                                  DateFormat(
+                                    'yyyy-MM-dd',
+                                  ).format(log.timestamp),
+                                  style: TextStyle(fontSize: 12.sp),
+                                ),
+                              ),
+                              DataCell(
+                                Text(
+                                  DateFormat('HH:mm:ss').format(log.timestamp),
+                                  style: TextStyle(
+                                    fontSize: 12.sp,
+                                    color: theme.colorScheme.onSurface
+                                        .withValues(alpha: 0.6),
+                                  ),
+                                ),
+                              ),
+                              DataCell(
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 12,
+                                      backgroundColor: theme.colorScheme.primary
+                                          .withValues(alpha: 0.1),
+                                      child: Text(
+                                        log.userId.isNotEmpty
+                                            ? log.userId[0].toUpperCase()
+                                            : '?',
+                                        style: TextStyle(
+                                          fontSize: 10.sp,
+                                          fontWeight: FontWeight.bold,
+                                          color: theme.colorScheme.primary,
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(width: 6.w),
+                                    Text(
+                                      log.userId,
+                                      style: TextStyle(fontSize: 12.sp),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              DataCell(
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: catColor.withValues(alpha: 0.12),
+                                    borderRadius: BorderRadius.circular(8.r),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        _getCategoryIcon(log.category),
+                                        size: 14,
+                                        color: catColor,
+                                      ),
+                                      SizedBox(width: 4.w),
+                                      Text(
+                                        normalizedCat.tr(),
+                                        style: TextStyle(
+                                          fontSize: 11.sp,
+                                          fontWeight: FontWeight.bold,
+                                          color: catColor,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              DataCell(
+                                Text(
+                                  _getActionLabel(log.action, isArabic),
+                                  style: TextStyle(
+                                    fontSize: 12.sp,
+                                    fontWeight: FontWeight.w600,
+                                    color: catColor,
+                                  ),
+                                ),
+                              ),
+                              DataCell(
+                                ConstrainedBox(
+                                  constraints: const BoxConstraints(
+                                    maxWidth: 300,
+                                  ),
+                                  child: Text(
+                                    log.description,
+                                    style: TextStyle(fontSize: 12.sp),
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 2,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
                         }).toList(),
                       ),
                     ),
