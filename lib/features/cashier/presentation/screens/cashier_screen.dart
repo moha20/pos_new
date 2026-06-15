@@ -427,8 +427,12 @@ class _CashierScreenState extends State<CashierScreen> {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: theme.colorScheme.primary,
+                    foregroundColor: Colors.white,
                   ),
-                  child: Text('confirm'.tr()),
+                  child: Text(
+                    'confirm'.tr(),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ),
               ],
             );
