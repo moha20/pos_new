@@ -646,7 +646,6 @@ class PrintService {
       buffer.writeln('- *المتبقي:* ${sale.amountRemaining.toStringAsFixed(2)} $currencySymbol');
       buffer.writeln();
       buffer.writeln('شكراً لتعاملكم معنا!');
-      final prefs = Gravity.find<SharedPreferences>();
       final whatsappPhone = prefs.getString('whatsapp_phone') ?? '';
       if (whatsappPhone.isNotEmpty) {
         buffer.writeln('للتواصل عبر واتساب: $whatsappPhone');
@@ -680,10 +679,9 @@ class PrintService {
       buffer.writeln('- *Remaining:* ${sale.amountRemaining.toStringAsFixed(2)} $currencySymbol');
       buffer.writeln();
       buffer.writeln('Thank you for shopping with us!');
-      final prefs = Gravity.find<SharedPreferences>();
-      final whatsappPhone = prefs.getString('whatsapp_phone') ?? '';
-      if (whatsappPhone.isNotEmpty) {
-        buffer.writeln('Contact us via WhatsApp: $whatsappPhone');
+      final whatsappPhoneEn = prefs.getString('whatsapp_phone') ?? '';
+      if (whatsappPhoneEn.isNotEmpty) {
+        buffer.writeln('Contact us via WhatsApp: $whatsappPhoneEn');
       }
     }
 

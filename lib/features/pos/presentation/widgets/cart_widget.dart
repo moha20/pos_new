@@ -104,6 +104,7 @@ class CartWidget extends StatelessWidget {
                       customers = custState.allCustomers;
                     }
                     return DropdownButtonFormField<CustomerEntity?>(
+                      isExpanded: true,
                       value: state.selectedCustomer == null 
                           ? null 
                           : customers.firstWhere((c) => c.id == state.selectedCustomer!.id, orElse: () => state.selectedCustomer!),
@@ -126,7 +127,10 @@ class CartWidget extends StatelessWidget {
                         ),
                         ...customers.map((c) => DropdownMenuItem<CustomerEntity?>(
                               value: c,
-                              child: Text('${c.name} (${_getTierBadgeText(c.priceLevel, isArabic)})'),
+                              child: Text(
+                                '${c.name} (${_getTierBadgeText(c.priceLevel, isArabic)})',
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             )),
                       ],
                       onChanged: (cust) {
