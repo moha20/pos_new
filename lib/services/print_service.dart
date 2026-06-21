@@ -633,6 +633,7 @@ class PrintService {
   Future<void> shareToWhatsApp(
     BuildContext context,
     SaleEntity sale, {
+    CustomerEntity? customer,
     String? customerName,
     String? customerPhone,
   }) async {
@@ -724,6 +725,20 @@ class PrintService {
                       ),
                     ],
                   ),
+                  SizedBox(height: 8.h),
+                  Text(
+                    shareViaWeb
+                        ? (isArabic
+                            ? '• سيتم فتح واتساب ويب وتنزيل الفاتورة بصيغة PDF لتتمكن من إرسالها.'
+                            : '• WhatsApp Web will open, and the PDF invoice will download for you to send.')
+                        : (isArabic
+                            ? '• سيتم فتح قائمة المشاركة بالنظام لمشاركة ملف الفاتورة PDF عبر تطبيق واتساب.'
+                            : '• The system share menu will open to share the PDF invoice via the WhatsApp app.'),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      fontSize: 10.sp,
+                      color: Colors.green.shade800,
+                    ),
+                  ),
                 ],
               ),
               actions: [
@@ -740,6 +755,7 @@ class PrintService {
                       resolvedCustName,
                       phoneController.text.trim(),
                       shareViaWeb,
+                      customer: customer,
                     );
                   },
                   style: ElevatedButton.styleFrom(
@@ -767,8 +783,9 @@ class PrintService {
     SaleEntity sale,
     String customerName,
     String phone,
-    bool shareViaWeb,
-  ) async {
+    bool shareViaWeb, {
+    CustomerEntity? customer,
+  }) async {
     final isArabic = context.locale.languageCode == 'ar';
     final currencySymbol = isArabic ? 'ج.م' : 'EGP';
 
@@ -885,63 +902,101 @@ class PrintService {
     // 2. Copy to clipboard automatically for convenient backup/manual pasting
     await Clipboard.setData(ClipboardData(text: textMsg));
 
-    // 3. Format phone number (remove leading +, remove spaces/dashes)
+    // 3. Generate PDF invoice bytes
+    await _loadFonts();
+    final logoImage = await _getLogoImage();
+    
+    if (!context.mounted) return;
+
+    final doc = await _buildInvoicePdf(
+      context,
+      sale,
+      companyNameText,
+      context.locale.languageCode,
+      logoImage,
+      customer: customer,
+    );
+    final pdfBytes = await doc.save();
+
+    // 4. Format phone number (remove leading +, remove spaces/dashes)
     var formattedPhone = phone.replaceAll(RegExp(r'[^0-9]'), '');
     if (formattedPhone.startsWith('01') && formattedPhone.length == 11) {
       formattedPhone = '2$formattedPhone';
     }
 
-    // 4. Construct WhatsApp url
-    String urlString;
-    final encodedText = Uri.encodeComponent(textMsg);
-
+    // 5. Perform sharing action based on choice
     if (shareViaWeb) {
+      // For WhatsApp Web, open the browser chat URL
+      String urlString;
+      final encodedText = Uri.encodeComponent(textMsg);
       if (formattedPhone.isNotEmpty) {
         urlString =
             'https://web.whatsapp.com/send?phone=$formattedPhone&text=$encodedText';
       } else {
         urlString = 'https://web.whatsapp.com/send?text=$encodedText';
       }
-    } else {
-      if (formattedPhone.isNotEmpty) {
-        urlString = 'https://wa.me/$formattedPhone?text=$encodedText';
-      } else {
-        urlString = 'https://wa.me/?text=$encodedText';
-      }
-    }
 
-    final uri = Uri.parse(urlString);
+      final uri = Uri.parse(urlString);
 
-    try {
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      } else {
-        throw 'Could not launch $urlString';
-      }
+      try {
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        } else {
+          throw 'Could not launch $urlString';
+        }
+      } catch (_) {}
+
+      // Download/Share the PDF file so they can attach it
+      await Printing.sharePdf(
+        bytes: pdfBytes,
+        filename: 'invoice_${sale.invoiceNumber}.pdf',
+      );
+
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
               isArabic
-                  ? 'تم نسخ تفاصيل الفاتورة وتوجيهك إلى واتساب...'
-                  : 'Invoice summary copied to clipboard and opening WhatsApp...',
+                  ? 'تم فتح واتساب ويب وتنزيل الفاتورة PDF. يمكنك إرفاق الملف ولصق النص المنسوخ.'
+                  : 'WhatsApp Web opened & PDF invoice downloaded. You can attach the PDF and paste the text.',
             ),
             backgroundColor: Colors.green,
           ),
         );
       }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              isArabic
-                  ? 'تعذر فتح واتساب تلقائياً، ولكن تم نسخ الفاتورة للحافظة.'
-                  : 'Could not open WhatsApp, but invoice summary was copied to clipboard.',
-            ),
-            backgroundColor: Colors.orange,
-          ),
+    } else {
+      // For WhatsApp App (direct PDF sharing via OS share sheet)
+      try {
+        await Printing.sharePdf(
+          bytes: pdfBytes,
+          filename: 'invoice_${sale.invoiceNumber}.pdf',
         );
+
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                isArabic
+                    ? 'جاري فتح قائمة المشاركة بالنظام لمشاركة ملف الفاتورة PDF...'
+                    : 'Opening system share menu to share PDF invoice...',
+              ),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                isArabic
+                    ? 'فشل في فتح قائمة المشاركة. تم نسخ النص للحافظة.'
+                    : 'Could not open share menu, but invoice text was copied to clipboard.',
+              ),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
       }
     }
   }

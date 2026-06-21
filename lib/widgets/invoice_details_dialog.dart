@@ -6,6 +6,7 @@ import '../services/print_service.dart';
 import '../core/di/di.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../features/customers/presentation/bloc/customer_bloc.dart';
+import '../features/customers/domain/entities/customer_entity.dart';
 
 void showInvoiceDetailsDialog(
   BuildContext context,
@@ -246,6 +247,7 @@ void showInvoiceDetailsDialog(
                             onPressed: () async {
                               final printService = Gravity.find<PrintService>();
                               String? customerPhone;
+                              CustomerEntity? customerEntity;
                               if (sale.customerId != null) {
                                 try {
                                   final customerBloc = context.read<CustomerBloc>();
@@ -253,12 +255,14 @@ void showInvoiceDetailsDialog(
                                     final customers = (customerBloc.state as CustomerLoaded).allCustomers;
                                     final match = customers.firstWhere((c) => c.id == sale.customerId);
                                     customerPhone = match.phone;
+                                    customerEntity = match;
                                   }
                                 } catch (_) {}
                               }
                               await printService.shareToWhatsApp(
                                 context,
                                 sale,
+                                customer: customerEntity,
                                 customerName: customerName,
                                 customerPhone: customerPhone,
                               );

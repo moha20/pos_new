@@ -1185,6 +1185,7 @@ class CartWidget extends StatelessWidget {
                   printService.shareToWhatsApp(
                     context,
                     draftSale,
+                    customer: state.selectedCustomer,
                     customerName: state.selectedCustomer?.name,
                     customerPhone: state.selectedCustomer?.phone,
                   );

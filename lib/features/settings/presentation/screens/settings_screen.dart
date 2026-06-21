@@ -41,7 +41,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final _companyController = TextEditingController();
   final _taxController = TextEditingController();
   final _printerController = TextEditingController();
-  final _whatsappController = TextEditingController();
   final _addressController = TextEditingController();
   final _phoneController = TextEditingController();
   final _distributorController = TextEditingController();
@@ -81,7 +80,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _companyController.text = state.companyName;
               _taxController.text = state.taxPercent.toString();
               _printerController.text = state.printerIp;
-              _whatsappController.text = state.whatsappPhone;
               _addressController.text = state.companyAddress;
               _phoneController.text = state.companyPhone;
               _distributorController.text = state.companyDistributor;
@@ -157,19 +155,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 ),
                               ],
                             ),
-                            SizedBox(height: 12.h),
-                            TextFormField(
-                              controller: _whatsappController,
-                              enabled: isAdmin,
-                              keyboardType: TextInputType.phone,
-                              decoration: InputDecoration(
-                                labelText: 'whatsapp_phone'.tr(),
-                                hintText: 'e.g. 201001234567',
-                                prefixIcon: const Icon(Icons.phone),
-                                border: const OutlineInputBorder(),
-                              ),
-                            ),
-                            SizedBox(height: 12.h),
+                             SizedBox(height: 12.h),
                             TextFormField(
                               controller: _addressController,
                               enabled: isAdmin,
@@ -295,8 +281,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                                         _selectedMode ??
                                                         'light',
                                                     whatsappPhone:
-                                                        _whatsappController
-                                                            .text,
+                                                        state.whatsappPhone,
                                                     companyAddress:
                                                         _addressController.text,
                                                     companyPhone:
@@ -383,8 +368,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                                         'copper',
                                                     themeMode: val,
                                                     whatsappPhone:
-                                                        _whatsappController
-                                                            .text,
+                                                        state.whatsappPhone,
                                                     companyAddress:
                                                         _addressController.text,
                                                     companyPhone:
@@ -415,7 +399,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                         printerIp: _printerController.text,
                                         themeType: _selectedTheme ?? 'copper',
                                         themeMode: _selectedMode ?? 'light',
-                                        whatsappPhone: _whatsappController.text,
+                                        whatsappPhone: state.whatsappPhone,
                                         companyAddress: _addressController.text,
                                         companyPhone: _phoneController.text,
                                         companyDistributor:

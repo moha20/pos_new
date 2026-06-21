@@ -5,6 +5,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/sales_history_cubit.dart';
 import '../../../customers/presentation/bloc/customer_bloc.dart';
+import '../../../customers/domain/entities/customer_entity.dart';
 import '../../../../widgets/responsive_layout.dart';
 import '../../../../widgets/stat_card.dart';
 import '../../../../core/di/di.dart';
@@ -248,6 +249,7 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
                                                 final printService =
                                                     Gravity.find<PrintService>();
                                                 String? customerPhone;
+                                                CustomerEntity? customerEntity;
                                                 if (sale.customerId != null) {
                                                   try {
                                                     final customerBloc = context.read<CustomerBloc>();
@@ -255,12 +257,14 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
                                                       final customers = (customerBloc.state as CustomerLoaded).allCustomers;
                                                       final match = customers.firstWhere((c) => c.id == sale.customerId);
                                                       customerPhone = match.phone;
+                                                      customerEntity = match;
                                                     }
                                                   } catch (_) {}
                                                 }
                                                 await printService.shareToWhatsApp(
                                                   context,
                                                   sale,
+                                                  customer: customerEntity,
                                                   customerName: customerName,
                                                   customerPhone: customerPhone,
                                                 );
