@@ -1,0 +1,15 @@
+{
+  "name": "almohandis_pos",
+  "main": "index.html",
+  "version": "1.0.0",
+  "window": {
+    "title": "Al-Mohandis POS",
+    "icon": "favicon.png",
+    "toolbar": false,
+    "width": 1280,
+    "height": 800,
+    "position": "center",
+    "resizable": true,
+    "frame": true
+  }
+}
