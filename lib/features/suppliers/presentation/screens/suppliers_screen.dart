@@ -22,11 +22,21 @@ class SuppliersScreen extends StatefulWidget {
 class _SuppliersScreenState extends State<SuppliersScreen> {
   final _searchController = TextEditingController();
   final Set<String> _selectedSupplierIds = {};
+  final ScrollController _verticalScrollController = ScrollController();
+  final ScrollController _horizontalScrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     context.read<SupplierBloc>().add(LoadSuppliers());
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _verticalScrollController.dispose();
+    _horizontalScrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -85,14 +95,14 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                   child: LayoutBuilder(
                     builder: (context, constraints) {
-                      final crossAxisCount = constraints.maxWidth > 900 ? 3 : 1;
+                      final crossAxisCount = constraints.maxWidth > 750 ? 3 : (constraints.maxWidth > 450 ? 2 : 1);
                       return GridView.count(
                         crossAxisCount: crossAxisCount,
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         crossAxisSpacing: 16,
                         mainAxisSpacing: 16,
-                        childAspectRatio: crossAxisCount == 3 ? 2.8 : 4.0,
+                        childAspectRatio: crossAxisCount == 3 ? 2.8 : (crossAxisCount == 2 ? 3.5 : 5.0),
                         children: [
                           StatCard(
                             title: 'total_orders'.tr(),
@@ -151,91 +161,101 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
                     return Center(child: Text('no_data'.tr()));
                   }
 
-                  return SingleChildScrollView(
-                    scrollDirection: Axis.vertical,
+                  return Scrollbar(
+                    controller: _verticalScrollController,
+                    thumbVisibility: true,
                     child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: DataTable(
-                        showCheckboxColumn: true,
-                        columns: [
-                          DataColumn(label: Text('supplier_name'.tr())),
-                          DataColumn(label: Text('phone'.tr())),
-                          DataColumn(label: Text('company_name'.tr())),
-                          DataColumn(label: Text('total_orders'.tr())),
-                          DataColumn(label: Text('paid'.tr())),
-                          DataColumn(label: Text('remaining'.tr())),
-                          DataColumn(label: Text('settings'.tr())),
-                        ],
-                        rows: suppliers.map((s) {
-                          return DataRow(
-                            selected: _selectedSupplierIds.contains(s.id),
-                            onSelectChanged: (selected) {
-                              setState(() {
-                                if (selected == true) {
-                                  _selectedSupplierIds.add(s.id);
-                                } else {
-                                  _selectedSupplierIds.remove(s.id);
-                                }
-                              });
-                            },
-                            cells: [
-                              DataCell(Text(s.name)),
-                              DataCell(Text(s.phone)),
-                              DataCell(Text(s.company)),
-                              DataCell(Text('${s.totalOrders.toStringAsFixed(2)} EGP')),
-                              DataCell(Text('${(s.totalOrders - s.balance).toStringAsFixed(2)} EGP')),
-                              DataCell(
-                                Text(
-                                  '${s.balance.toStringAsFixed(2)} EGP',
-                                  style: TextStyle(
-                                    color: s.balance > 0 ? Colors.red : Colors.green,
-                                    fontWeight: s.balance > 0 ? FontWeight.bold : FontWeight.normal,
-                                  ),
-                                ),
-                              ),
-                              DataCell(
-                                Row(
-                                  children: [
-                                    IconButton(
-                                      icon: const Icon(Icons.history, color: Colors.teal),
-                                      tooltip: context.locale.languageCode == 'ar' ? 'سجل المعاملات' : 'History',
-                                      onPressed: () => _showSupplierHistory(context, s),
-                                    ),
-                                    if (s.balance > 0)
-                                      IconButton(
-                                        icon: const Icon(Icons.payment, color: Colors.green),
-                                        tooltip: 'pay_balance'.tr(),
-                                        onPressed: () {
-                                          showDialog(
-                                            context: context,
-                                            builder: (_) => PayBalanceDialog(
-                                              type: 'supplier',
-                                              targetId: s.id,
-                                              targetName: s.name,
-                                              currentBalance: s.balance,
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                    IconButton(
-                                      icon: const Icon(Icons.edit, color: Colors.blue),
-                                      onPressed: () {
-                                        showDialog(
-                                          context: context,
-                                          builder: (context) => SupplierForm(supplier: s),
-                                        );
-                                      },
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(Icons.delete, color: Colors.red),
-                                      onPressed: () => _confirmDelete(context, s.id),
-                                    ),
-                                  ],
-                                ),
-                              ),
+                      controller: _verticalScrollController,
+                      scrollDirection: Axis.vertical,
+                      child: Scrollbar(
+                        controller: _horizontalScrollController,
+                        thumbVisibility: true,
+                        child: SingleChildScrollView(
+                          controller: _horizontalScrollController,
+                          scrollDirection: Axis.horizontal,
+                          child: DataTable(
+                            showCheckboxColumn: true,
+                            columns: [
+                              DataColumn(label: Text('supplier_name'.tr())),
+                              DataColumn(label: Text('phone'.tr())),
+                              DataColumn(label: Text('company_name'.tr())),
+                              DataColumn(label: Text('total_orders'.tr())),
+                              DataColumn(label: Text('paid'.tr())),
+                              DataColumn(label: Text('remaining'.tr())),
+                              DataColumn(label: Text('settings'.tr())),
                             ],
-                          );
-                        }).toList(),
+                            rows: suppliers.map((s) {
+                              return DataRow(
+                                selected: _selectedSupplierIds.contains(s.id),
+                                onSelectChanged: (selected) {
+                                  setState(() {
+                                    if (selected == true) {
+                                      _selectedSupplierIds.add(s.id);
+                                    } else {
+                                      _selectedSupplierIds.remove(s.id);
+                                    }
+                                  });
+                                },
+                                cells: [
+                                  DataCell(Text(s.name)),
+                                  DataCell(Text(s.phone)),
+                                  DataCell(Text(s.company)),
+                                  DataCell(Text('${s.totalOrders.toStringAsFixed(2)} EGP')),
+                                  DataCell(Text('${(s.totalOrders - s.balance).toStringAsFixed(2)} EGP')),
+                                  DataCell(
+                                    Text(
+                                      '${s.balance.toStringAsFixed(2)} EGP',
+                                      style: TextStyle(
+                                        color: s.balance > 0 ? Colors.red : Colors.green,
+                                        fontWeight: s.balance > 0 ? FontWeight.bold : FontWeight.normal,
+                                      ),
+                                    ),
+                                  ),
+                                  DataCell(
+                                    Row(
+                                      children: [
+                                        IconButton(
+                                          icon: const Icon(Icons.history, color: Colors.teal),
+                                          tooltip: context.locale.languageCode == 'ar' ? 'سجل المعاملات' : 'History',
+                                          onPressed: () => _showSupplierHistory(context, s),
+                                        ),
+                                        if (s.balance > 0)
+                                          IconButton(
+                                            icon: const Icon(Icons.payment, color: Colors.green),
+                                            tooltip: 'pay_balance'.tr(),
+                                            onPressed: () {
+                                              showDialog(
+                                                context: context,
+                                                builder: (_) => PayBalanceDialog(
+                                                  type: 'supplier',
+                                                  targetId: s.id,
+                                                  targetName: s.name,
+                                                  currentBalance: s.balance,
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                        IconButton(
+                                          icon: const Icon(Icons.edit, color: Colors.blue),
+                                          onPressed: () {
+                                            showDialog(
+                                              context: context,
+                                              builder: (context) => SupplierForm(supplier: s),
+                                            );
+                                          },
+                                        ),
+                                        IconButton(
+                                          icon: const Icon(Icons.delete, color: Colors.red),
+                                          onPressed: () => _confirmDelete(context, s.id),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              );
+                            }).toList(),
+                          ),
+                        ),
                       ),
                     ),
                   );

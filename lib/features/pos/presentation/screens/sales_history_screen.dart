@@ -21,11 +21,21 @@ class SalesHistoryScreen extends StatefulWidget {
 
 class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
   final _searchController = TextEditingController();
+  final ScrollController _verticalScrollController = ScrollController();
+  final ScrollController _horizontalScrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     context.read<SalesHistoryCubit>().loadSales();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _verticalScrollController.dispose();
+    _horizontalScrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -118,164 +128,174 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
                 Expanded(
                   child: sales.isEmpty
                       ? Center(child: Text('no_data'.tr()))
-                      : SingleChildScrollView(
-                          scrollDirection: Axis.vertical,
+                      : Scrollbar(
+                          controller: _verticalScrollController,
+                          thumbVisibility: true,
                           child: SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16.0,
-                              ),
-                              child: DataTable(
-                                showCheckboxColumn: false,
-                                columns: [
-                                  DataColumn(
-                                    label: Text('invoice_number'.tr()),
+                            controller: _verticalScrollController,
+                            scrollDirection: Axis.vertical,
+                            child: Scrollbar(
+                              controller: _horizontalScrollController,
+                              thumbVisibility: true,
+                              child: SingleChildScrollView(
+                                controller: _horizontalScrollController,
+                                scrollDirection: Axis.horizontal,
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16.0,
                                   ),
-                                  DataColumn(label: Text('customer_name'.tr())),
-                                  DataColumn(label: Text('date'.tr())),
-                                  DataColumn(label: Text('total'.tr())),
-                                  DataColumn(label: Text('paid'.tr())),
-                                  DataColumn(label: Text('remaining'.tr())),
-                                  DataColumn(
-                                    label: Text('payment_method'.tr()),
-                                  ),
-                                  DataColumn(label: Text('settings'.tr())),
-                                ],
-                                rows: sales.map((sale) {
-                                  // Get customer name
-                                  final customerBloc = context
-                                      .read<CustomerBloc>();
-                                  String customerName = isArabic
-                                      ? 'عميل نقدي'
-                                      : 'Cash Customer';
-                                  if (sale.customerId != null &&
-                                      customerBloc.state is CustomerLoaded) {
-                                    final customers =
-                                        (customerBloc.state as CustomerLoaded)
-                                            .allCustomers;
-                                    try {
-                                      final match = customers.firstWhere(
-                                        (c) => c.id == sale.customerId,
-                                      );
-                                      customerName = match.name;
-                                    } catch (_) {}
-                                  }
-
-                                  // Date format
-                                  final formattedDate = DateFormat(
-                                    'yyyy-MM-dd HH:mm',
-                                  ).format(sale.createdAt);
-
-                                  return DataRow(
-                                    onSelectChanged: (selected) {
-                                      if (selected != null) {
-                                        showInvoiceDetailsDialog(
-                                          context,
-                                          sale,
-                                          customerName,
-                                        );
-                                      }
-                                    },
-                                    cells: [
-                                      DataCell(Text(sale.invoiceNumber)),
-                                      DataCell(Text(customerName)),
-                                      DataCell(Text(formattedDate)),
-                                      DataCell(
-                                        Text(formatCurrency(sale.total)),
+                                  child: DataTable(
+                                    showCheckboxColumn: false,
+                                    columns: [
+                                      DataColumn(
+                                        label: Text('invoice_number'.tr()),
                                       ),
-                                      DataCell(
-                                        Text(formatCurrency(sale.amountPaid)),
+                                      DataColumn(label: Text('customer_name'.tr())),
+                                      DataColumn(label: Text('date'.tr())),
+                                      DataColumn(label: Text('total'.tr())),
+                                      DataColumn(label: Text('paid'.tr())),
+                                      DataColumn(label: Text('remaining'.tr())),
+                                      DataColumn(
+                                        label: Text('payment_method'.tr()),
                                       ),
-                                      DataCell(
-                                        Text(
-                                          formatCurrency(sale.amountRemaining),
-                                          style: TextStyle(
-                                            color: sale.amountRemaining > 0
-                                                ? Colors.red
-                                                : Colors.green,
-                                            fontWeight: sale.amountRemaining > 0
-                                                ? FontWeight.bold
-                                                : FontWeight.normal,
-                                          ),
-                                        ),
-                                      ),
-                                      DataCell(Text(sale.paymentMethod.tr())),
-                                      DataCell(
-                                        Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            IconButton(
-                                              icon: const Icon(
-                                                Icons.print,
-                                                color: Colors.blue,
-                                              ),
-                                              tooltip: 'print'.tr(),
-                                              onPressed: () async {
-                                                final printService =
-                                                    Gravity.find<PrintService>();
-                                                await printService.printInvoice(
-                                                  context,
-                                                  sale,
-                                                  'Al Mohands Electrical Tools / المهندس للأدوات الكهربائية',
-                                                  context.locale.languageCode,
-                                                );
-                                              },
-                                            ),
-                                            IconButton(
-                                              icon: const Icon(
-                                                Icons.share,
-                                                color: Colors.teal,
-                                              ),
-                                              tooltip: 'share'.tr(),
-                                              onPressed: () async {
-                                                final printService =
-                                                    Gravity.find<PrintService>();
-                                                await printService.shareInvoice(
-                                                  context,
-                                                  sale,
-                                                  'Al Mohands Electrical Tools / المهندس للأدوات الكهربائية',
-                                                  context.locale.languageCode,
-                                                );
-                                              },
-                                            ),
-                                            IconButton(
-                                              icon: const Icon(
-                                                Icons.chat_rounded,
-                                                color: Colors.green,
-                                              ),
-                                              tooltip: 'WhatsApp',
-                                              onPressed: () async {
-                                                final printService =
-                                                    Gravity.find<PrintService>();
-                                                String? customerPhone;
-                                                CustomerEntity? customerEntity;
-                                                if (sale.customerId != null) {
-                                                  try {
-                                                    final customerBloc = context.read<CustomerBloc>();
-                                                    if (customerBloc.state is CustomerLoaded) {
-                                                      final customers = (customerBloc.state as CustomerLoaded).allCustomers;
-                                                      final match = customers.firstWhere((c) => c.id == sale.customerId);
-                                                      customerPhone = match.phone;
-                                                      customerEntity = match;
-                                                    }
-                                                  } catch (_) {}
-                                                }
-                                                await printService.shareToWhatsApp(
-                                                  context,
-                                                  sale,
-                                                  customer: customerEntity,
-                                                  customerName: customerName,
-                                                  customerPhone: customerPhone,
-                                                );
-                                              },
-                                            ),
-                                          ],
-                                        ),
-                                      ),
+                                      DataColumn(label: Text('settings'.tr())),
                                     ],
-                                  );
-                                }).toList(),
+                                    rows: sales.map((sale) {
+                                      // Get customer name
+                                      final customerBloc = context
+                                          .read<CustomerBloc>();
+                                      String customerName = isArabic
+                                          ? 'عميل نقدي'
+                                          : 'Cash Customer';
+                                      if (sale.customerId != null &&
+                                          customerBloc.state is CustomerLoaded) {
+                                        final customers =
+                                            (customerBloc.state as CustomerLoaded)
+                                                .allCustomers;
+                                        try {
+                                          final match = customers.firstWhere(
+                                            (c) => c.id == sale.customerId,
+                                          );
+                                          customerName = match.name;
+                                        } catch (_) {}
+                                      }
+
+                                      // Date format
+                                      final formattedDate = DateFormat(
+                                        'yyyy-MM-dd HH:mm',
+                                      ).format(sale.createdAt);
+
+                                      return DataRow(
+                                        onSelectChanged: (selected) {
+                                          if (selected != null) {
+                                            showInvoiceDetailsDialog(
+                                              context,
+                                              sale,
+                                              customerName,
+                                            );
+                                          }
+                                        },
+                                        cells: [
+                                          DataCell(Text(sale.invoiceNumber)),
+                                          DataCell(Text(customerName)),
+                                          DataCell(Text(formattedDate)),
+                                          DataCell(
+                                            Text(formatCurrency(sale.total)),
+                                          ),
+                                          DataCell(
+                                            Text(formatCurrency(sale.amountPaid)),
+                                          ),
+                                          DataCell(
+                                            Text(
+                                              formatCurrency(sale.amountRemaining),
+                                              style: TextStyle(
+                                                color: sale.amountRemaining > 0
+                                                    ? Colors.red
+                                                    : Colors.green,
+                                                fontWeight: sale.amountRemaining > 0
+                                                    ? FontWeight.bold
+                                                    : FontWeight.normal,
+                                              ),
+                                            ),
+                                          ),
+                                          DataCell(Text(sale.paymentMethod.tr())),
+                                          DataCell(
+                                            Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                IconButton(
+                                                  icon: const Icon(
+                                                    Icons.print,
+                                                    color: Colors.blue,
+                                                  ),
+                                                  tooltip: 'print'.tr(),
+                                                  onPressed: () async {
+                                                    final printService =
+                                                        Gravity.find<PrintService>();
+                                                    await printService.printInvoice(
+                                                      context,
+                                                      sale,
+                                                      'Al Mohands Electrical Tools / المهندس للأدوات الكهربائية',
+                                                      context.locale.languageCode,
+                                                    );
+                                                  },
+                                                ),
+                                                IconButton(
+                                                  icon: const Icon(
+                                                    Icons.share,
+                                                    color: Colors.teal,
+                                                  ),
+                                                  tooltip: 'share'.tr(),
+                                                  onPressed: () async {
+                                                    final printService =
+                                                        Gravity.find<PrintService>();
+                                                    await printService.shareInvoice(
+                                                      context,
+                                                      sale,
+                                                      'Al Mohands Electrical Tools / المهندس للأدوات الكهربائية',
+                                                      context.locale.languageCode,
+                                                    );
+                                                  },
+                                                ),
+                                                IconButton(
+                                                  icon: const Icon(
+                                                    Icons.chat_rounded,
+                                                    color: Colors.green,
+                                                  ),
+                                                  tooltip: 'WhatsApp',
+                                                  onPressed: () async {
+                                                    final printService =
+                                                        Gravity.find<PrintService>();
+                                                    String? customerPhone;
+                                                    CustomerEntity? customerEntity;
+                                                    if (sale.customerId != null) {
+                                                      try {
+                                                        final customerBloc = context.read<CustomerBloc>();
+                                                        if (customerBloc.state is CustomerLoaded) {
+                                                          final customers = (customerBloc.state as CustomerLoaded).allCustomers;
+                                                          final match = customers.firstWhere((c) => c.id == sale.customerId);
+                                                          customerPhone = match.phone;
+                                                          customerEntity = match;
+                                                        }
+                                                      } catch (_) {}
+                                                    }
+                                                    await printService.shareToWhatsApp(
+                                                      context,
+                                                      sale,
+                                                      customer: customerEntity,
+                                                      customerName: customerName,
+                                                      customerPhone: customerPhone,
+                                                    );
+                                                  },
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      );
+                                    }).toList(),
+                                  ),
+                                ),
                               ),
                             ),
                           ),

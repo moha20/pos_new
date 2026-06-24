@@ -16,10 +16,20 @@ class ReportsScreen extends StatefulWidget {
 }
 
 class _ReportsScreenState extends State<ReportsScreen> {
+  final ScrollController _salesScrollController = ScrollController();
+  final ScrollController _expensesScrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
     context.read<ReportsBloc>().add(LoadReportsEvent());
+  }
+
+  @override
+  void dispose() {
+    _salesScrollController.dispose();
+    _expensesScrollController.dispose();
+    super.dispose();
   }
 
   String getLocalizedCategory(String dbCategory) {
@@ -131,9 +141,13 @@ class _ReportsScreenState extends State<ReportsScreen> {
   }
 
   Widget _buildSalesTab(ReportsLoaded state, ThemeData theme, bool isArabic, double screenWidth) {
-    return SingleChildScrollView(
-      padding: EdgeInsets.all(16.0.r),
-      child: Column(
+    return Scrollbar(
+      controller: _salesScrollController,
+      thumbVisibility: true,
+      child: SingleChildScrollView(
+        controller: _salesScrollController,
+        padding: EdgeInsets.all(16.0.r),
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // KPI cards grid
@@ -212,14 +226,19 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildExpensesTab(ReportsLoaded state, ThemeData theme, bool isArabic, double screenWidth) {
     final netProfit = state.totalRevenue - state.totalExpenses;
-    return SingleChildScrollView(
-      padding: EdgeInsets.all(16.0.r),
-      child: Column(
+    return Scrollbar(
+      controller: _expensesScrollController,
+      thumbVisibility: true,
+      child: SingleChildScrollView(
+        controller: _expensesScrollController,
+        padding: EdgeInsets.all(16.0.r),
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // KPI cards grid for Expenses & Profit
@@ -292,8 +311,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildBarChart(ReportsLoaded state, ThemeData theme, bool isArabic) {
     final history = state.dailySalesHistory.entries.toList();

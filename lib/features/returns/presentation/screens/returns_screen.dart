@@ -114,6 +114,7 @@ class _SalesReturnTabState extends State<SalesReturnTab> {
 
   final _customerSearchController = TextEditingController();
   final _productSearchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void dispose() {
@@ -122,6 +123,7 @@ class _SalesReturnTabState extends State<SalesReturnTab> {
     _noteController.dispose();
     _customerSearchController.dispose();
     _productSearchController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -167,9 +169,13 @@ class _SalesReturnTabState extends State<SalesReturnTab> {
         }
 
         if (state is ReturnsLoaded) {
-          return SingleChildScrollView(
-            padding: EdgeInsets.all(24.0.r),
-            child: Form(
+          return Scrollbar(
+            controller: _scrollController,
+            thumbVisibility: true,
+            child: SingleChildScrollView(
+              controller: _scrollController,
+              padding: EdgeInsets.all(24.0.r),
+              child: Form(
               key: _formKey,
               child: Center(
                 child: Container(
@@ -437,7 +443,8 @@ class _SalesReturnTabState extends State<SalesReturnTab> {
                 ),
               ),
             ),
-          );
+          ),
+        );
         }
 
         return const SizedBox.shrink();
@@ -466,6 +473,7 @@ class _PurchaseReturnTabState extends State<PurchaseReturnTab> {
 
   final _supplierSearchController = TextEditingController();
   final _productSearchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void dispose() {
@@ -474,6 +482,7 @@ class _PurchaseReturnTabState extends State<PurchaseReturnTab> {
     _noteController.dispose();
     _supplierSearchController.dispose();
     _productSearchController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -519,9 +528,13 @@ class _PurchaseReturnTabState extends State<PurchaseReturnTab> {
         }
 
         if (state is ReturnsLoaded) {
-          return SingleChildScrollView(
-            padding: EdgeInsets.all(24.0.r),
-            child: Form(
+          return Scrollbar(
+            controller: _scrollController,
+            thumbVisibility: true,
+            child: SingleChildScrollView(
+              controller: _scrollController,
+              padding: EdgeInsets.all(24.0.r),
+              child: Form(
               key: _formKey,
               child: Center(
                 child: Container(
@@ -782,7 +795,8 @@ class _PurchaseReturnTabState extends State<PurchaseReturnTab> {
                 ),
               ),
             ),
-          );
+          ),
+        );
         }
 
         return const SizedBox.shrink();

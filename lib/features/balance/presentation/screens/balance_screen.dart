@@ -19,6 +19,10 @@ class BalanceScreen extends StatefulWidget {
 class _BalanceScreenState extends State<BalanceScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  final ScrollController _customerVerticalController = ScrollController();
+  final ScrollController _customerHorizontalController = ScrollController();
+  final ScrollController _supplierVerticalController = ScrollController();
+  final ScrollController _supplierHorizontalController = ScrollController();
 
   @override
   void initState() {
@@ -32,6 +36,10 @@ class _BalanceScreenState extends State<BalanceScreen>
   @override
   void dispose() {
     _tabController.dispose();
+    _customerVerticalController.dispose();
+    _customerHorizontalController.dispose();
+    _supplierVerticalController.dispose();
+    _supplierHorizontalController.dispose();
     super.dispose();
   }
 
@@ -149,15 +157,14 @@ class _BalanceScreenState extends State<BalanceScreen>
                   ),
                   child: LayoutBuilder(
                     builder: (context, constraints) {
-                      final crossAxisCount =
-                          constraints.maxWidth > 900 ? 3 : 1;
+                      final crossAxisCount = constraints.maxWidth > 750 ? 3 : (constraints.maxWidth > 450 ? 2 : 1);
                       return GridView.count(
                         crossAxisCount: crossAxisCount,
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         crossAxisSpacing: 16,
                         mainAxisSpacing: 16,
-                        childAspectRatio: crossAxisCount == 3 ? 2.8 : 4.0,
+                        childAspectRatio: crossAxisCount == 3 ? 2.8 : (crossAxisCount == 2 ? 3.5 : 5.0),
                         children: [
                           StatCard(
                             title: 'total_customer_debt'.tr(),
@@ -229,78 +236,88 @@ class _BalanceScreenState extends State<BalanceScreen>
             );
           }
 
-          return SingleChildScrollView(
-            scrollDirection: Axis.vertical,
+          return Scrollbar(
+            controller: _customerVerticalController,
+            thumbVisibility: true,
             child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: DataTable(
-                showCheckboxColumn: false,
-                columns: [
-                  DataColumn(label: Text('customer_name'.tr())),
-                  DataColumn(label: Text('phone'.tr())),
-                  DataColumn(label: Text('total_purchases'.tr())),
-                  DataColumn(label: Text('paid'.tr())),
-                  DataColumn(label: Text('remaining'.tr())),
-                  DataColumn(label: Text('pay'.tr())),
-                ],
-                rows: debtors.map((c) {
-                  return DataRow(
-                    cells: [
-                      DataCell(Text(
-                        c.name,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      )),
-                      DataCell(Text(c.phone)),
-                      DataCell(Text(formatCurrency(c.totalPurchases))),
-                      DataCell(Text(
-                        formatCurrency(c.totalPurchases - c.balance),
-                        style: const TextStyle(color: Colors.green),
-                      )),
-                      DataCell(Text(
-                        formatCurrency(c.balance),
-                        style: const TextStyle(
-                          color: Colors.red,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      )),
-                      DataCell(
-                        ElevatedButton.icon(
-                          onPressed: () {
-                            showDialog(
-                              context: context,
-                              builder: (_) => PayBalanceDialog(
-                                type: 'customer',
-                                targetId: c.id,
-                                targetName: c.name,
-                                currentBalance: c.balance,
-                              ),
-                            );
-                          },
-                          icon: const Icon(Icons.payment, size: 16, color: Colors.white),
-                          label: Text(
-                            'pay'.tr(),
-                            style: TextStyle(
-                              fontSize: 11.sp,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
-                            foregroundColor: Colors.white,
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 12.w,
-                              vertical: 6.h,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8.r),
-                            ),
-                          ),
-                        ),
-                      ),
+              controller: _customerVerticalController,
+              scrollDirection: Axis.vertical,
+              child: Scrollbar(
+                controller: _customerHorizontalController,
+                thumbVisibility: true,
+                child: SingleChildScrollView(
+                  controller: _customerHorizontalController,
+                  scrollDirection: Axis.horizontal,
+                  child: DataTable(
+                    showCheckboxColumn: false,
+                    columns: [
+                      DataColumn(label: Text('customer_name'.tr())),
+                      DataColumn(label: Text('phone'.tr())),
+                      DataColumn(label: Text('total_purchases'.tr())),
+                      DataColumn(label: Text('paid'.tr())),
+                      DataColumn(label: Text('remaining'.tr())),
+                      DataColumn(label: Text('pay'.tr())),
                     ],
-                  );
-                }).toList(),
+                    rows: debtors.map((c) {
+                      return DataRow(
+                        cells: [
+                          DataCell(Text(
+                            c.name,
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          )),
+                          DataCell(Text(c.phone)),
+                          DataCell(Text(formatCurrency(c.totalPurchases))),
+                          DataCell(Text(
+                            formatCurrency(c.totalPurchases - c.balance),
+                            style: const TextStyle(color: Colors.green),
+                          )),
+                          DataCell(Text(
+                            formatCurrency(c.balance),
+                            style: const TextStyle(
+                              color: Colors.red,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          )),
+                          DataCell(
+                            ElevatedButton.icon(
+                              onPressed: () {
+                                showDialog(
+                                  context: context,
+                                  builder: (_) => PayBalanceDialog(
+                                    type: 'customer',
+                                    targetId: c.id,
+                                    targetName: c.name,
+                                    currentBalance: c.balance,
+                                  ),
+                                );
+                              },
+                              icon: const Icon(Icons.payment, size: 16, color: Colors.white),
+                              label: Text(
+                                'pay'.tr(),
+                                style: TextStyle(
+                                  fontSize: 11.sp,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green,
+                                foregroundColor: Colors.white,
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 12.w,
+                                  vertical: 6.h,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8.r),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    }).toList(),
+                  ),
+                ),
               ),
             ),
           );
@@ -349,80 +366,90 @@ class _BalanceScreenState extends State<BalanceScreen>
             );
           }
 
-          return SingleChildScrollView(
-            scrollDirection: Axis.vertical,
+          return Scrollbar(
+            controller: _supplierVerticalController,
+            thumbVisibility: true,
             child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: DataTable(
-                showCheckboxColumn: false,
-                columns: [
-                  DataColumn(label: Text('supplier_name'.tr())),
-                  DataColumn(label: Text('phone'.tr())),
-                  DataColumn(label: Text('company_name'.tr())),
-                  DataColumn(label: Text('total_orders'.tr())),
-                  DataColumn(label: Text('paid'.tr())),
-                  DataColumn(label: Text('remaining'.tr())),
-                  DataColumn(label: Text('pay'.tr())),
-                ],
-                rows: debtors.map((s) {
-                  return DataRow(
-                    cells: [
-                      DataCell(Text(
-                        s.name,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      )),
-                      DataCell(Text(s.phone)),
-                      DataCell(Text(s.company)),
-                      DataCell(Text(formatCurrency(s.totalOrders))),
-                      DataCell(Text(
-                        formatCurrency(s.totalOrders - s.balance),
-                        style: const TextStyle(color: Colors.green),
-                      )),
-                      DataCell(Text(
-                        formatCurrency(s.balance),
-                        style: const TextStyle(
-                          color: Colors.red,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      )),
-                      DataCell(
-                        ElevatedButton.icon(
-                          onPressed: () {
-                            showDialog(
-                              context: context,
-                              builder: (_) => PayBalanceDialog(
-                                type: 'supplier',
-                                targetId: s.id,
-                                targetName: s.name,
-                                currentBalance: s.balance,
-                              ),
-                            );
-                          },
-                          icon: const Icon(Icons.payment, size: 16, color: Colors.white),
-                          label: Text(
-                            'pay'.tr(),
-                            style: TextStyle(
-                              fontSize: 11.sp,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
-                            foregroundColor: Colors.white,
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 12.w,
-                              vertical: 6.h,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8.r),
-                            ),
-                          ),
-                        ),
-                      ),
+              controller: _supplierVerticalController,
+              scrollDirection: Axis.vertical,
+              child: Scrollbar(
+                controller: _supplierHorizontalController,
+                thumbVisibility: true,
+                child: SingleChildScrollView(
+                  controller: _supplierHorizontalController,
+                  scrollDirection: Axis.horizontal,
+                  child: DataTable(
+                    showCheckboxColumn: false,
+                    columns: [
+                      DataColumn(label: Text('supplier_name'.tr())),
+                      DataColumn(label: Text('phone'.tr())),
+                      DataColumn(label: Text('company_name'.tr())),
+                      DataColumn(label: Text('total_orders'.tr())),
+                      DataColumn(label: Text('paid'.tr())),
+                      DataColumn(label: Text('remaining'.tr())),
+                      DataColumn(label: Text('pay'.tr())),
                     ],
-                  );
-                }).toList(),
+                    rows: debtors.map((s) {
+                      return DataRow(
+                        cells: [
+                          DataCell(Text(
+                            s.name,
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          )),
+                          DataCell(Text(s.phone)),
+                          DataCell(Text(s.company)),
+                          DataCell(Text(formatCurrency(s.totalOrders))),
+                          DataCell(Text(
+                            formatCurrency(s.totalOrders - s.balance),
+                            style: const TextStyle(color: Colors.green),
+                          )),
+                          DataCell(Text(
+                            formatCurrency(s.balance),
+                            style: const TextStyle(
+                              color: Colors.red,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          )),
+                          DataCell(
+                            ElevatedButton.icon(
+                              onPressed: () {
+                                showDialog(
+                                  context: context,
+                                  builder: (_) => PayBalanceDialog(
+                                    type: 'supplier',
+                                    targetId: s.id,
+                                    targetName: s.name,
+                                    currentBalance: s.balance,
+                                  ),
+                                );
+                              },
+                              icon: const Icon(Icons.payment, size: 16, color: Colors.white),
+                              label: Text(
+                                'pay'.tr(),
+                                style: TextStyle(
+                                  fontSize: 11.sp,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green,
+                                foregroundColor: Colors.white,
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 12.w,
+                                  vertical: 6.h,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8.r),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    }).toList(),
+                  ),
+                ),
               ),
             ),
           );

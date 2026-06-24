@@ -24,11 +24,25 @@ class CustomersScreen extends StatefulWidget {
 class _CustomersScreenState extends State<CustomersScreen> {
   final _searchController = TextEditingController();
   final Set<String> _selectedCustomerIds = {};
+  final ScrollController _verticalScrollController = ScrollController();
+  final ScrollController _horizontalScrollController = ScrollController();
+  final ScrollController _historyVerticalScrollController = ScrollController();
+  final ScrollController _historyHorizontalScrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     context.read<CustomerBloc>().add(LoadCustomers());
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _verticalScrollController.dispose();
+    _horizontalScrollController.dispose();
+    _historyVerticalScrollController.dispose();
+    _historyHorizontalScrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -88,14 +102,14 @@ class _CustomersScreenState extends State<CustomersScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                   child: LayoutBuilder(
                     builder: (context, constraints) {
-                      final crossAxisCount = constraints.maxWidth > 900 ? 3 : 1;
+                      final crossAxisCount = constraints.maxWidth > 750 ? 3 : (constraints.maxWidth > 450 ? 2 : 1);
                       return GridView.count(
                         crossAxisCount: crossAxisCount,
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         crossAxisSpacing: 16,
                         mainAxisSpacing: 16,
-                        childAspectRatio: crossAxisCount == 3 ? 2.8 : 4.0,
+                        childAspectRatio: crossAxisCount == 3 ? 2.8 : (crossAxisCount == 2 ? 3.5 : 5.0),
                         children: [
                           StatCard(
                             title: 'total_purchases'.tr(),
@@ -154,101 +168,111 @@ class _CustomersScreenState extends State<CustomersScreen> {
                     return Center(child: Text('no_data'.tr()));
                   }
 
-                  return SingleChildScrollView(
-                    scrollDirection: Axis.vertical,
+                  return Scrollbar(
+                    controller: _verticalScrollController,
+                    thumbVisibility: true,
                     child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: DataTable(
-                        showCheckboxColumn: true,
-                        columns: [
-                          DataColumn(label: Text('customer_name'.tr())),
-                          DataColumn(label: Text('phone'.tr())),
-                          DataColumn(label: Text('address'.tr())),
-                          DataColumn(label: Text('price_tier'.tr())),
-                          DataColumn(label: Text('total_purchases'.tr())),
-                          DataColumn(label: Text('paid'.tr())),
-                          DataColumn(label: Text('remaining'.tr())),
-                          DataColumn(label: Text('settings'.tr())),
-                        ],
-                        rows: customers.map((c) {
-                          return DataRow(
-                            selected: _selectedCustomerIds.contains(c.id),
-                            onSelectChanged: (selected) {
-                              setState(() {
-                                if (selected == true) {
-                                  _selectedCustomerIds.add(c.id);
-                                } else {
-                                  _selectedCustomerIds.remove(c.id);
-                                }
-                              });
-                            },
-                            cells: [
-                              DataCell(Text(c.name)),
-                              DataCell(Text(c.phone)),
-                              DataCell(Text(c.address)),
-                              DataCell(
-                                Chip(
-                                  label: Text(
-                                    _getTierBadgeText(c.priceLevel, isArabic),
-                                    style: TextStyle(fontSize: 10.sp, color: Colors.white, fontWeight: FontWeight.bold),
-                                  ),
-                                  backgroundColor: theme.colorScheme.secondary,
-                                ),
-                              ),
-                              DataCell(Text('${c.totalPurchases.toStringAsFixed(2)} EGP')),
-                              DataCell(Text('${(c.totalPurchases - c.balance).toStringAsFixed(2)} EGP')),
-                              DataCell(
-                                Text(
-                                  '${c.balance.toStringAsFixed(2)} EGP',
-                                  style: TextStyle(
-                                    color: c.balance > 0 ? Colors.red : Colors.green,
-                                    fontWeight: c.balance > 0 ? FontWeight.bold : FontWeight.normal,
-                                  ),
-                                ),
-                              ),
-                              DataCell(
-                                Row(
-                                  children: [
-                                    IconButton(
-                                      icon: const Icon(Icons.history, color: Colors.teal),
-                                      tooltip: context.locale.languageCode == 'ar' ? 'سجل المعاملات' : 'History',
-                                      onPressed: () => _showCustomerHistory(context, c),
-                                    ),
-                                    if (c.balance > 0)
-                                      IconButton(
-                                        icon: const Icon(Icons.payment, color: Colors.green),
-                                        tooltip: 'pay_balance'.tr(),
-                                        onPressed: () {
-                                          showDialog(
-                                            context: context,
-                                            builder: (_) => PayBalanceDialog(
-                                              type: 'customer',
-                                              targetId: c.id,
-                                              targetName: c.name,
-                                              currentBalance: c.balance,
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                    IconButton(
-                                      icon: const Icon(Icons.edit, color: Colors.blue),
-                                      onPressed: () {
-                                        showDialog(
-                                          context: context,
-                                          builder: (context) => CustomerForm(customer: c),
-                                        );
-                                      },
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(Icons.delete, color: Colors.red),
-                                      onPressed: () => _confirmDelete(context, c.id),
-                                    ),
-                                  ],
-                                ),
-                              ),
+                      controller: _verticalScrollController,
+                      scrollDirection: Axis.vertical,
+                      child: Scrollbar(
+                        controller: _horizontalScrollController,
+                        thumbVisibility: true,
+                        child: SingleChildScrollView(
+                          controller: _horizontalScrollController,
+                          scrollDirection: Axis.horizontal,
+                          child: DataTable(
+                            showCheckboxColumn: true,
+                            columns: [
+                              DataColumn(label: Text('customer_name'.tr())),
+                              DataColumn(label: Text('phone'.tr())),
+                              DataColumn(label: Text('address'.tr())),
+                              DataColumn(label: Text('price_tier'.tr())),
+                              DataColumn(label: Text('total_purchases'.tr())),
+                              DataColumn(label: Text('paid'.tr())),
+                              DataColumn(label: Text('remaining'.tr())),
+                              DataColumn(label: Text('settings'.tr())),
                             ],
-                          );
-                        }).toList(),
+                            rows: customers.map((c) {
+                              return DataRow(
+                                selected: _selectedCustomerIds.contains(c.id),
+                                onSelectChanged: (selected) {
+                                  setState(() {
+                                    if (selected == true) {
+                                      _selectedCustomerIds.add(c.id);
+                                    } else {
+                                      _selectedCustomerIds.remove(c.id);
+                                    }
+                                  });
+                                },
+                                cells: [
+                                  DataCell(Text(c.name)),
+                                  DataCell(Text(c.phone)),
+                                  DataCell(Text(c.address)),
+                                  DataCell(
+                                    Chip(
+                                      label: Text(
+                                        _getTierBadgeText(c.priceLevel, isArabic),
+                                        style: TextStyle(fontSize: 10.sp, color: Colors.white, fontWeight: FontWeight.bold),
+                                      ),
+                                      backgroundColor: theme.colorScheme.secondary,
+                                    ),
+                                  ),
+                                  DataCell(Text('${c.totalPurchases.toStringAsFixed(2)} EGP')),
+                                  DataCell(Text('${(c.totalPurchases - c.balance).toStringAsFixed(2)} EGP')),
+                                  DataCell(
+                                    Text(
+                                      '${c.balance.toStringAsFixed(2)} EGP',
+                                      style: TextStyle(
+                                        color: c.balance > 0 ? Colors.red : Colors.green,
+                                        fontWeight: c.balance > 0 ? FontWeight.bold : FontWeight.normal,
+                                      ),
+                                    ),
+                                  ),
+                                  DataCell(
+                                    Row(
+                                      children: [
+                                        IconButton(
+                                          icon: const Icon(Icons.history, color: Colors.teal),
+                                          tooltip: context.locale.languageCode == 'ar' ? 'سجل المعاملات' : 'History',
+                                          onPressed: () => _showCustomerHistory(context, c),
+                                        ),
+                                        if (c.balance > 0)
+                                          IconButton(
+                                            icon: const Icon(Icons.payment, color: Colors.green),
+                                            tooltip: 'pay_balance'.tr(),
+                                            onPressed: () {
+                                              showDialog(
+                                                context: context,
+                                                builder: (_) => PayBalanceDialog(
+                                                  type: 'customer',
+                                                  targetId: c.id,
+                                                  targetName: c.name,
+                                                  currentBalance: c.balance,
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                        IconButton(
+                                          icon: const Icon(Icons.edit, color: Colors.blue),
+                                          onPressed: () {
+                                            showDialog(
+                                              context: context,
+                                              builder: (context) => CustomerForm(customer: c),
+                                            );
+                                          },
+                                        ),
+                                        IconButton(
+                                          icon: const Icon(Icons.delete, color: Colors.red),
+                                          onPressed: () => _confirmDelete(context, c.id),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              );
+                            }).toList(),
+                          ),
+                        ),
                       ),
                     ),
                   );
@@ -488,55 +512,65 @@ class _CustomersScreenState extends State<CustomersScreen> {
                             );
                           }
 
-                          return SingleChildScrollView(
-                            scrollDirection: Axis.vertical,
+                          return Scrollbar(
+                            controller: _historyVerticalScrollController,
+                            thumbVisibility: true,
                             child: SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              child: DataTable(
-                                showCheckboxColumn: false,
-                                columns: [
-                                  DataColumn(label: Text('invoice_number'.tr())),
-                                  DataColumn(label: Text('date'.tr())),
-                                  DataColumn(label: Text('total'.tr())),
-                                  DataColumn(label: Text('paid'.tr())),
-                                  DataColumn(label: Text('remaining'.tr())),
-                                  DataColumn(label: Text('payment_method'.tr())),
-                                  DataColumn(label: Text('settings'.tr())),
-                                ],
-                                rows: customerSales.map((sale) {
-                                  final formattedDate = DateFormat('yyyy-MM-dd HH:mm').format(sale.createdAt);
-                                  return DataRow(
-                                    onSelectChanged: (selected) {
-                                      if (selected == true) {
-                                        showInvoiceDetailsDialog(context, sale, customer.name);
-                                      }
-                                    },
-                                    cells: [
-                                      DataCell(Text(sale.invoiceNumber)),
-                                      DataCell(Text(formattedDate)),
-                                      DataCell(Text(formatCurrency(sale.total))),
-                                      DataCell(Text(formatCurrency(sale.amountPaid))),
-                                      DataCell(
-                                        Text(
-                                          formatCurrency(sale.amountRemaining),
-                                          style: TextStyle(
-                                            color: sale.amountRemaining > 0 ? Colors.red : Colors.green,
-                                            fontWeight: sale.amountRemaining > 0 ? FontWeight.bold : FontWeight.normal,
-                                          ),
-                                        ),
-                                      ),
-                                      DataCell(Text(sale.paymentMethod.tr())),
-                                      DataCell(
-                                        IconButton(
-                                          icon: Icon(Icons.visibility, color: theme.colorScheme.primary),
-                                          onPressed: () {
-                                            showInvoiceDetailsDialog(context, sale, customer.name);
-                                          },
-                                        ),
-                                      ),
+                              controller: _historyVerticalScrollController,
+                              scrollDirection: Axis.vertical,
+                              child: Scrollbar(
+                                controller: _historyHorizontalScrollController,
+                                thumbVisibility: true,
+                                child: SingleChildScrollView(
+                                  controller: _historyHorizontalScrollController,
+                                  scrollDirection: Axis.horizontal,
+                                  child: DataTable(
+                                    showCheckboxColumn: false,
+                                    columns: [
+                                      DataColumn(label: Text('invoice_number'.tr())),
+                                      DataColumn(label: Text('date'.tr())),
+                                      DataColumn(label: Text('total'.tr())),
+                                      DataColumn(label: Text('paid'.tr())),
+                                      DataColumn(label: Text('remaining'.tr())),
+                                      DataColumn(label: Text('payment_method'.tr())),
+                                      DataColumn(label: Text('settings'.tr())),
                                     ],
-                                  );
-                                }).toList(),
+                                    rows: customerSales.map((sale) {
+                                      final formattedDate = DateFormat('yyyy-MM-dd HH:mm').format(sale.createdAt);
+                                      return DataRow(
+                                        onSelectChanged: (selected) {
+                                          if (selected == true) {
+                                            showInvoiceDetailsDialog(context, sale, customer.name);
+                                          }
+                                        },
+                                        cells: [
+                                          DataCell(Text(sale.invoiceNumber)),
+                                          DataCell(Text(formattedDate)),
+                                          DataCell(Text(formatCurrency(sale.total))),
+                                          DataCell(Text(formatCurrency(sale.amountPaid))),
+                                          DataCell(
+                                            Text(
+                                              formatCurrency(sale.amountRemaining),
+                                              style: TextStyle(
+                                                color: sale.amountRemaining > 0 ? Colors.red : Colors.green,
+                                                fontWeight: sale.amountRemaining > 0 ? FontWeight.bold : FontWeight.normal,
+                                              ),
+                                            ),
+                                          ),
+                                          DataCell(Text(sale.paymentMethod.tr())),
+                                          DataCell(
+                                            IconButton(
+                                              icon: Icon(Icons.visibility, color: theme.colorScheme.primary),
+                                              onPressed: () {
+                                                showInvoiceDetailsDialog(context, sale, customer.name);
+                                              },
+                                            ),
+                                          ),
+                                        ],
+                                      );
+                                    }).toList(),
+                                  ),
+                                ),
                               ),
                             ),
                           );

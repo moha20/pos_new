@@ -18,6 +18,7 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
   String _selectedCategory = 'all';
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+  final ScrollController _verticalScrollController = ScrollController();
 
   static const List<Map<String, dynamic>> _categories = [
     {'key': 'all', 'icon': Icons.select_all, 'color': Colors.blueGrey},
@@ -52,6 +53,7 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
   @override
   void dispose() {
     _searchController.dispose();
+    _verticalScrollController.dispose();
     super.dispose();
   }
 
@@ -278,9 +280,13 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
                     );
                   }
 
-                  return SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: SizedBox(
+                  return Scrollbar(
+                    controller: _verticalScrollController,
+                    thumbVisibility: true,
+                    child: SingleChildScrollView(
+                      controller: _verticalScrollController,
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: SizedBox(
                       width: double.infinity,
                       child: DataTable(
                         headingRowColor: WidgetStateProperty.all(
@@ -450,7 +456,8 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
                         }).toList(),
                       ),
                     ),
-                  );
+                  ),
+                );
                 }
 
                 return const SizedBox.shrink();

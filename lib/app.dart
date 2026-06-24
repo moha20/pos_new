@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -80,6 +81,7 @@ class App extends StatelessWidget {
                 builder: (context, child) {
                   return MaterialApp.router(
                     debugShowCheckedModeBanner: false,
+                    scrollBehavior: const AppScrollBehavior(),
                     locale: context.locale,
                     supportedLocales: context.supportedLocales,
                     localizationsDelegates: context.localizationDelegates,
@@ -96,4 +98,16 @@ class App extends StatelessWidget {
       ),
     );
   }
+}
+
+class AppScrollBehavior extends MaterialScrollBehavior {
+  const AppScrollBehavior();
+
+  @override
+  Set<PointerDeviceKind> get dragDevices => {
+        PointerDeviceKind.touch,
+        PointerDeviceKind.mouse,
+        PointerDeviceKind.trackpad,
+        PointerDeviceKind.stylus,
+      };
 }

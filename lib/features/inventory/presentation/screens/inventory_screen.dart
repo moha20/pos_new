@@ -21,11 +21,21 @@ class InventoryScreen extends StatefulWidget {
 class _InventoryScreenState extends State<InventoryScreen> {
   final _searchController = TextEditingController();
   final Set<String> _selectedProductIds = {};
+  final ScrollController _verticalScrollController = ScrollController();
+  final ScrollController _horizontalScrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     context.read<InventoryBloc>().add(LoadInventory());
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _verticalScrollController.dispose();
+    _horizontalScrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -129,149 +139,159 @@ class _InventoryScreenState extends State<InventoryScreen> {
                     return Center(child: Text('no_data'.tr()));
                   }
 
-                  return SingleChildScrollView(
-                    scrollDirection: Axis.vertical,
+                  return Scrollbar(
+                    controller: _verticalScrollController,
+                    thumbVisibility: true,
                     child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: DataTable(
-                        showCheckboxColumn: true,
-                        columns: [
-                          DataColumn(label: Text('product_name'.tr())),
-                          DataColumn(label: Text('barcode'.tr())),
-                          DataColumn(label: Text('category'.tr())),
-                          DataColumn(label: Text('stock'.tr())),
-                          DataColumn(label: Text('price_retail'.tr())),
-                          if (!isCashier) DataColumn(label: Text('cost_price'.tr())),
-                          DataColumn(label: Text('settings'.tr())),
-                        ],
-                        rows: products.map((p) {
-                          final isLowStock = p.isLowStock;
-                          final isOutOfStock = p.isOutOfStock;
-                          Color stockColor = Colors.green;
-                          if (isOutOfStock) {
-                            stockColor = Colors.red;
-                          } else if (isLowStock) {
-                            stockColor = Colors.orange;
-                          }
-
-                          return DataRow(
-                            selected: _selectedProductIds.contains(p.id),
-                            onSelectChanged: canModify
-                                ? (selected) {
-                                    setState(() {
-                                      if (selected == true) {
-                                        _selectedProductIds.add(p.id);
-                                      } else {
-                                        _selectedProductIds.remove(p.id);
-                                      }
-                                    });
-                                  }
-                                : null,
-                            cells: [
-                              DataCell(
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Container(
-                                      width: 36.w,
-                                      height: 36.h,
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(8.r),
-                                        border: Border.all(color: theme.dividerColor.withOpacity(0.2)),
-                                      ),
-                                      clipBehavior: Clip.antiAlias,
-                                      child: p.imagePath != null && p.imagePath!.isNotEmpty
-                                          ? (p.imagePath!.startsWith('http://') || p.imagePath!.startsWith('https://')
-                                              ? Image.network(
-                                                  p.imagePath!,
-                                                  fit: BoxFit.cover,
-                                                  errorBuilder: (c, e, s) => const Icon(Icons.broken_image, size: 18, color: Colors.red),
-                                                )
-                                              : (p.imagePath!.startsWith('data:image/')
-                                                  ? Builder(builder: (context) {
-                                                      try {
-                                                        final base64String = p.imagePath!.split(',').last;
-                                                        final bytes = base64.decode(base64String);
-                                                        return Image.memory(
-                                                          bytes,
-                                                          fit: BoxFit.cover,
-                                                          errorBuilder: (c, e, s) => const Icon(Icons.broken_image, size: 18, color: Colors.red),
-                                                        );
-                                                      } catch (_) {
-                                                        return const Icon(Icons.broken_image, size: 18, color: Colors.red);
-                                                      }
-                                                    })
-                                                  : (kIsWeb
-                                                      ? const Icon(Icons.image, size: 18, color: Colors.grey)
-                                                      : Image.file(
-                                                          File(p.imagePath!),
-                                                          fit: BoxFit.cover,
-                                                          errorBuilder: (c, e, s) => const Icon(Icons.broken_image, size: 18, color: Colors.red),
-                                                        ))))
-                                          : Container(
-                                              decoration: BoxDecoration(
-                                                gradient: LinearGradient(
-                                                  colors: [
-                                                    theme.colorScheme.primary.withOpacity(0.6),
-                                                    theme.colorScheme.secondary.withOpacity(0.6),
-                                                  ],
-                                                ),
-                                              ),
-                                              alignment: Alignment.center,
-                                              child: Text(
-                                                p.name.isNotEmpty ? p.name[0].toUpperCase() : '?',
-                                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14.sp),
-                                              ),
-                                            ),
-                                    ),
-                                    SizedBox(width: 8.w),
-                                    Text(p.name),
-                                  ],
-                                ),
-                              ),
-                              DataCell(Text(p.barcode)),
-                              DataCell(Text(p.category)),
-                              DataCell(
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: stockColor.withOpacity(0.15),
-                                    borderRadius: BorderRadius.circular(6.r),
-                                  ),
-                                  child: Text(
-                                    '${p.stock} (${p.unit.split(' / ').first})',
-                                    style: TextStyle(color: stockColor, fontWeight: FontWeight.bold),
-                                  ),
-                                ),
-                              ),
-                              DataCell(Text('${p.priceFor('retail').toStringAsFixed(2)} EGP')),
-                              if (!isCashier) DataCell(Text('${p.costPrice.toStringAsFixed(2)} EGP')),
-                              DataCell(
-                                Row(
-                                  children: [
-                                    IconButton(
-                                      icon: const Icon(Icons.edit, color: Colors.blue),
-                                      onPressed: canModify
-                                          ? () {
-                                              showDialog(
-                                                context: context,
-                                                builder: (context) => ProductForm(product: p),
-                                              );
-                                            }
-                                          : null, // disables for cashiers
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(Icons.delete, color: Colors.red),
-                                      onPressed: canModify
-                                          ? () => _confirmDelete(context, p.id)
-                                          : null, // disables for cashiers
-                                    ),
-                                  ],
-                                ),
-                              ),
+                      controller: _verticalScrollController,
+                      scrollDirection: Axis.vertical,
+                      child: Scrollbar(
+                        controller: _horizontalScrollController,
+                        thumbVisibility: true,
+                        child: SingleChildScrollView(
+                          controller: _horizontalScrollController,
+                          scrollDirection: Axis.horizontal,
+                          child: DataTable(
+                            showCheckboxColumn: true,
+                            columns: [
+                              DataColumn(label: Text('product_name'.tr())),
+                              DataColumn(label: Text('barcode'.tr())),
+                              DataColumn(label: Text('category'.tr())),
+                              DataColumn(label: Text('stock'.tr())),
+                              DataColumn(label: Text('price_retail'.tr())),
+                              if (!isCashier) DataColumn(label: Text('cost_price'.tr())),
+                              DataColumn(label: Text('settings'.tr())),
                             ],
-                          );
-                        }).toList(),
+                            rows: products.map((p) {
+                              final isLowStock = p.isLowStock;
+                              final isOutOfStock = p.isOutOfStock;
+                              Color stockColor = Colors.green;
+                              if (isOutOfStock) {
+                                stockColor = Colors.red;
+                              } else if (isLowStock) {
+                                stockColor = Colors.orange;
+                              }
+
+                              return DataRow(
+                                selected: _selectedProductIds.contains(p.id),
+                                onSelectChanged: canModify
+                                    ? (selected) {
+                                        setState(() {
+                                          if (selected == true) {
+                                            _selectedProductIds.add(p.id);
+                                          } else {
+                                            _selectedProductIds.remove(p.id);
+                                          }
+                                        });
+                                      }
+                                    : null,
+                                cells: [
+                                  DataCell(
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Container(
+                                          width: 36.w,
+                                          height: 36.h,
+                                          decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(8.r),
+                                            border: Border.all(color: theme.dividerColor.withOpacity(0.2)),
+                                          ),
+                                          clipBehavior: Clip.antiAlias,
+                                          child: p.imagePath != null && p.imagePath!.isNotEmpty
+                                              ? (p.imagePath!.startsWith('http://') || p.imagePath!.startsWith('https://')
+                                                  ? Image.network(
+                                                      p.imagePath!,
+                                                      fit: BoxFit.cover,
+                                                      errorBuilder: (c, e, s) => const Icon(Icons.broken_image, size: 18, color: Colors.red),
+                                                    )
+                                                  : (p.imagePath!.startsWith('data:image/')
+                                                      ? Builder(builder: (context) {
+                                                          try {
+                                                            final base64String = p.imagePath!.split(',').last;
+                                                            final bytes = base64.decode(base64String);
+                                                            return Image.memory(
+                                                              bytes,
+                                                              fit: BoxFit.cover,
+                                                              errorBuilder: (c, e, s) => const Icon(Icons.broken_image, size: 18, color: Colors.red),
+                                                            );
+                                                          } catch (_) {
+                                                            return const Icon(Icons.broken_image, size: 18, color: Colors.red);
+                                                          }
+                                                        })
+                                                      : (kIsWeb
+                                                          ? const Icon(Icons.image, size: 18, color: Colors.grey)
+                                                          : Image.file(
+                                                              File(p.imagePath!),
+                                                              fit: BoxFit.cover,
+                                                              errorBuilder: (c, e, s) => const Icon(Icons.broken_image, size: 18, color: Colors.red),
+                                                            ))))
+                                              : Container(
+                                                  decoration: BoxDecoration(
+                                                    gradient: LinearGradient(
+                                                      colors: [
+                                                        theme.colorScheme.primary.withOpacity(0.6),
+                                                        theme.colorScheme.secondary.withOpacity(0.6),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  alignment: Alignment.center,
+                                                  child: Text(
+                                                    p.name.isNotEmpty ? p.name[0].toUpperCase() : '?',
+                                                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14.sp),
+                                                  ),
+                                                ),
+                                        ),
+                                        SizedBox(width: 8.w),
+                                        Text(p.name),
+                                      ],
+                                    ),
+                                  ),
+                                  DataCell(Text(p.barcode)),
+                                  DataCell(Text(p.category)),
+                                  DataCell(
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: stockColor.withOpacity(0.15),
+                                        borderRadius: BorderRadius.circular(6.r),
+                                      ),
+                                      child: Text(
+                                        '${p.stock} (${p.unit.split(' / ').first})',
+                                        style: TextStyle(color: stockColor, fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ),
+                                  DataCell(Text('${p.priceFor('retail').toStringAsFixed(2)} EGP')),
+                                  if (!isCashier) DataCell(Text('${p.costPrice.toStringAsFixed(2)} EGP')),
+                                  DataCell(
+                                    Row(
+                                      children: [
+                                        IconButton(
+                                          icon: const Icon(Icons.edit, color: Colors.blue),
+                                          onPressed: canModify
+                                              ? () {
+                                                  showDialog(
+                                                    context: context,
+                                                    builder: (context) => ProductForm(product: p),
+                                                  );
+                                                }
+                                              : null, // disables for cashiers
+                                        ),
+                                        IconButton(
+                                          icon: const Icon(Icons.delete, color: Colors.red),
+                                          onPressed: canModify
+                                              ? () => _confirmDelete(context, p.id)
+                                              : null, // disables for cashiers
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              );
+                            }).toList(),
+                          ),
+                        ),
                       ),
                     ),
                   );

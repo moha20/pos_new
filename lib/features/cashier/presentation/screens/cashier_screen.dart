@@ -24,12 +24,24 @@ class _CashierScreenState extends State<CashierScreen> {
   String _expenseCategory = 'شراء بضاعة / Stock Purchase';
   final _formKey = GlobalKey<FormState>();
   final Set<String> _selectedExpenseIds = {};
+  final ScrollController _verticalScrollController = ScrollController();
+  final ScrollController _horizontalScrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     context.read<CashierBloc>().add(LoadCashier());
     context.read<ReportsBloc>().add(LoadReportsEvent());
+  }
+
+  @override
+  void dispose() {
+    _startingCashController.dispose();
+    _expenseDescController.dispose();
+    _expenseAmountController.dispose();
+    _verticalScrollController.dispose();
+    _horizontalScrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -230,67 +242,77 @@ class _CashierScreenState extends State<CashierScreen> {
                   child: state.expenses.isEmpty
                       ? Center(child: Text('no_data'.tr()))
                       : Card(
-                          child: SingleChildScrollView(
+                          child: Scrollbar(
+                            controller: _verticalScrollController,
+                            thumbVisibility: true,
                             child: SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              child: DataTable(
-                                showCheckboxColumn: true,
-                                columns: [
-                                  DataColumn(
-                                    label: Text('expense_description'.tr()),
-                                  ),
-                                  DataColumn(label: Text('amount'.tr())),
-                                  DataColumn(label: Text('category'.tr())),
-                                  DataColumn(label: Text('date'.tr())),
-                                  DataColumn(label: Text('delete'.tr())),
-                                ],
-                                rows: state.expenses.map((e) {
-                                  return DataRow(
-                                    selected: _selectedExpenseIds.contains(
-                                      e.id,
-                                    ),
-                                    onSelectChanged: (selected) {
-                                      setState(() {
-                                        if (selected == true) {
-                                          _selectedExpenseIds.add(e.id);
-                                        } else {
-                                          _selectedExpenseIds.remove(e.id);
-                                        }
-                                      });
-                                    },
-                                    cells: [
-                                      DataCell(Text(e.description)),
-                                      DataCell(
-                                        Text(
-                                          '${e.amount.toStringAsFixed(2)} EGP',
-                                          style: const TextStyle(
-                                            color: Colors.red,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
+                              controller: _verticalScrollController,
+                              child: Scrollbar(
+                                controller: _horizontalScrollController,
+                                thumbVisibility: true,
+                                child: SingleChildScrollView(
+                                  controller: _horizontalScrollController,
+                                  scrollDirection: Axis.horizontal,
+                                  child: DataTable(
+                                    showCheckboxColumn: true,
+                                    columns: [
+                                      DataColumn(
+                                        label: Text('expense_description'.tr()),
                                       ),
-                                      DataCell(Text(e.category)),
-                                      DataCell(
-                                        Text(
-                                          e.date.toString().substring(0, 16),
-                                        ),
-                                      ),
-                                      DataCell(
-                                        IconButton(
-                                          icon: const Icon(
-                                            Icons.delete,
-                                            color: Colors.red,
-                                          ),
-                                          onPressed: () =>
-                                              _confirmDeleteExpense(
-                                                context,
-                                                e.id,
-                                              ),
-                                        ),
-                                      ),
+                                      DataColumn(label: Text('amount'.tr())),
+                                      DataColumn(label: Text('category'.tr())),
+                                      DataColumn(label: Text('date'.tr())),
+                                      DataColumn(label: Text('delete'.tr())),
                                     ],
-                                  );
-                                }).toList(),
+                                    rows: state.expenses.map((e) {
+                                      return DataRow(
+                                        selected: _selectedExpenseIds.contains(
+                                          e.id,
+                                        ),
+                                        onSelectChanged: (selected) {
+                                          setState(() {
+                                            if (selected == true) {
+                                              _selectedExpenseIds.add(e.id);
+                                            } else {
+                                              _selectedExpenseIds.remove(e.id);
+                                            }
+                                          });
+                                        },
+                                        cells: [
+                                          DataCell(Text(e.description)),
+                                          DataCell(
+                                            Text(
+                                              '${e.amount.toStringAsFixed(2)} EGP',
+                                              style: const TextStyle(
+                                                color: Colors.red,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                          DataCell(Text(e.category)),
+                                          DataCell(
+                                            Text(
+                                              e.date.toString().substring(0, 16),
+                                            ),
+                                          ),
+                                          DataCell(
+                                            IconButton(
+                                              icon: const Icon(
+                                                Icons.delete,
+                                                color: Colors.red,
+                                              ),
+                                              onPressed: () =>
+                                                  _confirmDeleteExpense(
+                                                    context,
+                                                    e.id,
+                                                  ),
+                                            ),
+                                          ),
+                                        ],
+                                      );
+                                    }).toList(),
+                                  ),
+                                ),
                               ),
                             ),
                           ),
