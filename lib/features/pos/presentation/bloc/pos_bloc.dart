@@ -8,6 +8,7 @@ import '../../../customers/domain/repositories/customer_repository.dart';
 import '../../../../core/di/di.dart';
 import '../../../../services/activity_log_service.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // Helper class for cart item
 class CartItem {
@@ -168,7 +169,7 @@ class POSBloc extends Bloc<POSEvent, POSState> {
   }) : super(POSState(
           cartItems: [],
           discount: 0.0,
-          taxRate: 14.0, // Default VAT
+          taxRate: Gravity.find<SharedPreferences>().getDouble('tax_percent') ?? 0.0,
           invoiceNumber: '',
           status: POSStatus.initial,
         )) {

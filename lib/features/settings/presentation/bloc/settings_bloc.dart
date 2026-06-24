@@ -82,7 +82,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
 
   SettingsBloc(this.prefs) : super(SettingsLoaded(
     companyName: prefs.getString('company_name') ?? 'مؤسسة المهندس للأدوات الكهربائية',
-    taxPercent: prefs.getDouble('tax_percent') ?? 14.0,
+    taxPercent: prefs.getDouble('tax_percent') ?? 0.0,
     printerIp: prefs.getString('printer_ip') ?? '192.168.1.100',
     themeType: prefs.getString('theme_type') ?? 'copper',
     themeMode: prefs.getString('theme_mode') ?? 'light',
@@ -95,7 +95,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     on<LoadSettings>((event, emit) {
       try {
         final company = prefs.getString('company_name') ?? 'مؤسسة المهندس للأدوات الكهربائية';
-        final tax = prefs.getDouble('tax_percent') ?? 14.0;
+        final tax = prefs.getDouble('tax_percent') ?? 0.0;
         final ip = prefs.getString('printer_ip') ?? '192.168.1.100';
         final theme = prefs.getString('theme_type') ?? 'copper';
         final mode = prefs.getString('theme_mode') ?? 'light';
@@ -167,7 +167,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
           await prefs.setString('logo_path', event.logoPath!);
         }
         final company = prefs.getString('company_name') ?? 'مؤسسة المهندس للأدوات الكهربائية';
-        final tax = prefs.getDouble('tax_percent') ?? 14.0;
+        final tax = prefs.getDouble('tax_percent') ?? 0.0;
         final ip = prefs.getString('printer_ip') ?? '192.168.1.100';
         final theme = prefs.getString('theme_type') ?? 'copper';
         final mode = prefs.getString('theme_mode') ?? 'light';

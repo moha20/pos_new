@@ -273,7 +273,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                                         double.tryParse(
                                                           _taxController.text,
                                                         ) ??
-                                                        14.0,
+                                                        0.0,
                                                     printerIp:
                                                         _printerController.text,
                                                     themeType: val,
@@ -360,7 +360,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                                         double.tryParse(
                                                           _taxController.text,
                                                         ) ??
-                                                        14.0,
+                                                        0.0,
                                                     printerIp:
                                                         _printerController.text,
                                                     themeType:
