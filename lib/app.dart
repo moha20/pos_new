@@ -10,6 +10,7 @@ import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/inventory/presentation/bloc/inventory_bloc.dart';
 import 'features/customers/presentation/bloc/customer_bloc.dart';
 import 'features/suppliers/presentation/bloc/supplier_bloc.dart';
+import 'features/suppliers/presentation/bloc/supplier_invoice_bloc.dart';
 import 'features/pos/presentation/bloc/pos_bloc.dart';
 import 'features/pos/presentation/bloc/sales_history_cubit.dart';
 import 'features/cashier/presentation/bloc/cashier_bloc.dart';
@@ -39,6 +40,9 @@ class App extends StatelessWidget {
         ),
         BlocProvider(
           create: (_) => Gravity.find<SupplierBloc>()..add(LoadSuppliers()),
+        ),
+        BlocProvider(
+          create: (_) => Gravity.find<SupplierInvoiceBloc>()..add(SupplierInvoiceInit()),
         ),
         BlocProvider(create: (_) => Gravity.find<POSBloc>()..add(POSInit())),
         BlocProvider(

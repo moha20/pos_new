@@ -7,6 +7,7 @@ import '../../features/pos/presentation/screens/sales_history_screen.dart';
 import '../../features/inventory/presentation/screens/inventory_screen.dart';
 import '../../features/customers/presentation/screens/customers_screen.dart';
 import '../../features/suppliers/presentation/screens/suppliers_screen.dart';
+import '../../features/suppliers/presentation/screens/supplier_invoice_screen.dart';
 import '../../features/reports/presentation/screens/reports_screen.dart';
 import '../../features/cashier/presentation/screens/cashier_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
@@ -75,6 +76,13 @@ final GoRouter appRouter = GoRouter(
       pageBuilder: (context, state) => NoTransitionPage(
         key: state.pageKey,
         child: const SuppliersScreen(),
+      ),
+    ),
+    GoRoute(
+      path: '/supplier-invoice',
+      pageBuilder: (context, state) => NoTransitionPage(
+        key: state.pageKey,
+        child: const SupplierInvoiceScreen(),
       ),
     ),
     GoRoute(

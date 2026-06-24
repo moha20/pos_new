@@ -158,13 +158,16 @@ class _BalanceScreenState extends State<BalanceScreen>
                   child: LayoutBuilder(
                     builder: (context, constraints) {
                       final crossAxisCount = constraints.maxWidth > 750 ? 3 : (constraints.maxWidth > 450 ? 2 : 1);
+                      final itemWidth = (constraints.maxWidth - (crossAxisCount - 1) * 16) / crossAxisCount;
+                      final double cardHeight = 100.h;
+                      final double childAspectRatio = itemWidth / cardHeight;
                       return GridView.count(
                         crossAxisCount: crossAxisCount,
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         crossAxisSpacing: 16,
                         mainAxisSpacing: 16,
-                        childAspectRatio: crossAxisCount == 3 ? 2.8 : (crossAxisCount == 2 ? 3.5 : 5.0),
+                        childAspectRatio: childAspectRatio,
                         children: [
                           StatCard(
                             title: 'total_customer_debt'.tr(),
@@ -239,12 +242,16 @@ class _BalanceScreenState extends State<BalanceScreen>
           return Scrollbar(
             controller: _customerVerticalController,
             thumbVisibility: true,
-            child: SingleChildScrollView(
-              controller: _customerVerticalController,
-              scrollDirection: Axis.vertical,
-              child: Scrollbar(
-                controller: _customerHorizontalController,
-                thumbVisibility: true,
+            notificationPredicate: (notification) =>
+                notification.metrics.axis == Axis.vertical,
+            child: Scrollbar(
+              controller: _customerHorizontalController,
+              thumbVisibility: true,
+              notificationPredicate: (notification) =>
+                  notification.metrics.axis == Axis.horizontal,
+              child: SingleChildScrollView(
+                controller: _customerVerticalController,
+                scrollDirection: Axis.vertical,
                 child: SingleChildScrollView(
                   controller: _customerHorizontalController,
                   scrollDirection: Axis.horizontal,
@@ -369,12 +376,16 @@ class _BalanceScreenState extends State<BalanceScreen>
           return Scrollbar(
             controller: _supplierVerticalController,
             thumbVisibility: true,
-            child: SingleChildScrollView(
-              controller: _supplierVerticalController,
-              scrollDirection: Axis.vertical,
-              child: Scrollbar(
-                controller: _supplierHorizontalController,
-                thumbVisibility: true,
+            notificationPredicate: (notification) =>
+                notification.metrics.axis == Axis.vertical,
+            child: Scrollbar(
+              controller: _supplierHorizontalController,
+              thumbVisibility: true,
+              notificationPredicate: (notification) =>
+                  notification.metrics.axis == Axis.horizontal,
+              child: SingleChildScrollView(
+                controller: _supplierVerticalController,
+                scrollDirection: Axis.vertical,
                 child: SingleChildScrollView(
                   controller: _supplierHorizontalController,
                   scrollDirection: Axis.horizontal,

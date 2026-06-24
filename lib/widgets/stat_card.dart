@@ -39,7 +39,7 @@ class StatCard extends StatelessWidget {
           width: 1.5.w,
         ),
       ),
-      padding: EdgeInsets.all(20.0.r),
+      padding: EdgeInsets.symmetric(horizontal: 16.0.r, vertical: 12.0.r),
       child: Row(
         children: [
           Expanded(
@@ -54,12 +54,16 @@ class StatCard extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                SizedBox(height: 8.h),
-                Text(
-                  value,
-                  style: theme.textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.w900,
-                    color: color,
+                SizedBox(height: 4.h),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: AlignmentDirectional.centerStart,
+                  child: Text(
+                    value,
+                    style: theme.textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.w900,
+                      color: color,
+                    ),
                   ),
                 ),
                 if (subtitle != null) ...[

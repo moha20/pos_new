@@ -27,6 +27,7 @@ class HiveConfig {
   static late final Box expensesBox;
   static late final Box activityLogsBox;
   static late final Box paymentsBox;
+  static late final Box supplierInvoicesBox;
 
   static Future<void> init() async {
     await Hive.initFlutter();
@@ -39,6 +40,7 @@ class HiveConfig {
     expensesBox = await Hive.openBox('expenses');
     activityLogsBox = await Hive.openBox('activity_logs');
     paymentsBox = await Hive.openBox('payments');
+    supplierInvoicesBox = await Hive.openBox('supplier_invoices');
 
     _seedIfNeeded();
   }

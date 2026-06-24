@@ -19,6 +19,7 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   final ScrollController _verticalScrollController = ScrollController();
+  final ScrollController _horizontalScrollController = ScrollController();
 
   static const List<Map<String, dynamic>> _categories = [
     {'key': 'all', 'icon': Icons.select_all, 'color': Colors.blueGrey},
@@ -54,6 +55,7 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
   void dispose() {
     _searchController.dispose();
     _verticalScrollController.dispose();
+    _horizontalScrollController.dispose();
     super.dispose();
   }
 
@@ -283,12 +285,21 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
                   return Scrollbar(
                     controller: _verticalScrollController,
                     thumbVisibility: true,
-                    child: SingleChildScrollView(
-                      controller: _verticalScrollController,
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: SizedBox(
-                      width: double.infinity,
-                      child: DataTable(
+                    notificationPredicate: (notification) =>
+                        notification.metrics.axis == Axis.vertical,
+                    child: Scrollbar(
+                      controller: _horizontalScrollController,
+                      thumbVisibility: true,
+                      notificationPredicate: (notification) =>
+                          notification.metrics.axis == Axis.horizontal,
+                      child: SingleChildScrollView(
+                        controller: _verticalScrollController,
+                        scrollDirection: Axis.vertical,
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: SingleChildScrollView(
+                          controller: _horizontalScrollController,
+                          scrollDirection: Axis.horizontal,
+                          child: DataTable(
                         headingRowColor: WidgetStateProperty.all(
                           theme.colorScheme.primary.withValues(alpha: 0.06),
                         ),
@@ -457,8 +468,9 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
                       ),
                     ),
                   ),
-                );
-                }
+                ),
+              );
+              }
 
                 return const SizedBox.shrink();
               },

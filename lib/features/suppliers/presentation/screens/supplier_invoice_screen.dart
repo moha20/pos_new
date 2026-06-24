@@ -3,25 +3,24 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../bloc/pos_bloc.dart';
+import '../bloc/supplier_invoice_bloc.dart';
 import '../../../inventory/presentation/bloc/inventory_bloc.dart';
 import '../../../inventory/domain/entities/product_entity.dart';
-import '../widgets/cart_widget.dart';
+import '../widgets/supplier_invoice_cart_widget.dart';
 import '../../../../widgets/responsive_layout.dart';
 import '../../../../services/barcode_service.dart';
 import '../../../../core/di/di.dart';
 
-class POSScreen extends StatefulWidget {
-  const POSScreen({super.key});
+class SupplierInvoiceScreen extends StatefulWidget {
+  const SupplierInvoiceScreen({super.key});
 
   @override
-  State<POSScreen> createState() => _POSScreenState();
+  State<SupplierInvoiceScreen> createState() => _SupplierInvoiceScreenState();
 }
 
-class _POSScreenState extends State<POSScreen> {
+class _SupplierInvoiceScreenState extends State<SupplierInvoiceScreen> {
   final _searchController = TextEditingController();
   bool _isGridView = false;
   int _activeTab = 0;
@@ -29,9 +28,8 @@ class _POSScreenState extends State<POSScreen> {
   @override
   void initState() {
     super.initState();
-    // Load inventory and refresh POS next invoice count
     context.read<InventoryBloc>().add(LoadInventory());
-    context.read<POSBloc>().add(POSInit());
+    context.read<SupplierInvoiceBloc>().add(SupplierInvoiceInit());
   }
 
   @override
@@ -152,16 +150,16 @@ class _POSScreenState extends State<POSScreen> {
       ],
     );
 
-    return BlocBuilder<POSBloc, POSState>(
+    return BlocBuilder<SupplierInvoiceBloc, SupplierInvoiceState>(
       builder: (context, state) {
         return ResponsiveLayout(
-          title: 'pos'.tr(),
+          title: 'supplier_invoice'.tr(),
           child: isDesktop
               ? Row(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Expanded(flex: 5, child: mainContent),
-                    const Expanded(flex: 3, child: CartWidget()),
+                    const Expanded(flex: 3, child: SupplierInvoiceCartWidget()),
                   ],
                 )
               : Column(
@@ -208,7 +206,7 @@ class _POSScreenState extends State<POSScreen> {
                             ? mainContent
                             : const Padding(
                                 padding: EdgeInsets.all(8.0),
-                                child: CartWidget(),
+                                child: SupplierInvoiceCartWidget(),
                               ),
                       ),
                     ),
@@ -302,11 +300,9 @@ class _POSScreenState extends State<POSScreen> {
     }
 
     return InkWell(
-      onTap: isOutOfStock
-          ? null
-          : () {
-              context.read<POSBloc>().add(POSAddProduct(product));
-            },
+      onTap: () {
+        context.read<SupplierInvoiceBloc>().add(SupplierInvoiceAddProduct(product));
+      },
       child: Card(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16.r),
@@ -325,8 +321,7 @@ class _POSScreenState extends State<POSScreen> {
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 clipBehavior: Clip.antiAlias,
-                child:
-                    product.imagePath != null && product.imagePath!.isNotEmpty
+                child: product.imagePath != null && product.imagePath!.isNotEmpty
                     ? _buildProductImage(product.imagePath!)
                     : _buildProductPlaceholder(product.name, theme),
               ),
@@ -358,12 +353,12 @@ class _POSScreenState extends State<POSScreen> {
               ),
               SizedBox(height: 8.h),
 
-              // Price (Retail is standard)
+              // Price (Cost Price is standard for supplier invoice)
               Text(
-                '${product.priceFor('retail').toStringAsFixed(2)} $currencySymbol',
+                '${'purchase_price'.tr()}: ${product.costPrice.toStringAsFixed(2)} $currencySymbol',
                 style: TextStyle(
                   fontWeight: FontWeight.w900,
-                  fontSize: 15.sp,
+                  fontSize: 13.sp,
                   color: theme.colorScheme.primary,
                 ),
               ),
@@ -423,11 +418,9 @@ class _POSScreenState extends State<POSScreen> {
         side: BorderSide(color: cardBorderColor, width: 1.2),
       ),
       child: InkWell(
-        onTap: isOutOfStock
-            ? null
-            : () {
-                context.read<POSBloc>().add(POSAddProduct(product));
-              },
+        onTap: () {
+          context.read<SupplierInvoiceBloc>().add(SupplierInvoiceAddProduct(product));
+        },
         borderRadius: BorderRadius.circular(12.r),
         child: Padding(
           padding: EdgeInsets.all(8.0.r),
@@ -441,8 +434,7 @@ class _POSScreenState extends State<POSScreen> {
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 clipBehavior: Clip.antiAlias,
-                child:
-                    product.imagePath != null && product.imagePath!.isNotEmpty
+                child: product.imagePath != null && product.imagePath!.isNotEmpty
                     ? _buildProductImage(product.imagePath!)
                     : _buildProductPlaceholder(product.name, theme),
               ),
@@ -476,10 +468,10 @@ class _POSScreenState extends State<POSScreen> {
                     Row(
                       children: [
                         Text(
-                          '${product.priceFor('retail').toStringAsFixed(2)} $currencySymbol',
+                          '${'purchase_price'.tr()}: ${product.costPrice.toStringAsFixed(2)} $currencySymbol',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            fontSize: 14.sp,
+                            fontSize: 12.sp,
                             color: theme.colorScheme.primary,
                           ),
                         ),
@@ -508,17 +500,14 @@ class _POSScreenState extends State<POSScreen> {
                 ),
               ),
 
-              // Add button / icon
               IconButton(
                 icon: Icon(
                   Icons.add_shopping_cart,
-                  color: isOutOfStock ? Colors.grey : theme.colorScheme.primary,
+                  color: theme.colorScheme.primary,
                 ),
-                onPressed: isOutOfStock
-                    ? null
-                    : () {
-                        context.read<POSBloc>().add(POSAddProduct(product));
-                      },
+                onPressed: () {
+                  context.read<SupplierInvoiceBloc>().add(SupplierInvoiceAddProduct(product));
+                },
               ),
             ],
           ),
@@ -532,7 +521,7 @@ class _POSScreenState extends State<POSScreen> {
     final code = await barcodeService.scanBarcode(context);
     if (code != null && code.isNotEmpty) {
       if (mounted) {
-        context.read<POSBloc>().add(POSScanBarcode(code));
+        context.read<SupplierInvoiceBloc>().add(SupplierInvoiceScanBarcode(code));
       }
     }
   }

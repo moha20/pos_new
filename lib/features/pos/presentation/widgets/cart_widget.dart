@@ -509,7 +509,8 @@ class CartWidget extends StatelessWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('${'tax'.tr()} (${state.taxRate}%)'),
+                        Text(
+                            '${'tax'.tr()} (${state.taxRate % 1 == 0 ? state.taxRate.toInt() : state.taxRate}%)'),
                         Text(formatCurrency(state.taxAmount)),
                       ],
                     ),

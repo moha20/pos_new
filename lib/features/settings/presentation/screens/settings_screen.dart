@@ -78,7 +78,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           if (state is SettingsLoaded) {
             if (_companyController.text.isEmpty) {
               _companyController.text = state.companyName;
-              _taxController.text = state.taxPercent.toString();
+              _taxController.text = state.taxPercent % 1 == 0
+                  ? state.taxPercent.toInt().toString()
+                  : state.taxPercent.toString();
               _printerController.text = state.printerIp;
               _addressController.text = state.companyAddress;
               _phoneController.text = state.companyPhone;
@@ -133,10 +135,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                       labelText: 'tax_percent'.tr(),
                                       border: const OutlineInputBorder(),
                                     ),
-                                    validator: (v) =>
-                                        v == null || double.tryParse(v) == null
-                                        ? 'no_data'.tr()
-                                        : null,
+                                     validator: (v) {
+                                       if (v == null || v.isEmpty) return null;
+                                       if (double.tryParse(v) == null) {
+                                         return 'error_occurred'.tr();
+                                       }
+                                       return null;
+                                     },
                                   ),
                                 ),
                                 SizedBox(width: 12.w),
@@ -258,9 +263,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                           ),
                                         ),
                                       ],
-                                      onChanged: !isAdmin
-                                          ? null
-                                          : (val) {
+                                      onChanged: (val) {
                                               if (val != null) {
                                                 setState(() {
                                                   _selectedTheme = val;
@@ -345,9 +348,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                           child: Text('system_mode'.tr()),
                                         ),
                                       ],
-                                      onChanged: !isAdmin
-                                          ? null
-                                          : (val) {
+                                      onChanged: (val) {
                                               if (val != null) {
                                                 setState(() {
                                                   _selectedMode = val;
@@ -393,9 +394,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                     context.read<SettingsBloc>().add(
                                       SaveSettings(
                                         companyName: _companyController.text,
-                                        taxPercent: double.parse(
-                                          _taxController.text,
-                                        ),
+                                        taxPercent: double.tryParse(
+                                              _taxController.text,
+                                            ) ??
+                                            0.0,
                                         printerIp: _printerController.text,
                                         themeType: _selectedTheme ?? 'copper',
                                         themeMode: _selectedMode ?? 'light',

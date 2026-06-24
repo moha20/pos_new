@@ -72,14 +72,17 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
                   padding: EdgeInsets.all(16.0.r),
                   child: LayoutBuilder(
                     builder: (context, constraints) {
-                      final crossAxisCount = constraints.maxWidth > 900 ? 3 : 1;
+                      final crossAxisCount = constraints.maxWidth > 750 ? 3 : (constraints.maxWidth > 450 ? 2 : 1);
+                      final itemWidth = (constraints.maxWidth - (crossAxisCount - 1) * 16) / crossAxisCount;
+                      final double cardHeight = 100.h;
+                      final double childAspectRatio = itemWidth / cardHeight;
                       return GridView.count(
                         crossAxisCount: crossAxisCount,
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         crossAxisSpacing: 16,
                         mainAxisSpacing: 16,
-                        childAspectRatio: crossAxisCount == 3 ? 2.5 : 4.0,
+                        childAspectRatio: childAspectRatio,
                         children: [
                           StatCard(
                             title: 'total'.tr(),
@@ -131,12 +134,16 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
                       : Scrollbar(
                           controller: _verticalScrollController,
                           thumbVisibility: true,
-                          child: SingleChildScrollView(
-                            controller: _verticalScrollController,
-                            scrollDirection: Axis.vertical,
-                            child: Scrollbar(
-                              controller: _horizontalScrollController,
-                              thumbVisibility: true,
+                          notificationPredicate: (notification) =>
+                              notification.metrics.axis == Axis.vertical,
+                          child: Scrollbar(
+                            controller: _horizontalScrollController,
+                            thumbVisibility: true,
+                            notificationPredicate: (notification) =>
+                                notification.metrics.axis == Axis.horizontal,
+                            child: SingleChildScrollView(
+                              controller: _verticalScrollController,
+                              scrollDirection: Axis.vertical,
                               child: SingleChildScrollView(
                                 controller: _horizontalScrollController,
                                 scrollDirection: Axis.horizontal,

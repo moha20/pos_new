@@ -103,13 +103,16 @@ class _CustomersScreenState extends State<CustomersScreen> {
                   child: LayoutBuilder(
                     builder: (context, constraints) {
                       final crossAxisCount = constraints.maxWidth > 750 ? 3 : (constraints.maxWidth > 450 ? 2 : 1);
+                      final itemWidth = (constraints.maxWidth - (crossAxisCount - 1) * 16) / crossAxisCount;
+                      final double cardHeight = 100.h;
+                      final double childAspectRatio = itemWidth / cardHeight;
                       return GridView.count(
                         crossAxisCount: crossAxisCount,
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         crossAxisSpacing: 16,
                         mainAxisSpacing: 16,
-                        childAspectRatio: crossAxisCount == 3 ? 2.8 : (crossAxisCount == 2 ? 3.5 : 5.0),
+                        childAspectRatio: childAspectRatio,
                         children: [
                           StatCard(
                             title: 'total_purchases'.tr(),
@@ -171,12 +174,16 @@ class _CustomersScreenState extends State<CustomersScreen> {
                   return Scrollbar(
                     controller: _verticalScrollController,
                     thumbVisibility: true,
-                    child: SingleChildScrollView(
-                      controller: _verticalScrollController,
-                      scrollDirection: Axis.vertical,
-                      child: Scrollbar(
-                        controller: _horizontalScrollController,
-                        thumbVisibility: true,
+                    notificationPredicate: (notification) =>
+                        notification.metrics.axis == Axis.vertical,
+                    child: Scrollbar(
+                      controller: _horizontalScrollController,
+                      thumbVisibility: true,
+                      notificationPredicate: (notification) =>
+                          notification.metrics.axis == Axis.horizontal,
+                      child: SingleChildScrollView(
+                        controller: _verticalScrollController,
+                        scrollDirection: Axis.vertical,
                         child: SingleChildScrollView(
                           controller: _horizontalScrollController,
                           scrollDirection: Axis.horizontal,
@@ -515,12 +522,16 @@ class _CustomersScreenState extends State<CustomersScreen> {
                           return Scrollbar(
                             controller: _historyVerticalScrollController,
                             thumbVisibility: true,
-                            child: SingleChildScrollView(
-                              controller: _historyVerticalScrollController,
-                              scrollDirection: Axis.vertical,
-                              child: Scrollbar(
-                                controller: _historyHorizontalScrollController,
-                                thumbVisibility: true,
+                            notificationPredicate: (notification) =>
+                                notification.metrics.axis == Axis.vertical,
+                            child: Scrollbar(
+                              controller: _historyHorizontalScrollController,
+                              thumbVisibility: true,
+                              notificationPredicate: (notification) =>
+                                  notification.metrics.axis == Axis.horizontal,
+                              child: SingleChildScrollView(
+                                controller: _historyVerticalScrollController,
+                                scrollDirection: Axis.vertical,
                                 child: SingleChildScrollView(
                                   controller: _historyHorizontalScrollController,
                                   scrollDirection: Axis.horizontal,

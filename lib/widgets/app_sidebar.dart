@@ -40,6 +40,12 @@ class AppSidebar extends StatelessWidget {
         labelKey: 'suppliers',
         route: '/suppliers',
       ),
+      if (user?.isAdmin == true)
+        _SidebarItem(
+          icon: Icons.receipt,
+          labelKey: 'supplier_invoice',
+          route: '/supplier-invoice',
+        ),
       _SidebarItem(
         icon: Icons.account_balance_wallet,
         labelKey: 'balance',

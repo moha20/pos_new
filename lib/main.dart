@@ -25,6 +25,9 @@ import 'features/customers/presentation/bloc/customer_bloc.dart';
 import 'features/suppliers/domain/repositories/supplier_repository.dart';
 import 'features/suppliers/data/repositories/supplier_repository_impl.dart';
 import 'features/suppliers/presentation/bloc/supplier_bloc.dart';
+import 'features/suppliers/domain/repositories/supplier_invoice_repository.dart';
+import 'features/suppliers/data/repositories/supplier_invoice_repository_impl.dart';
+import 'features/suppliers/presentation/bloc/supplier_invoice_bloc.dart';
 
 import 'features/pos/domain/repositories/sale_repository.dart';
 import 'features/pos/data/repositories/sale_repository_impl.dart';
@@ -70,6 +73,13 @@ void main() async {
   Gravity.put<ProductRepository>(ProductRepositoryImpl(HiveConfig.productsBox));
   Gravity.put<CustomerRepository>(CustomerRepositoryImpl(HiveConfig.customersBox));
   Gravity.put<SupplierRepository>(SupplierRepositoryImpl(HiveConfig.suppliersBox));
+  Gravity.put<SupplierInvoiceRepository>(
+    SupplierInvoiceRepositoryImpl(
+      HiveConfig.supplierInvoicesBox,
+      HiveConfig.productsBox,
+      HiveConfig.suppliersBox,
+    ),
+  );
   Gravity.put<SaleRepository>(SaleRepositoryImpl(HiveConfig.salesBox, HiveConfig.productsBox));
   Gravity.put<CashierRepository>(
     CashierRepositoryImpl(HiveConfig.expensesBox, Gravity.find<SharedPreferences>()),
@@ -85,6 +95,13 @@ void main() async {
   Gravity.put<InventoryBloc>(InventoryBloc(Gravity.find<ProductRepository>()));
   Gravity.put<CustomerBloc>(CustomerBloc(Gravity.find<CustomerRepository>()));
   Gravity.put<SupplierBloc>(SupplierBloc(Gravity.find<SupplierRepository>()));
+  Gravity.put<SupplierInvoiceBloc>(
+    SupplierInvoiceBloc(
+      supplierInvoiceRepository: Gravity.find<SupplierInvoiceRepository>(),
+      productRepository: Gravity.find<ProductRepository>(),
+      supplierRepository: Gravity.find<SupplierRepository>(),
+    ),
+  );
   Gravity.put<POSBloc>(
     POSBloc(
       saleRepository: Gravity.find<SaleRepository>(),

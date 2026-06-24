@@ -175,7 +175,11 @@ class POSBloc extends Bloc<POSEvent, POSState> {
         )) {
     on<POSInit>((event, emit) async {
       final nextNum = await saleRepository.getNextInvoiceNumber();
-      emit(state.copyWith(invoiceNumber: '#$nextNum'));
+      final currentTax = Gravity.find<SharedPreferences>().getDouble('tax_percent') ?? 0.0;
+      emit(state.copyWith(
+        invoiceNumber: '#$nextNum',
+        taxRate: currentTax,
+      ));
     });
 
     on<POSAddProduct>((event, emit) {
@@ -288,11 +292,12 @@ class POSBloc extends Bloc<POSEvent, POSState> {
 
     on<POSClearCart>((event, emit) async {
       final nextNum = await saleRepository.getNextInvoiceNumber();
+      final currentTax = Gravity.find<SharedPreferences>().getDouble('tax_percent') ?? 0.0;
       emit(POSState(
         cartItems: [],
         selectedCustomer: null,
         discount: 0.0,
-        taxRate: state.taxRate,
+        taxRate: currentTax,
         invoiceNumber: '#$nextNum',
         status: POSStatus.initial,
       ));

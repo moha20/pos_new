@@ -141,6 +141,12 @@ class _ReportsScreenState extends State<ReportsScreen> {
   }
 
   Widget _buildSalesTab(ReportsLoaded state, ThemeData theme, bool isArabic, double screenWidth) {
+    final salesCrossAxisCount = screenWidth > 900 ? 3 : (screenWidth > 600 ? 2 : 1);
+    final salesGridWidth = screenWidth - 32.r;
+    final salesItemWidth = (salesGridWidth - (salesCrossAxisCount - 1) * 16) / salesCrossAxisCount;
+    final double salesCardHeight = 110.0;
+    final double salesChildAspectRatio = salesItemWidth / salesCardHeight;
+
     return Scrollbar(
       controller: _salesScrollController,
       thumbVisibility: true,
@@ -152,14 +158,12 @@ class _ReportsScreenState extends State<ReportsScreen> {
         children: [
           // KPI cards grid
           GridView.count(
-            crossAxisCount: screenWidth > 900
-                ? 3
-                : (screenWidth > 600 ? 2 : 1),
+            crossAxisCount: salesCrossAxisCount,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             crossAxisSpacing: 16,
             mainAxisSpacing: 16,
-            childAspectRatio: screenWidth > 600 ? 2.2 : 3.2,
+            childAspectRatio: salesChildAspectRatio,
             children: [
               StatCard(
                 title: 'today_sales'.tr(),
@@ -232,6 +236,12 @@ class _ReportsScreenState extends State<ReportsScreen> {
 
   Widget _buildExpensesTab(ReportsLoaded state, ThemeData theme, bool isArabic, double screenWidth) {
     final netProfit = state.totalRevenue - state.totalExpenses;
+    final expensesCrossAxisCount = screenWidth > 900 ? 3 : (screenWidth > 600 ? 2 : 1);
+    final expensesGridWidth = screenWidth - 32.r;
+    final expensesItemWidth = (expensesGridWidth - (expensesCrossAxisCount - 1) * 16) / expensesCrossAxisCount;
+    final double expensesCardHeight = 110.0;
+    final double expensesChildAspectRatio = expensesItemWidth / expensesCardHeight;
+
     return Scrollbar(
       controller: _expensesScrollController,
       thumbVisibility: true,
@@ -243,14 +253,12 @@ class _ReportsScreenState extends State<ReportsScreen> {
         children: [
           // KPI cards grid for Expenses & Profit
           GridView.count(
-            crossAxisCount: screenWidth > 900
-                ? 3
-                : (screenWidth > 600 ? 2 : 1),
+            crossAxisCount: expensesCrossAxisCount,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             crossAxisSpacing: 16,
             mainAxisSpacing: 16,
-            childAspectRatio: screenWidth > 600 ? 2.2 : 3.2,
+            childAspectRatio: expensesChildAspectRatio,
             children: [
               StatCard(
                 title: 'today_expenses'.tr(),
@@ -336,7 +344,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
             ),
             SizedBox(height: 24.h),
             SizedBox(
-              height: 220.h,
+              height: 240,
               child: displayHistory.isEmpty
                   ? Center(child: Text('no_data'.tr()))
                   : BarChart(
@@ -459,7 +467,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
             ),
             SizedBox(height: 24.h),
             SizedBox(
-              height: 220.h,
+              height: 240,
               child: total <= 0
                   ? Center(child: Text('no_data'.tr()))
                   : PieChart(
@@ -522,7 +530,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
             ),
             SizedBox(height: 24.h),
             SizedBox(
-              height: 220.h,
+              height: 240,
               child: total <= 0
                   ? Center(child: Text('no_expenses_recorded'.tr()))
                   : PieChart(
@@ -556,14 +564,14 @@ class _ReportsScreenState extends State<ReportsScreen> {
             SizedBox(height: 16.h),
             if (total <= 0)
               SizedBox(
-                height: 228.h,
+                height: 240,
                 child: Center(
                   child: Text('no_expenses_recorded'.tr()),
                 ),
               )
             else
               SizedBox(
-                height: 228.h,
+                height: 240,
                 child: ListView(
                   shrinkWrap: true,
                   children: state.expenseCategorySplit.entries
