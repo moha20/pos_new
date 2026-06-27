@@ -3,27 +3,27 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:path_provider/path_provider.dart';
-import 'dart:convert';
-import 'dart:io';
-import 'package:flutter/foundation.dart';
+// import 'package:file_picker/file_picker.dart';
+// import 'package:path_provider/path_provider.dart';
+// import 'dart:convert';
+// import 'dart:io';
+// import 'package:flutter/foundation.dart';
 import '../bloc/settings_bloc.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/domain/entities/user_entity.dart';
 import '../../../../widgets/responsive_layout.dart';
 import '../../../../widgets/language_toggle.dart';
-import '../../../../widgets/app_logo.dart';
+// import '../../../../widgets/app_logo.dart';
 import '../../../../core/di/di.dart';
 import '../../../../services/backup_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/db/hive_config.dart';
-import '../../../customers/data/models/customer_model.dart';
-import '../../../suppliers/data/models/supplier_model.dart';
-import '../../../inventory/data/models/product_model.dart';
-import '../../../pos/data/models/sale_model.dart';
-import '../../../cashier/data/models/expense_model.dart';
-import '../../../activity_log/data/models/activity_log_model.dart';
+// import '../../../customers/data/models/customer_model.dart';
+// import '../../../suppliers/data/models/supplier_model.dart';
+// import '../../../inventory/data/models/product_model.dart';
+// import '../../../pos/data/models/sale_model.dart';
+// import '../../../cashier/data/models/expense_model.dart';
+// import '../../../activity_log/data/models/activity_log_model.dart';
 import '../../../auth/domain/repositories/auth_repository.dart';
 import '../../../customers/presentation/bloc/customer_bloc.dart';
 import '../../../suppliers/presentation/bloc/supplier_bloc.dart';
@@ -111,7 +111,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           children: [
                             TextFormField(
                               controller: _companyController,
-                              enabled: isAdmin,
+                              enabled: false,
                               decoration: InputDecoration(
                                 labelText: 'company_name'.tr(),
                                 border: const OutlineInputBorder(),
@@ -573,6 +573,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                       ),
                     if (isAdmin) ...[
+                      /*
                       SizedBox(height: 24.h),
                       Text(
                         'logo_management'.tr(),
@@ -684,6 +685,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ),
                         ),
                       ),
+                      */
                       SizedBox(height: 24.h),
                       Text(
                         'backup_restore'.tr(),
@@ -1138,6 +1140,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  /*
   void _handleChangeLogo(BuildContext context) async {
     try {
       final result = await FilePicker.platform.pickFiles(
@@ -1208,6 +1211,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     );
   }
+  */
 
   void _handleBackup(BuildContext context) async {
     final isArabic = context.locale.languageCode == 'ar';
@@ -1312,7 +1316,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
             child: Text('confirm'.tr()),
           ),
         ],
@@ -1405,7 +1412,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
               context.read<AuthBloc>().add(AuthDeleteUserRequested(user.id));
               Navigator.pop(dlgContext);
             },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
             child: Text('confirm'.tr()),
           ),
         ],
@@ -1629,10 +1639,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   }
                 }
               },
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+              ),
               child: Text(
                 isArabic ? 'حذف نهائي' : 'Delete Permanently',
-                style: const TextStyle(color: Colors.white),
               ),
             ),
           ],
