@@ -13,6 +13,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../features/pos/domain/entities/sale_entity.dart';
 import '../features/customers/domain/entities/customer_entity.dart';
+import '../widgets/invoice_format_widgets.dart';
 import '../core/di/di.dart';
 
 class PrintService {
@@ -56,6 +57,7 @@ class PrintService {
     String lang,
     pw.MemoryImage logoImage, {
     CustomerEntity? customer,
+    InvoiceFormatShape shape = InvoiceFormatShape.a4,
   }) async {
     final pdf = pw.Document();
     final isAr = lang == 'ar';
@@ -120,9 +122,148 @@ class PrintService {
         ? tafqeet(sale.total)
         : 'Only ${sale.total.toStringAsFixed(2)} EGP';
 
+    final pageFormat = shape == InvoiceFormatShape.a4
+        ? PdfPageFormat.a4
+        : (shape == InvoiceFormatShape.thermal80
+            ? PdfPageFormat(80 * PdfPageFormat.mm, double.infinity, marginAll: 3 * PdfPageFormat.mm)
+            : PdfPageFormat.a5);
+
+    if (shape == InvoiceFormatShape.thermal80) {
+      pdf.addPage(
+        pw.Page(
+          pageFormat: pageFormat,
+          theme: pw.ThemeData.withFont(
+            base: _baseFont!,
+            bold: _boldFont!,
+            fontFallback: _fallbackFonts!,
+          ),
+          build: (pw.Context context) {
+            final formattedDate = DateFormat('yyyy-MM-dd HH:mm').format(sale.createdAt);
+            return pw.Directionality(
+              textDirection: textDirection,
+              child: pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.center,
+                children: [
+                  pw.Container(
+                    height: 30,
+                    child: pw.Image(logoImage, fit: pw.BoxFit.contain),
+                  ),
+                  pw.SizedBox(height: 2),
+                  pw.Text(companyNameText, style: _style(fontSize: 9, bold: true)),
+                  pw.Text(phoneText, style: _style(fontSize: 7)),
+                  pw.SizedBox(height: 4),
+                  pw.Divider(borderStyle: pw.BorderStyle.dashed),
+
+                  pw.Text(
+                    isDraft
+                        ? (isAr ? 'مسودة إيصال' : 'DRAFT RECEIPT')
+                        : (isAr ? 'إيصال مبيعات' : 'SALES RECEIPT'),
+                    style: _style(fontSize: 8, bold: true),
+                  ),
+                  pw.SizedBox(height: 2),
+                  pw.Row(
+                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                    children: [
+                      pw.Text('${isAr ? "فاتورة" : "Inv"}: ${sale.invoiceNumber}', style: _style(fontSize: 7, bold: true)),
+                      pw.Text(formattedDate, style: _style(fontSize: 7)),
+                    ],
+                  ),
+                  pw.Row(
+                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                    children: [
+                      pw.Text('${isAr ? "العميل" : "Cust"}: ${customer?.name ?? defaultCustomerName}', style: _style(fontSize: 7)),
+                      pw.Text('${isAr ? "الكاشير" : "Cashier"}: ${sale.cashierId}', style: _style(fontSize: 7)),
+                    ],
+                  ),
+                  pw.Divider(borderStyle: pw.BorderStyle.dashed),
+
+                  pw.Table(
+                    columnWidths: const {
+                      0: pw.FlexColumnWidth(3),
+                      1: pw.FlexColumnWidth(1),
+                      2: pw.FlexColumnWidth(1.5),
+                      3: pw.FlexColumnWidth(1.5),
+                    },
+                    children: [
+                      pw.TableRow(
+                        children: [
+                          pw.Text(isAr ? 'الصنف' : 'Item', style: _style(fontSize: 7, bold: true)),
+                          pw.Text(isAr ? 'الكمية' : 'Qty', style: _style(fontSize: 7, bold: true), textAlign: pw.TextAlign.center),
+                          pw.Text(isAr ? 'السعر' : 'Price', style: _style(fontSize: 7, bold: true), textAlign: pw.TextAlign.right),
+                          pw.Text(isAr ? 'الإجمالي' : 'Total', style: _style(fontSize: 7, bold: true), textAlign: pw.TextAlign.right),
+                        ],
+                      ),
+                      ...sale.items.map((item) {
+                        return pw.TableRow(
+                          children: [
+                            pw.Text(item.productName, style: _style(fontSize: 6.5)),
+                            pw.Text('${item.qty}', style: _style(fontSize: 6.5), textAlign: pw.TextAlign.center),
+                            pw.Text(item.unitPrice.toStringAsFixed(2), style: _style(fontSize: 6.5), textAlign: pw.TextAlign.right),
+                            pw.Text(item.totalPrice.toStringAsFixed(2), style: _style(fontSize: 6.5, bold: true), textAlign: pw.TextAlign.right),
+                          ],
+                        );
+                      }),
+                    ],
+                  ),
+                  pw.Divider(borderStyle: pw.BorderStyle.dashed),
+
+                  pw.Row(
+                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                    children: [
+                      pw.Text(subtotalLabel, style: _style(fontSize: 7)),
+                      pw.Text('${sale.subtotal.toStringAsFixed(2)} EGP', style: _style(fontSize: 7)),
+                    ],
+                  ),
+                  if (sale.discount > 0)
+                    pw.Row(
+                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                      children: [
+                        pw.Text(discountLabel, style: _style(fontSize: 7)),
+                        pw.Text('-${sale.discount.toStringAsFixed(2)} EGP', style: _style(fontSize: 7)),
+                      ],
+                    ),
+                  pw.SizedBox(height: 2),
+                  pw.Container(
+                    padding: const pw.EdgeInsets.all(4),
+                    decoration: pw.BoxDecoration(
+                      border: pw.Border.all(color: PdfColors.black, width: 1),
+                    ),
+                    child: pw.Row(
+                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                      children: [
+                        pw.Text(totalLabel, style: _style(fontSize: 8, bold: true)),
+                        pw.Text('${sale.total.toStringAsFixed(2)} EGP', style: _style(fontSize: 9, bold: true)),
+                      ],
+                    ),
+                  ),
+                  pw.SizedBox(height: 4),
+
+                  pw.BarcodeWidget(
+                    barcode: pw.Barcode.code128(),
+                    data: sale.invoiceNumber,
+                    width: 120,
+                    height: 25,
+                    drawText: true,
+                    textStyle: _style(fontSize: 6),
+                  ),
+                  pw.SizedBox(height: 4),
+                  pw.Text(
+                    isAr ? 'شكراً لزيارتكم! نتمنى لكم يوماً سعيداً' : 'Thank you for your visit!',
+                    style: _style(fontSize: 7, bold: true),
+                    textAlign: pw.TextAlign.center,
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      );
+      return pdf;
+    }
+
     pdf.addPage(
       pw.Page(
-        pageFormat: PdfPageFormat.a5,
+        pageFormat: pageFormat,
         theme: pw.ThemeData.withFont(
           base: _baseFont!,
           bold: _boldFont!,
@@ -444,6 +585,7 @@ class PrintService {
     String companyName,
     String lang, {
     CustomerEntity? customer,
+    InvoiceFormatShape shape = InvoiceFormatShape.a4,
   }) async {
     await _loadFonts();
 
@@ -455,6 +597,7 @@ class PrintService {
       context: context,
       builder: (dialogContext) {
         String activeLang = lang;
+        InvoiceFormatShape activeShape = shape;
         bool isMaximized = false;
         return StatefulBuilder(
           builder: (context, setState) {
@@ -467,8 +610,8 @@ class PrintService {
               ),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                width: isMaximized ? screenWidth * 0.95 : 500,
-                height: isMaximized ? screenHeight * 0.95 : 650,
+                width: isMaximized ? screenWidth * 0.95 : 650,
+                height: isMaximized ? screenHeight * 0.95 : 700,
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
@@ -485,101 +628,128 @@ class PrintService {
                             ),
                           ),
                           const SizedBox(width: 8),
+                          // Shape Segmented Selector
+                          SegmentedButton<InvoiceFormatShape>(
+                            style: SegmentedButton.styleFrom(
+                              visualDensity: VisualDensity.compact,
+                            ),
+                            segments: const [
+                              ButtonSegment<InvoiceFormatShape>(
+                                value: InvoiceFormatShape.a4,
+                                label: Text('A4'),
+                              ),
+                              ButtonSegment<InvoiceFormatShape>(
+                                value: InvoiceFormatShape.a5,
+                                label: Text('A5'),
+                              ),
+                              ButtonSegment<InvoiceFormatShape>(
+                                value: InvoiceFormatShape.thermal80,
+                                label: Text('80mm'),
+                              ),
+                            ],
+                            selected: {activeShape},
+                            onSelectionChanged: (val) {
+                              setState(() {
+                                activeShape = val.first;
+                              });
+                            },
+                          ),
+                          const SizedBox(width: 8),
                           // Language Dropdown Selector
                           Row(
-                          children: [
-                            Text(
-                              'receipt_language'.tr(),
-                              style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Theme.of(context).colorScheme.surface,
-                                border: Border.all(
-                                  color: Theme.of(
-                                    context,
-                                  ).dividerColor.withOpacity(0.2),
+                            children: [
+                              Text(
+                                'receipt_language'.tr(),
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
                                 ),
-                                borderRadius: BorderRadius.circular(8),
                               ),
-                              child: DropdownButtonHideUnderline(
-                                child: DropdownButton<String>(
-                                  value: activeLang,
-                                  icon: Icon(
-                                    Icons.keyboard_arrow_down_rounded,
+                              const SizedBox(width: 4),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).colorScheme.surface,
+                                  border: Border.all(
                                     color: Theme.of(
                                       context,
-                                    ).colorScheme.primary,
-                                    size: 20,
+                                    ).dividerColor.withValues(alpha: 0.2),
                                   ),
-                                  dropdownColor: Theme.of(context).cardColor,
-                                  borderRadius: BorderRadius.circular(12),
-                                  items: const [
-                                    DropdownMenuItem(
-                                      value: 'ar',
-                                      child: Text(
-                                        'العربية',
-                                        style: TextStyle(fontSize: 13),
-                                      ),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: DropdownButtonHideUnderline(
+                                  child: DropdownButton<String>(
+                                    value: activeLang,
+                                    icon: Icon(
+                                      Icons.keyboard_arrow_down_rounded,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.primary,
+                                      size: 20,
                                     ),
-                                    DropdownMenuItem(
-                                      value: 'en',
-                                      child: Text(
-                                        'English',
-                                        style: TextStyle(fontSize: 13),
+                                    dropdownColor: Theme.of(context).cardColor,
+                                    borderRadius: BorderRadius.circular(12),
+                                    items: const [
+                                      DropdownMenuItem(
+                                        value: 'ar',
+                                        child: Text(
+                                          'العربية',
+                                          style: TextStyle(fontSize: 13),
+                                        ),
                                       ),
-                                    ),
-                                  ],
-                                  onChanged: (val) {
-                                    if (val != null) {
-                                      setState(() {
-                                        activeLang = val;
-                                      });
-                                    }
-                                  },
+                                      DropdownMenuItem(
+                                        value: 'en',
+                                        child: Text(
+                                          'English',
+                                          style: TextStyle(fontSize: 13),
+                                        ),
+                                      ),
+                                    ],
+                                    onChanged: (val) {
+                                      if (val != null) {
+                                        setState(() {
+                                          activeLang = val;
+                                        });
+                                      }
+                                    },
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            IconButton(
-                              icon: Icon(
-                                isMaximized
-                                    ? Icons.fullscreen_exit
-                                    : Icons.fullscreen,
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              IconButton(
+                                icon: Icon(
+                                  isMaximized
+                                      ? Icons.fullscreen_exit
+                                      : Icons.fullscreen,
+                                ),
+                                tooltip: isArabic
+                                    ? (isMaximized ? 'تصغير' : 'تكبير')
+                                    : (isMaximized ? 'Minimize' : 'Maximize'),
+                                onPressed: () {
+                                  setState(() {
+                                    isMaximized = !isMaximized;
+                                  });
+                                },
                               ),
-                              tooltip: isArabic
-                                  ? (isMaximized ? 'تصغير' : 'تكبير')
-                                  : (isMaximized ? 'Minimize' : 'Maximize'),
-                              onPressed: () {
-                                setState(() {
-                                  isMaximized = !isMaximized;
-                                });
-                              },
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.close),
-                              onPressed: () => Navigator.pop(dialogContext),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
+                              IconButton(
+                                icon: const Icon(Icons.close),
+                                onPressed: () => Navigator.pop(dialogContext),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                     const SizedBox(height: 12),
                     Expanded(
                       child: PdfPreview(
-                        key: ValueKey(activeLang),
+                        key: ValueKey('$activeLang-${activeShape.name}'),
                         build: (format) async {
                           final doc = await _buildInvoicePdf(
                             context,
@@ -588,6 +758,7 @@ class PrintService {
                             activeLang,
                             logoImage,
                             customer: customer,
+                            shape: activeShape,
                           );
                           return doc.save();
                         },

@@ -158,7 +158,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
             ),
           ),
 
-          // Customers Table
+          // Customers List (DataTable for Desktop, Cards for Mobile & Tablet)
           Expanded(
             child: BlocBuilder<CustomerBloc, CustomerState>(
               builder: (context, state) {
@@ -167,10 +167,126 @@ class _CustomersScreenState extends State<CustomersScreen> {
                 }
                 if (state is CustomerLoaded) {
                   final customers = state.filteredCustomers;
+                  final screenWidth = MediaQuery.of(context).size.width;
                   if (customers.isEmpty) {
                     return Center(child: Text('no_data'.tr()));
                   }
 
+                  final isDesktop = screenWidth > 950;
+                  final currencySymbol = 'currency_symbol'.tr();
+
+                  if (!isDesktop) {
+                    // Mobile & Tablet Customer Card View
+                    return ListView.builder(
+                      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                      itemCount: customers.length,
+                      itemBuilder: (context, index) {
+                        final c = customers[index];
+                        final hasDebt = c.balance > 0;
+
+                        return Card(
+                          margin: EdgeInsets.only(bottom: 10.h),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.r),
+                            side: BorderSide(
+                              color: _selectedCustomerIds.contains(c.id)
+                                  ? theme.colorScheme.primary
+                                  : theme.dividerColor.withValues(alpha: 0.1),
+                              width: _selectedCustomerIds.contains(c.id) ? 2 : 1,
+                            ),
+                          ),
+                          child: InkWell(
+                            onTap: () {
+                              showDialog(
+                                context: context,
+                                builder: (context) => CustomerForm(customer: c),
+                              );
+                            },
+                            borderRadius: BorderRadius.circular(12.r),
+                            child: Padding(
+                              padding: EdgeInsets.all(12.r),
+                              child: Row(
+                                children: [
+                                  CircleAvatar(
+                                    backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.1),
+                                    child: Text(
+                                      c.name.isNotEmpty ? c.name.substring(0, 1).toUpperCase() : '?',
+                                      style: TextStyle(
+                                        color: theme.colorScheme.primary,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(width: 12.w),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          c.name,
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 14.sp,
+                                          ),
+                                        ),
+                                        SizedBox(height: 2.h),
+                                        Text(
+                                          c.phone.isNotEmpty ? c.phone : 'no_phone'.tr(),
+                                          style: theme.textTheme.bodySmall?.copyWith(
+                                            fontSize: 11.sp,
+                                            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                                          ),
+                                        ),
+                                        SizedBox(height: 4.h),
+                                        Row(
+                                          children: [
+                                            Container(
+                                              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                                              decoration: BoxDecoration(
+                                                color: (hasDebt ? Colors.red : Colors.green).withValues(alpha: 0.12),
+                                                borderRadius: BorderRadius.circular(6.r),
+                                              ),
+                                              child: Text(
+                                                hasDebt
+                                                    ? '${'remaining'.tr()}: ${c.balance.toStringAsFixed(2)} $currencySymbol'
+                                                    : 'clear_balance'.tr(),
+                                                style: TextStyle(
+                                                  color: hasDebt ? Colors.red : Colors.green,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 10.sp,
+                                                ),
+                                              ),
+                                            ),
+                                            SizedBox(width: 8.w),
+                                            Chip(
+                                              visualDensity: VisualDensity.compact,
+                                              label: Text(_getTierBadgeText(c.priceLevel, isArabic), style: TextStyle(fontSize: 10.sp)),
+                                              padding: EdgeInsets.zero,
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.edit_outlined),
+                                    onPressed: () {
+                                      showDialog(
+                                        context: context,
+                                        builder: (context) => CustomerForm(customer: c),
+                                      );
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  }
+
+                  // Desktop DataTable View (UNCHANGED)
                   return Scrollbar(
                     controller: _verticalScrollController,
                     thumbVisibility: true,

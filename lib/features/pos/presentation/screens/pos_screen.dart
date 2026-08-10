@@ -152,68 +152,154 @@ class _POSScreenState extends State<POSScreen> {
       ],
     );
 
+    final isTablet = width >= 650 && width <= 950;
+    final isMobile = width < 650;
+
     return BlocBuilder<POSBloc, POSState>(
       builder: (context, state) {
-        return ResponsiveLayout(
-          title: 'pos'.tr(),
-          child: isDesktop
-              ? Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Expanded(flex: 5, child: mainContent),
-                    const Expanded(flex: 3, child: CartWidget()),
-                  ],
-                )
-              : Column(
-                  children: [
-                    Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 12.w,
-                        vertical: 8.h,
-                      ),
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: SegmentedButton<int>(
-                          style: SegmentedButton.styleFrom(
-                            selectedBackgroundColor: theme.colorScheme.primary,
-                            selectedForegroundColor: Colors.white,
+        final totalItemsCount = state.cartItems.fold<int>(0, (sum, item) => sum + item.qty);
+        final isArabic = context.locale.languageCode == 'ar';
+        final currencySymbol = isArabic ? 'ج.م' : 'EGP';
+
+        Widget bodyContent;
+        if (isDesktop) {
+          // Desktop: 5:3 ratio split view (UNCHANGED)
+          bodyContent = Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(flex: 5, child: mainContent),
+              const Expanded(flex: 3, child: CartWidget()),
+            ],
+          );
+        } else if (isTablet) {
+          // Tablet: 6:4 ratio 2-column POS terminal layout
+          bodyContent = Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(flex: 6, child: mainContent),
+              const Expanded(flex: 4, child: CartWidget()),
+            ],
+          );
+        } else {
+          // Mobile: Tabbed view with Floating Cart Summary Bar
+          bodyContent = Stack(
+            children: [
+              Column(
+                children: [
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 12.w,
+                      vertical: 8.h,
+                    ),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: SegmentedButton<int>(
+                        style: SegmentedButton.styleFrom(
+                          selectedBackgroundColor: theme.colorScheme.primary,
+                          selectedForegroundColor: Colors.white,
+                        ),
+                        segments: [
+                          ButtonSegment<int>(
+                            value: 0,
+                            icon: const Icon(Icons.grid_view_rounded),
+                            label: Text('products'.tr()),
                           ),
-                          segments: [
-                            ButtonSegment<int>(
-                              value: 0,
-                              icon: const Icon(Icons.grid_view_rounded),
-                              label: Text('products'.tr()),
+                          ButtonSegment<int>(
+                            value: 1,
+                            icon: Badge(
+                              label: Text('${state.cartItems.length}'),
+                              isLabelVisible: state.cartItems.isNotEmpty,
+                              child: const Icon(Icons.shopping_cart_rounded),
                             ),
-                            ButtonSegment<int>(
-                              value: 1,
-                              icon: Badge(
-                                label: Text('${state.cartItems.length}'),
-                                isLabelVisible: state.cartItems.isNotEmpty,
-                                child: const Icon(Icons.shopping_cart_rounded),
+                            label: Text('cart'.tr()),
+                          ),
+                        ],
+                        selected: {_activeTab},
+                        onSelectionChanged: (value) {
+                          setState(() => _activeTab = value.first);
+                        },
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 200),
+                      child: _activeTab == 0
+                          ? mainContent
+                          : const Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: CartWidget(),
+                            ),
+                    ),
+                  ),
+                ],
+              ),
+              // Floating Cart Bottom Bar on Mobile when on Products tab
+              if (isMobile && _activeTab == 0 && state.cartItems.isNotEmpty)
+                Positioned(
+                  left: 16.w,
+                  right: 16.w,
+                  bottom: 16.h,
+                  child: Material(
+                    elevation: 8,
+                    borderRadius: BorderRadius.circular(16.r),
+                    color: theme.colorScheme.primary,
+                    child: InkWell(
+                      onTap: () => setState(() => _activeTab = 1),
+                      borderRadius: BorderRadius.circular(16.r),
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                        child: Row(
+                          children: [
+                            Badge(
+                              label: Text('$totalItemsCount'),
+                              backgroundColor: Colors.white,
+                              textColor: theme.colorScheme.primary,
+                              child: const Icon(Icons.shopping_bag_outlined, color: Colors.white),
+                            ),
+                            SizedBox(width: 12.w),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    '${'cart'.tr()} ($totalItemsCount)',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Text(
+                                    '${state.total.toStringAsFixed(2)} $currencySymbol',
+                                    style: TextStyle(
+                                      color: Colors.white.withValues(alpha: 0.9),
+                                      fontSize: 12.sp,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              label: Text('cart'.tr()),
+                            ),
+                            Text(
+                              isArabic ? 'عرض السلة ←' : 'View Cart →',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ],
-                          selected: {_activeTab},
-                          onSelectionChanged: (value) {
-                            setState(() => _activeTab = value.first);
-                          },
                         ),
                       ),
                     ),
-                    Expanded(
-                      child: AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 200),
-                        child: _activeTab == 0
-                            ? mainContent
-                            : const Padding(
-                                padding: EdgeInsets.all(8.0),
-                                child: CartWidget(),
-                              ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
+            ],
+          );
+        }
+
+        return ResponsiveLayout(
+          title: 'pos'.tr(),
+          child: bodyContent,
         );
       },
     );

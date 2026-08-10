@@ -63,6 +63,8 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
           }
           if (state is SalesHistoryLoaded) {
             final sales = state.filteredSales;
+            final theme = Theme.of(context);
+            final screenWidth = MediaQuery.of(context).size.width;
 
             return Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -127,31 +129,152 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
                 ),
                 SizedBox(height: 12.h),
 
-                // Invoices Table
+                // Invoices List (DataTable for Desktop, Cards for Mobile & Tablet)
                 Expanded(
                   child: sales.isEmpty
                       ? Center(child: Text('no_data'.tr()))
-                      : Scrollbar(
-                          controller: _verticalScrollController,
-                          thumbVisibility: true,
-                          notificationPredicate: (notification) =>
-                              notification.metrics.axis == Axis.vertical,
-                          child: Scrollbar(
-                            controller: _horizontalScrollController,
-                            thumbVisibility: true,
-                            notificationPredicate: (notification) =>
-                                notification.metrics.axis == Axis.horizontal,
-                            child: SingleChildScrollView(
-                              controller: _verticalScrollController,
-                              scrollDirection: Axis.vertical,
-                              child: SingleChildScrollView(
-                                controller: _horizontalScrollController,
-                                scrollDirection: Axis.horizontal,
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16.0,
+                      : (screenWidth <= 950)
+                          ? ListView.builder(
+                              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                              itemCount: sales.length,
+                              itemBuilder: (context, index) {
+                                final sale = sales[index];
+                                final customerBloc = context.read<CustomerBloc>();
+                                String customerName = isArabic ? 'عميل نقدي' : 'Cash Customer';
+                                if (sale.customerId != null && customerBloc.state is CustomerLoaded) {
+                                  final customers = (customerBloc.state as CustomerLoaded).allCustomers;
+                                  try {
+                                    final match = customers.firstWhere((c) => c.id == sale.customerId);
+                                    customerName = match.name;
+                                  } catch (_) {}
+                                }
+                                final formattedDate = DateFormat('yyyy-MM-dd HH:mm').format(sale.createdAt);
+
+                                return Card(
+                                  margin: EdgeInsets.only(bottom: 10.h),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12.r),
+                                    side: BorderSide(
+                                      color: theme.dividerColor.withValues(alpha: 0.1),
+                                    ),
                                   ),
-                                  child: DataTable(
+                                  child: InkWell(
+                                    onTap: () {
+                                      showInvoiceDetailsDialog(context, sale, customerName);
+                                    },
+                                    borderRadius: BorderRadius.circular(12.r),
+                                    child: Padding(
+                                      padding: EdgeInsets.all(14.r),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Container(
+                                                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                                                decoration: BoxDecoration(
+                                                  color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                                                  borderRadius: BorderRadius.circular(8.r),
+                                                ),
+                                                child: Text(
+                                                  sale.invoiceNumber,
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: theme.colorScheme.primary,
+                                                    fontSize: 12.sp,
+                                                  ),
+                                                ),
+                                              ),
+                                              Text(
+                                                formatCurrency(sale.total),
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.w900,
+                                                  fontSize: 15.sp,
+                                                  color: theme.colorScheme.primary,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          SizedBox(height: 8.h),
+                                          Row(
+                                            children: [
+                                              Icon(Icons.person_outline, size: 16.r, color: Colors.grey.shade600),
+                                              SizedBox(width: 4.w),
+                                              Text(
+                                                customerName,
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 13.sp,
+                                                ),
+                                              ),
+                                              const Spacer(),
+                                              Icon(Icons.access_time, size: 14.r, color: Colors.grey.shade600),
+                                              SizedBox(width: 4.w),
+                                              Text(
+                                                formattedDate,
+                                                style: TextStyle(
+                                                  fontSize: 11.sp,
+                                                  color: Colors.grey.shade600,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          SizedBox(height: 6.h),
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Chip(
+                                                visualDensity: VisualDensity.compact,
+                                                label: Text(sale.paymentMethod.tr(), style: TextStyle(fontSize: 10.sp)),
+                                                padding: EdgeInsets.zero,
+                                                backgroundColor: theme.colorScheme.surfaceContainerHighest,
+                                              ),
+                                              Row(
+                                                children: [
+                                                  Text(
+                                                    '${'paid'.tr()}: ${sale.amountPaid.toStringAsFixed(2)}',
+                                                    style: TextStyle(fontSize: 11.sp, color: Colors.green),
+                                                  ),
+                                                  if (sale.amountRemaining > 0) ...[
+                                                    SizedBox(width: 8.w),
+                                                    Text(
+                                                      '${'remaining'.tr()}: ${sale.amountRemaining.toStringAsFixed(2)}',
+                                                      style: TextStyle(fontSize: 11.sp, color: Colors.red, fontWeight: FontWeight.bold),
+                                                    ),
+                                                  ],
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            )
+                          : Scrollbar(
+                              controller: _verticalScrollController,
+                              thumbVisibility: true,
+                              notificationPredicate: (notification) =>
+                                  notification.metrics.axis == Axis.vertical,
+                              child: Scrollbar(
+                                controller: _horizontalScrollController,
+                                thumbVisibility: true,
+                                notificationPredicate: (notification) =>
+                                    notification.metrics.axis == Axis.horizontal,
+                                child: SingleChildScrollView(
+                                  controller: _verticalScrollController,
+                                  scrollDirection: Axis.vertical,
+                                  child: SingleChildScrollView(
+                                    controller: _horizontalScrollController,
+                                    scrollDirection: Axis.horizontal,
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 16.0,
+                                      ),
+                                      child: DataTable(
                                     showCheckboxColumn: false,
                                     columns: [
                                       DataColumn(

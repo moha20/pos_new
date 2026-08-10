@@ -31,6 +31,9 @@ class CartWidget extends StatelessWidget {
       listener: (context, state) {
         if (state.status == POSStatus.checkoutSuccess &&
             state.lastCompletedSale != null) {
+          final completedSale = state.lastCompletedSale!;
+          final customerName = state.selectedCustomer?.name ?? (isArabic ? 'عميل نقدي' : 'Cash Customer');
+
           // 1. Show Success Message
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -45,14 +48,13 @@ class CartWidget extends StatelessWidget {
             ),
           );
 
-          // 2. Open PDF Print Preview
-          final printService = Gravity.find<PrintService>();
-          printService.printInvoice(
-            context,
-            state.lastCompletedSale!,
-            'Al Mohands Electrical Tools / المهندس للأدوات الكهربائية',
-            context.locale.languageCode,
-            customer: state.selectedCustomer,
+          // 2. Open NEW Invoice Details Screen with A4, A5, and Thermal 80mm Cashier Printer shapes
+          context.push(
+            '/invoice-details',
+            extra: {
+              'sale': completedSale,
+              'customerName': customerName,
+            },
           );
 
           // 3. Reload Customers

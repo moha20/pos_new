@@ -190,6 +190,7 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
       widget.sale,
       companyName,
       lang,
+      shape: _selectedShape,
     );
   }
 }

@@ -126,7 +126,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
             ),
           ),
 
-          // Inventory Table
+          // Inventory Content (DataTable for Desktop, Native Cards for Mobile & Tablet)
           Expanded(
             child: BlocBuilder<InventoryBloc, InventoryState>(
               builder: (context, state) {
@@ -139,6 +139,156 @@ class _InventoryScreenState extends State<InventoryScreen> {
                     return Center(child: Text('no_data'.tr()));
                   }
 
+                  final isDesktop = screenWidth > 950;
+                  final currencySymbol = 'currency_symbol'.tr();
+
+                  if (!isDesktop) {
+                    // Mobile & Tablet Product List View
+                    return ListView.builder(
+                      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                      itemCount: products.length,
+                      itemBuilder: (context, index) {
+                        final p = products[index];
+                        final isLowStock = p.isLowStock;
+                        final isOutOfStock = p.isOutOfStock;
+                        Color stockColor = Colors.green;
+                        String stockStatusText = '${'stock'.tr()}: ${p.stock}';
+                        if (isOutOfStock) {
+                          stockColor = Colors.red;
+                          stockStatusText = 'out_of_stock'.tr();
+                        } else if (isLowStock) {
+                          stockColor = Colors.orange;
+                          stockStatusText = '${'low_stock'.tr()} (${p.stock})';
+                        }
+
+                        return Card(
+                          margin: EdgeInsets.only(bottom: 10.h),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.r),
+                            side: BorderSide(
+                              color: _selectedProductIds.contains(p.id)
+                                  ? theme.colorScheme.primary
+                                  : theme.dividerColor.withValues(alpha: 0.1),
+                              width: _selectedProductIds.contains(p.id) ? 2 : 1,
+                            ),
+                          ),
+                          child: InkWell(
+                            onTap: canModify
+                                ? () {
+                                    setState(() {
+                                      if (_selectedProductIds.contains(p.id)) {
+                                        _selectedProductIds.remove(p.id);
+                                      } else {
+                                        _selectedProductIds.add(p.id);
+                                      }
+                                    });
+                                  }
+                                : null,
+                            borderRadius: BorderRadius.circular(12.r),
+                            child: Padding(
+                              padding: EdgeInsets.all(12.r),
+                              child: Row(
+                                children: [
+                                  if (canModify)
+                                    Checkbox(
+                                      value: _selectedProductIds.contains(p.id),
+                                      onChanged: (val) {
+                                        setState(() {
+                                          if (val == true) {
+                                            _selectedProductIds.add(p.id);
+                                          } else {
+                                            _selectedProductIds.remove(p.id);
+                                          }
+                                        });
+                                      },
+                                    ),
+                                  // Product thumbnail/icon
+                                  Container(
+                                    height: 50.r,
+                                    width: 50.r,
+                                    decoration: BoxDecoration(
+                                      color: theme.colorScheme.primary.withValues(alpha: 0.08),
+                                      borderRadius: BorderRadius.circular(10.r),
+                                    ),
+                                    child: Icon(Icons.inventory_2_outlined, color: theme.colorScheme.primary),
+                                  ),
+                                  SizedBox(width: 12.w),
+                                  // Details
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          p.name,
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 14.sp,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        SizedBox(height: 2.h),
+                                        Text(
+                                          '${p.barcode} • ${p.category}',
+                                          style: theme.textTheme.bodySmall?.copyWith(
+                                            fontSize: 11.sp,
+                                            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                                          ),
+                                        ),
+                                        SizedBox(height: 4.h),
+                                        Row(
+                                          children: [
+                                            Container(
+                                              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                                              decoration: BoxDecoration(
+                                                color: stockColor.withValues(alpha: 0.12),
+                                                borderRadius: BorderRadius.circular(6.r),
+                                              ),
+                                              child: Text(
+                                                stockStatusText,
+                                                style: TextStyle(
+                                                  color: stockColor,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 10.sp,
+                                                ),
+                                              ),
+                                            ),
+                                            SizedBox(width: 8.w),
+                                            Text(
+                                              '${p.priceFor('retail').toStringAsFixed(2)} $currencySymbol',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 13.sp,
+                                                color: theme.colorScheme.primary,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  // Actions
+                                  if (canModify)
+                                    IconButton(
+                                      icon: const Icon(Icons.edit_outlined),
+                                      onPressed: () {
+                                        showDialog(
+                                          context: context,
+                                          builder: (context) => ProductForm(product: p),
+                                        );
+                                      },
+                                      tooltip: 'edit'.tr(),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  }
+
+                  // Desktop DataTable View (UNCHANGED)
                   return Scrollbar(
                     controller: _verticalScrollController,
                     thumbVisibility: true,

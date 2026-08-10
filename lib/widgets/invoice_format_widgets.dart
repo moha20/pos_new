@@ -331,10 +331,13 @@ class A4InvoicePreviewWidget extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'thank_you_notice'.tr(),
-                style: TextStyle(fontSize: 11.sp, fontStyle: FontStyle.italic, color: Colors.grey.shade600),
+              Expanded(
+                child: Text(
+                  'thank_you_notice'.tr(),
+                  style: TextStyle(fontSize: 11.sp, fontStyle: FontStyle.italic, color: Colors.grey.shade600),
+                ),
               ),
+              SizedBox(width: 8.w),
               Text(
                 'signature_label'.tr(),
                 style: TextStyle(fontSize: 11.sp, fontWeight: FontWeight.bold),
@@ -703,7 +706,14 @@ class ThermalReceiptPreviewWidget extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(fontSize: 10.sp, fontFamily: 'monospace')),
+          Expanded(
+            child: Text(
+              label,
+              style: TextStyle(fontSize: 10.sp, fontFamily: 'monospace'),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          SizedBox(width: 4.w),
           Text(value, style: TextStyle(fontSize: 10.sp, fontWeight: FontWeight.bold, fontFamily: 'monospace')),
         ],
       ),
@@ -716,7 +726,13 @@ Widget _metaRow(String label, String val) {
   return Row(
     children: [
       Text('$label: ', style: TextStyle(fontSize: 11.sp, color: Colors.grey.shade700)),
-      Text(val, style: TextStyle(fontSize: 11.sp, fontWeight: FontWeight.bold)),
+      Expanded(
+        child: Text(
+          val,
+          style: TextStyle(fontSize: 11.sp, fontWeight: FontWeight.bold),
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
     ],
   );
 }
@@ -760,14 +776,18 @@ Widget _summaryRow(
     child: Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: fontSize,
-            fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
-            color: isDiscount ? Colors.red : null,
+        Expanded(
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: fontSize,
+              fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
+              color: isDiscount ? Colors.red : null,
+            ),
+            overflow: TextOverflow.ellipsis,
           ),
         ),
+        const SizedBox(width: 4),
         Text(
           value,
           style: TextStyle(
