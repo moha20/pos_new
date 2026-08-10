@@ -78,21 +78,26 @@ class App extends StatelessWidget {
                   activeThemeMode = ThemeMode.light;
               }
               final isBlue = themeType == 'logo_blue';
-              return ScreenUtilInit(
-                designSize: const Size(1280, 800),
-                minTextAdapt: true,
-                splitScreenMode: true,
-                builder: (context, child) {
-                  return MaterialApp.router(
-                    debugShowCheckedModeBanner: false,
-                    scrollBehavior: const AppScrollBehavior(),
-                    locale: context.locale,
-                    supportedLocales: context.supportedLocales,
-                    localizationsDelegates: context.localizationDelegates,
-                    routerConfig: appRouter,
-                    themeMode: activeThemeMode,
-                    theme: isBlue ? AppTheme.logoBlueLight : AppTheme.light,
-                    darkTheme: isBlue ? AppTheme.logoBlueDark : AppTheme.dark,
+              return LayoutBuilder(
+                builder: (context, constraints) {
+                  final isMobile = constraints.maxWidth < 650;
+                  return ScreenUtilInit(
+                    designSize: isMobile ? const Size(375, 812) : const Size(1280, 800),
+                    minTextAdapt: true,
+                    splitScreenMode: true,
+                    builder: (context, child) {
+                      return MaterialApp.router(
+                        debugShowCheckedModeBanner: false,
+                        scrollBehavior: const AppScrollBehavior(),
+                        locale: context.locale,
+                        supportedLocales: context.supportedLocales,
+                        localizationsDelegates: context.localizationDelegates,
+                        routerConfig: appRouter,
+                        themeMode: activeThemeMode,
+                        theme: isBlue ? AppTheme.logoBlueLight : AppTheme.light,
+                        darkTheme: isBlue ? AppTheme.logoBlueDark : AppTheme.dark,
+                      );
+                    },
                   );
                 },
               );

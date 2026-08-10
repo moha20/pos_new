@@ -64,10 +64,13 @@ class _CustomerFormState extends State<CustomerForm> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 650;
+
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
       child: Container(
-        width: 500.w,
+        width: isMobile ? screenWidth * 0.92 : 500.w,
         padding: EdgeInsets.all(24.0.r),
         child: Form(
           key: _formKey,

@@ -472,18 +472,21 @@ class PrintService {
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'invoice_preview'.tr(),
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'invoice_preview'.tr(),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
                           ),
-                        ),
-                        // Language Dropdown Selector
-                        Row(
+                          const SizedBox(width: 8),
+                          // Language Dropdown Selector
+                          Row(
                           children: [
                             Text(
                               'receipt_language'.tr(),
@@ -571,6 +574,7 @@ class PrintService {
                           ],
                         ),
                       ],
+                    ),
                     ),
                     const SizedBox(height: 12),
                     Expanded(

@@ -30,6 +30,9 @@ class AppBottomNav extends StatelessWidget {
       type: BottomNavigationBarType.fixed,
       selectedItemColor: theme.colorScheme.primary,
       unselectedItemColor: theme.colorScheme.onSurface.withOpacity(0.6),
+      selectedFontSize: 11,
+      unselectedFontSize: 10,
+      iconSize: 22,
       items: items.map((item) {
         return BottomNavigationBarItem(
           icon: Icon(item.icon),

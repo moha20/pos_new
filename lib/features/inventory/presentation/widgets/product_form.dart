@@ -162,10 +162,13 @@ class _ProductFormState extends State<ProductForm> {
     final user = context.read<AuthBloc>().currentUser;
     final isCashier = user?.isCashier ?? true;
 
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 650;
+
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
       child: Container(
-        width: 600.w,
+        width: isMobile ? screenWidth * 0.92 : 600.w,
         constraints: const BoxConstraints(maxHeight: 700),
         padding: EdgeInsets.all(24.0.r),
         child: Form(

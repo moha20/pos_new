@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'app_sidebar.dart';
 import 'app_bottom_nav.dart';
+import 'app_drawer.dart';
 
 class ResponsiveLayout extends StatelessWidget {
   final Widget child;
@@ -26,6 +27,7 @@ class ResponsiveLayout extends StatelessWidget {
               title: Text(title),
               actions: actions,
             ),
+      drawer: isDesktop ? null : const AppDrawer(),
       body: isDesktop
           ? Row(
               children: [

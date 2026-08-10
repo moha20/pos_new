@@ -14,6 +14,8 @@ import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../../features/activity_log/presentation/screens/activity_log_screen.dart';
 import '../../features/returns/presentation/screens/returns_screen.dart';
 import '../../features/balance/presentation/screens/balance_screen.dart';
+import '../../features/pos/presentation/screens/invoice_details_screen.dart';
+import '../../features/pos/domain/entities/sale_entity.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/login',
@@ -126,6 +128,33 @@ final GoRouter appRouter = GoRouter(
         key: state.pageKey,
         child: const BalanceScreen(),
       ),
+    ),
+    GoRoute(
+      path: '/invoice-details',
+      pageBuilder: (context, state) {
+        final extra = state.extra;
+        SaleEntity? sale;
+        String? customerName;
+        if (extra is SaleEntity) {
+          sale = extra;
+        } else if (extra is Map<String, dynamic>) {
+          sale = extra['sale'] as SaleEntity?;
+          customerName = extra['customerName'] as String?;
+        }
+        if (sale == null) {
+          return NoTransitionPage(
+            key: state.pageKey,
+            child: const SalesHistoryScreen(),
+          );
+        }
+        return NoTransitionPage(
+          key: state.pageKey,
+          child: InvoiceDetailsScreen(
+            sale: sale,
+            customerName: customerName,
+          ),
+        );
+      },
     ),
   ],
 );
