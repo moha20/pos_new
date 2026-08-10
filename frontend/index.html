@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>لوحة إيجاز لإدارة الشركات | Al-Mohandis POS Admin</title>
+
+  <!-- Google Fonts: Cairo & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Custom Styling -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="dark-mode">
+
+  <!-- Top Navigation Header -->
+  <header class="top-nav">
+    <div class="nav-brand">
+      <div class="logo-icon"><i class="fa-solid fa-store"></i></div>
+      <div class="brand-text">
+        <h1 id="app-title">منصة إدارة الشركات والمبيعات</h1>
+        <span class="sub-title">Al-Mohandis Central Control System</span>
+      </div>
+    </div>
+    
+    <div class="nav-actions">
+      <button class="btn-icon" id="theme-toggle" title="تغيير المظهر">
+        <i class="fa-solid fa-moon"></i>
+      </button>
+      <button class="btn-icon" id="lang-toggle" title="Change Language">
+        <i class="fa-solid fa-globe"></i> <span id="lang-code">EN</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="main-layout">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-menu">
+        <button class="menu-item active" data-target="section-companies">
+          <i class="fa-solid fa-building-user"></i>
+          <span data-i18n="companies_title">إدارة الشركات</span>
+        </button>
+        <button class="menu-item" data-target="section-sales">
+          <i class="fa-solid fa-chart-line"></i>
+          <span data-i18n="sales_title">المبيعات أونلاين</span>
+        </button>
+        <button class="menu-item" data-target="section-config">
+          <i class="fa-solid fa-gears"></i>
+          <span data-i18n="config_title">إعدادات النظام</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="content-area">
+
+      <!-- Metric Cards Grid -->
+      <div class="stats-grid">
+        <div class="stat-card blue">
+          <div class="stat-icon"><i class="fa-solid fa-building"></i></div>
+          <div class="stat-info">
+            <span class="stat-label" data-i18n="total_companies">إجمالي الشركات</span>
+            <h3 id="stat-total-companies">0</h3>
+          </div>
+        </div>
+
+        <div class="stat-card green">
+          <div class="stat-icon"><i class="fa-solid fa-circle-check"></i></div>
+          <div class="stat-info">
+            <span class="stat-label" data-i18n="active_companies">الشركات النشطة</span>
+            <h3 id="stat-active-companies">0</h3>
+          </div>
+        </div>
+
+        <div class="stat-card red">
+          <div class="stat-icon"><i class="fa-solid fa-ban"></i></div>
+          <div class="stat-info">
+            <span class="stat-label" data-i18n="inactive_companies">الشركات المتوقفة</span>
+            <h3 id="stat-inactive-companies">0</h3>
+          </div>
+        </div>
+
+        <div class="stat-card gold">
+          <div class="stat-icon"><i class="fa-solid fa-receipt"></i></div>
+          <div class="stat-info">
+            <span class="stat-label" data-i18n="total_sales">إجمالي المبيعات</span>
+            <h3 id="stat-total-revenue">0.00 EGP</h3>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 1: Companies Management -->
+      <section id="section-companies" class="page-section active">
+        <div class="section-header">
+          <div>
+            <h2 data-i18n="companies_management">إدارة شركات POS</h2>
+            <p data-i18n="companies_desc">التحكم بفعالية وتنشيط/إيقاف الشركات فورياً لمنع الدخول</p>
+          </div>
+          <button class="btn primary" id="open-add-company-modal">
+            <i class="fa-solid fa-plus"></i> <span data-i18n="add_company">إضافة شركة جديدة</span>
+          </button>
+        </div>
+
+        <div class="card table-card">
+          <div class="table-toolbar">
+            <div class="search-box">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="text" id="search-companies" placeholder="بحث باسم الشركة أو الهاتف..." data-i18n-ph="search_company_placeholder">
+            </div>
+            <button class="btn secondary" id="refresh-companies-btn">
+              <i class="fa-solid fa-arrows-rotate"></i> <span data-i18n="refresh">تحديث</span>
+            </button>
+          </div>
+
+          <div class="table-responsive">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th data-i18n="tbl_company_name">اسم الشركة / الفرع</th>
+                  <th data-i18n="tbl_phone">الهاتف</th>
+                  <th data-i18n="tbl_email">البريد الإلكتروني</th>
+                  <th data-i18n="tbl_address">العنوان</th>
+                  <th data-i18n="tbl_status">حالة التفعيل</th>
+                  <th data-i18n="tbl_actions">الإجراءات</th>
+                </tr>
+              </thead>
+              <tbody id="companies-table-body">
+                <tr>
+                  <td colspan="7" class="loading-td">
+                    <i class="fa-solid fa-spinner fa-spin"></i> جاري تحميل البيانات...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 2: Online Cloud Sales -->
+      <section id="section-sales" class="page-section">
+        <div class="section-header">
+          <div>
+            <h2 data-i18n="online_sales_title">سجل المبيعات المباشرة أونلاين</h2>
+            <p data-i18n="online_sales_desc">متابعة الفواتير الصادرة من الكاشيرات عبر كافة الشركات النشطة</p>
+          </div>
+          <button class="btn secondary" id="refresh-sales-btn">
+            <i class="fa-solid fa-arrows-rotate"></i> <span data-i18n="refresh">تحديث المبيعات</span>
+          </button>
+        </div>
+
+        <div class="card table-card">
+          <div class="table-toolbar">
+            <div class="filter-group">
+              <label for="company-sales-filter" data-i18n="filter_by_company">تصفية حسب الشركة:</label>
+              <select id="company-sales-filter" class="custom-select">
+                <option value="All" data-i18n="all_companies">كافة الشركات</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th data-i18n="tbl_inv_no">رقم الفاتورة</th>
+                  <th data-i18n="tbl_company_name">الشركة</th>
+                  <th data-i18n="tbl_cashier">الكاشير / المستخدم</th>
+                  <th data-i18n="tbl_items_count">عدد الأصناف</th>
+                  <th data-i18n="tbl_payment_method">طريقة الدفع</th>
+                  <th data-i18n="tbl_total">إجمالي المبلغ</th>
+                  <th data-i18n="tbl_date">التاريخ والوقت</th>
+                </tr>
+              </thead>
+              <tbody id="sales-table-body">
+                <tr>
+                  <td colspan="7" class="loading-td">
+                    <i class="fa-solid fa-spinner fa-spin"></i> جاري جلب الفواتير أونلاين...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 3: API Config & Server Info -->
+      <section id="section-config" class="page-section">
+        <div class="section-header">
+          <div>
+            <h2 data-i18n="config_title">إعدادات الخادم والربط</h2>
+            <p data-i18n="config_desc">معلومات الاتصال بخادم Hostinger وقواعد البيانات</p>
+          </div>
+        </div>
+
+        <div class="card config-card">
+          <div class="config-row">
+            <span class="label">API Backend URL:</span>
+            <input type="text" id="api-endpoint-input" class="custom-input" value="https://apipos.official-web.online/api" readonly>
+          </div>
+          <div class="config-row">
+            <span class="label">Inactive Company Message:</span>
+            <input type="text" class="custom-input" value="Please call support service to login / برجاء الاتصال بخدمة الدعم الفني لتسجيل الدخول" readonly>
+          </div>
+          <div class="config-actions">
+            <button class="btn primary" id="test-connection-btn">
+              <i class="fa-solid fa-plug"></i> <span data-i18n="test_connection">اختبار الاتصال بالخادم</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+  </div>
+
+  <!-- ADD / EDIT COMPANY MODAL -->
+  <div class="modal-backdrop" id="company-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modal-title" data-i18n="modal_add_title">إضافة شركة جديدة</h3>
+        <button class="close-modal" id="close-modal-btn">&times;</button>
+      </div>
+
+      <form id="company-form">
+        <input type="hidden" id="company-id" value="">
+        
+        <div class="form-group">
+          <label for="company-name-input" data-i18n="tbl_company_name">اسم الشركة / الفرع *</label>
+          <input type="text" id="company-name-input" class="custom-input" required placeholder="مثال: شركة المهندس - فرع الهرم">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="company-phone-input" data-i18n="tbl_phone">رقم الهاتف</label>
+            <input type="text" id="company-phone-input" class="custom-input" placeholder="01115525942">
+          </div>
+          <div class="form-group">
+            <label for="company-email-input" data-i18n="tbl_email">البريد الإلكتروني</label>
+            <input type="email" id="company-email-input" class="custom-input" placeholder="info@company.com">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="company-admin-user-input" data-i18n="tbl_admin_user">اسم أدمن الشركة *</label>
+            <input type="text" id="company-admin-user-input" class="custom-input" required placeholder="مثال: admin">
+          </div>
+          <div class="form-group">
+            <label for="company-admin-pass-input" data-i18n="tbl_admin_pass">كلمة سر أدمن الشركة *</label>
+            <input type="text" id="company-admin-pass-input" class="custom-input" required placeholder="مثال: admin123">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="company-address-input" data-i18n="tbl_address">العنوان والفرع</label>
+          <input type="text" id="company-address-input" class="custom-input" placeholder="القاهرة - الهرم">
+        </div>
+
+        <div class="form-group checkbox-group">
+          <label class="switch-label">
+            <input type="checkbox" id="company-active-input" checked>
+            <span class="slider"></span>
+            <span class="switch-text" data-i18n="active_status_label">تفعيل الشركة (السماح بالدخول)</span>
+          </label>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn secondary" id="cancel-modal-btn" data-i18n="cancel">إلغاء</button>
+          <button type="submit" class="btn primary" id="save-company-btn" data-i18n="save">حفظ البيانات</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
