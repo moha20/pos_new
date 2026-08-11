@@ -77,7 +77,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           }
           if (state is SettingsLoaded) {
             if (_companyController.text.isEmpty) {
-              _companyController.text = state.companyName;
+              _companyController.text = (user?.companyName != null && user!.companyName!.isNotEmpty)
+                  ? user.companyName!
+                  : state.companyName;
               _taxController.text = state.taxPercent % 1 == 0
                   ? state.taxPercent.toInt().toString()
                   : state.taxPercent.toString();
@@ -234,8 +236,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   decoration: BoxDecoration(
                                     color: theme.colorScheme.surface,
                                     border: Border.all(
-                                      color: theme.dividerColor.withOpacity(
-                                        0.2,
+                                      color: theme.dividerColor.withValues(
+                                        alpha: 0.2,
                                       ),
                                     ),
                                     borderRadius: BorderRadius.circular(8),
@@ -319,8 +321,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   decoration: BoxDecoration(
                                     color: theme.colorScheme.surface,
                                     border: Border.all(
-                                      color: theme.dividerColor.withOpacity(
-                                        0.2,
+                                      color: theme.dividerColor.withValues(
+                                        alpha: 0.2,
                                       ),
                                     ),
                                     borderRadius: BorderRadius.circular(8),
@@ -453,7 +455,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     SizedBox(height: 12.h),
                     if (!isAdmin)
                       Card(
-                        color: Colors.amber.withOpacity(0.1),
+                        color: Colors.amber.withValues(alpha: 0.1),
                         child: Padding(
                           padding: EdgeInsets.all(16.0.r),
                           child: Text(
@@ -526,7 +528,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                             backgroundColor: theme
                                                 .colorScheme
                                                 .primary
-                                                .withOpacity(0.1),
+                                                .withValues(alpha: 0.1),
                                             child: const Icon(Icons.person),
                                           ),
                                           title: Text(u.name),
@@ -706,7 +708,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                     : 'You can create a local backup copy of all data (Realm database file) or restore a previous one. Please be careful when restoring as it will completely overwrite current data.',
                                 style: theme.textTheme.bodyMedium?.copyWith(
                                   color: theme.colorScheme.onSurface
-                                      .withOpacity(0.7),
+                                      .withValues(alpha: 0.7),
                                 ),
                               ),
                               SizedBox(height: 16.h),
@@ -865,7 +867,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                     : 'Selective data deletion. Warning: This action is irreversible and selected data will be deleted permanently.',
                                 style: theme.textTheme.bodyMedium?.copyWith(
                                   color: theme.colorScheme.onSurface
-                                      .withOpacity(0.7),
+                                      .withValues(alpha: 0.7),
                                 ),
                               ),
                               SizedBox(height: 16.h),
@@ -1086,7 +1088,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12.r),
                         borderSide: BorderSide(
-                          color: theme.dividerColor.withOpacity(0.2),
+                          color: theme.dividerColor.withValues(alpha: 0.2),
                         ),
                       ),
                       focusedBorder: OutlineInputBorder(
@@ -1503,7 +1505,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12.r),
                         borderSide: BorderSide(
-                          color: theme.dividerColor.withOpacity(0.2),
+                          color: theme.dividerColor.withValues(alpha: 0.2),
                         ),
                       ),
                       focusedBorder: OutlineInputBorder(
