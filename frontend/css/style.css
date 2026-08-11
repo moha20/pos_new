@@ -403,24 +403,30 @@ body {
 .switch-label {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   cursor: pointer;
   user-select: none;
 }
 
 .switch-label input {
-  display: none;
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
 }
 
 .slider {
-  width: 44px;
+  direction: ltr !important;
+  width: 48px;
   height: 24px;
-  background-color: rgba(239, 68, 68, 0.3);
+  background-color: rgba(239, 68, 68, 0.25);
   border-radius: 30px;
   position: relative;
-  transition: 0.3s ease;
-  border: 1px solid rgba(239, 68, 68, 0.5);
+  transition: background-color 0.25s ease, border-color 0.25s ease;
+  border: 1px solid rgba(239, 68, 68, 0.4);
   flex-shrink: 0;
+  display: inline-block;
 }
 
 .slider:before {
@@ -430,19 +436,19 @@ body {
   width: 18px;
   left: 2px;
   top: 2px;
-  background-color: white;
+  background-color: #ffffff;
   border-radius: 50%;
-  transition: transform 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
 }
 
 input:checked + .slider {
-  background-color: var(--success);
-  border-color: var(--success);
+  background-color: #10b981;
+  border-color: #10b981;
 }
 
 input:checked + .slider:before {
-  transform: translateX(20px);
+  transform: translateX(24px);
 }
 
 /* MODAL */
