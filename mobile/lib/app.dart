@@ -113,6 +113,10 @@ class AppScrollBehavior extends MaterialScrollBehavior {
   const AppScrollBehavior();
 
   @override
+  ScrollPhysics getScrollPhysics(BuildContext context) =>
+      const ClampingScrollPhysics();
+
+  @override
   Set<PointerDeviceKind> get dragDevices => {
         PointerDeviceKind.touch,
         PointerDeviceKind.mouse,
