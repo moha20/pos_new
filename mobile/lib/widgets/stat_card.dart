@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-
 class StatCard extends StatelessWidget {
   final String title;
   final String value;
@@ -27,21 +26,53 @@ class StatCard extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            color.withOpacity(isDark ? 0.15 : 0.08),
-            color.withOpacity(isDark ? 0.05 : 0.02),
+            color.withValues(alpha: isDark ? 0.18 : 0.08),
+            color.withValues(alpha: isDark ? 0.04 : 0.02),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(16.r),
+        borderRadius: BorderRadius.circular(20.r),
         border: Border.all(
-          color: color.withOpacity(isDark ? 0.3 : 0.15),
+          color: color.withValues(alpha: isDark ? 0.35 : 0.2),
           width: 1.5.w,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: isDark ? 0.12 : 0.06),
+            blurRadius: 16.r,
+            offset: Offset(0, 6.h),
+          ),
+        ],
       ),
-      padding: EdgeInsets.symmetric(horizontal: 16.0.r, vertical: 12.0.r),
+      padding: EdgeInsets.all(16.r),
       child: Row(
         children: [
+          Container(
+            width: 48.r,
+            height: 48.r,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  color.withValues(alpha: 0.25),
+                  color.withValues(alpha: 0.1),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: color.withValues(alpha: 0.3),
+                width: 1.w,
+              ),
+            ),
+            child: Icon(
+              icon,
+              color: color,
+              size: 24.r,
+            ),
+          ),
+          SizedBox(width: 14.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -50,9 +81,12 @@ class StatCard extends StatelessWidget {
                 Text(
                   title,
                   style: theme.textTheme.titleSmall?.copyWith(
-                    color: theme.colorScheme.onSurface.withOpacity(0.6),
-                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12.sp,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 SizedBox(height: 4.h),
                 FittedBox(
@@ -60,34 +94,38 @@ class StatCard extends StatelessWidget {
                   alignment: AlignmentDirectional.centerStart,
                   child: Text(
                     value,
-                    style: theme.textTheme.headlineMedium?.copyWith(
+                    style: theme.textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.w900,
                       color: color,
+                      letterSpacing: -0.5,
                     ),
                   ),
                 ),
                 if (subtitle != null) ...[
                   SizedBox(height: 4.h),
-                  Text(
-                    subtitle!,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurface.withOpacity(0.4),
-                    ),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.trending_up,
+                        size: 14.r,
+                        color: color.withValues(alpha: 0.8),
+                      ),
+                      SizedBox(width: 4.w),
+                      Expanded(
+                        child: Text(
+                          subtitle!,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                            fontSize: 10.sp,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ],
-            ),
-          ),
-          Container(
-            padding: EdgeInsets.all(12.r),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.15),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              icon,
-              color: color,
-              size: 28,
             ),
           ),
         ],

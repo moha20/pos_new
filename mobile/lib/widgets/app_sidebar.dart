@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-
 import 'package:go_router/go_router.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -14,65 +13,66 @@ class AppSidebar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final route = GoRouterState.of(context).matchedLocation;
     final authBloc = context.read<AuthBloc>();
     final user = authBloc.currentUser;
 
     final List<_SidebarItem> items = [
-      _SidebarItem(icon: Icons.point_of_sale, labelKey: 'pos', route: '/pos'),
+      _SidebarItem(icon: Icons.point_of_sale_rounded, labelKey: 'pos', route: '/pos'),
       _SidebarItem(
-        icon: Icons.receipt_long,
+        icon: Icons.receipt_long_rounded,
         labelKey: 'sales_history',
         route: '/sales',
       ),
       _SidebarItem(
-        icon: Icons.inventory,
+        icon: Icons.inventory_2_rounded,
         labelKey: 'inventory',
         route: '/inventory',
       ),
       _SidebarItem(
-        icon: Icons.people,
+        icon: Icons.people_alt_rounded,
         labelKey: 'customers',
         route: '/customers',
       ),
       _SidebarItem(
-        icon: Icons.local_shipping,
+        icon: Icons.local_shipping_rounded,
         labelKey: 'suppliers',
         route: '/suppliers',
       ),
       if (user?.isAdmin == true)
         _SidebarItem(
-          icon: Icons.receipt,
+          icon: Icons.receipt_rounded,
           labelKey: 'supplier_invoice',
           route: '/supplier-invoice',
         ),
       _SidebarItem(
-        icon: Icons.account_balance_wallet,
+        icon: Icons.account_balance_wallet_rounded,
         labelKey: 'balance',
         route: '/balance',
       ),
       _SidebarItem(
-        icon: Icons.bar_chart,
+        icon: Icons.insights_rounded,
         labelKey: 'reports',
         route: '/reports',
       ),
       _SidebarItem(
-        icon: Icons.calculate,
+        icon: Icons.point_of_sale_outlined,
         labelKey: 'cashier',
         route: '/cashier',
       ),
       _SidebarItem(
-        icon: Icons.assignment_return,
+        icon: Icons.replay_rounded,
         labelKey: 'returns',
         route: '/returns',
       ),
       _SidebarItem(
-        icon: Icons.history,
+        icon: Icons.history_toggle_off_rounded,
         labelKey: 'activity_log',
         route: '/activity-log',
       ),
       _SidebarItem(
-        icon: Icons.settings,
+        icon: Icons.settings_suggest_rounded,
         labelKey: 'settings',
         route: '/settings',
       ),
@@ -84,167 +84,222 @@ class AppSidebar extends StatelessWidget {
         color: theme.colorScheme.surface,
         border: Border(
           right: BorderSide(
-            color: theme.dividerColor.withOpacity(0.08),
+            color: theme.dividerColor.withValues(alpha: 0.1),
             width: 1.w,
           ),
           left: BorderSide(
-            color: theme.dividerColor.withOpacity(0.08),
+            color: theme.dividerColor.withValues(alpha: 0.1),
             width: 1.w,
           ),
         ),
       ),
       child: Column(
         children: [
-          // Logo & Header
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16.0,
-              vertical: 20.0,
+          // Logo & Header Area
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  theme.colorScheme.primary.withValues(alpha: isDark ? 0.12 : 0.05),
+                  Colors.transparent,
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
             ),
             child: Column(
               children: [
-                Container(
-                  height: 70.h,
-                  width: double.infinity,
-                  padding: EdgeInsets.all(6.r),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12.r),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.04),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
+                const AppLogo(),
+                if (user?.companyName != null && user!.companyName!.isNotEmpty) ...[
+                  SizedBox(height: 12.h),
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.primary.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(20.r),
+                      border: Border.all(
+                        color: theme.colorScheme.primary.withValues(alpha: 0.25),
+                        width: 1.w,
                       ),
-                    ],
-                    border: Border.all(color: Colors.grey.shade200, width: 1.w),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.business_rounded,
+                          size: 14.r,
+                          color: theme.colorScheme.primary,
+                        ),
+                        SizedBox(width: 6.w),
+                        Flexible(
+                          child: Text(
+                            user.companyName!,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.primary,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 11.sp,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8.r),
-                    child: const AppLogo(fit: BoxFit.contain),
-                  ),
-                ),
-                SizedBox(height: 12.h),
-                const LanguageToggle(),
+                ],
               ],
             ),
           ),
-          const Divider(height: 1),
-          // Nav list
+
+          Divider(height: 1, color: theme.dividerColor.withValues(alpha: 0.08)),
+
+          // Navigation Menu List
           Expanded(
             child: ListView.builder(
-              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+              padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
               itemCount: items.length,
               itemBuilder: (context, index) {
                 final item = items[index];
                 final isSelected = route == item.route;
 
                 return Padding(
-                  padding: const EdgeInsets.only(bottom: 4.0),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? theme.colorScheme.primary
-                          : Colors.transparent,
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                    child: ListTile(
-                      leading: Icon(
-                        item.icon,
-                        color: isSelected
-                            ? Colors.white
-                            : theme.colorScheme.onSurface.withOpacity(0.7),
-                      ),
-                      title: Text(
-                        item.labelKey.tr(),
-                        style: TextStyle(
-                          color: isSelected
-                              ? Colors.white
-                              : theme.colorScheme.onSurface,
-                          fontWeight: isSelected
-                              ? FontWeight.bold
-                              : FontWeight.normal,
+                  padding: EdgeInsets.only(bottom: 6.h),
+                  child: Material(
+                    color: Colors.transparent,
+                    borderRadius: BorderRadius.circular(14.r),
+                    child: InkWell(
+                      onTap: () => context.go(item.route),
+                      borderRadius: BorderRadius.circular(14.r),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 16.w,
+                          vertical: 12.h,
+                        ),
+                        decoration: BoxDecoration(
+                          gradient: isSelected
+                              ? LinearGradient(
+                                  colors: [
+                                    theme.colorScheme.primary,
+                                    theme.colorScheme.primary.withValues(alpha: 0.85),
+                                  ],
+                                  begin: Alignment.centerLeft,
+                                  end: Alignment.centerRight,
+                                )
+                              : null,
+                          borderRadius: BorderRadius.circular(14.r),
+                          boxShadow: isSelected
+                              ? [
+                                  BoxShadow(
+                                    color: theme.colorScheme.primary.withValues(alpha: 0.35),
+                                    blurRadius: 10.r,
+                                    offset: Offset(0, 4.h),
+                                  ),
+                                ]
+                              : [],
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              item.icon,
+                              size: 20.r,
+                              color: isSelected
+                                  ? Colors.white
+                                  : theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                            ),
+                            SizedBox(width: 14.w),
+                            Expanded(
+                              child: Text(
+                                item.labelKey.tr(),
+                                style: theme.textTheme.titleSmall?.copyWith(
+                                  color: isSelected
+                                      ? Colors.white
+                                      : theme.colorScheme.onSurface,
+                                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
+                                  fontSize: 13.sp,
+                                ),
+                              ),
+                            ),
+                            if (isSelected)
+                              Container(
+                                width: 6.r,
+                                height: 6.r,
+                                decoration: const BoxDecoration(
+                                  color: Colors.white,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                          ],
                         ),
                       ),
-                      tileColor: Colors.transparent,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.r),
-                      ),
-                      onTap: () => context.go(item.route),
                     ),
                   ),
                 );
               },
             ),
           ),
-          const Divider(height: 1),
-          // Logged user & Logout
-          if (user != null)
-            Padding(
-              padding: EdgeInsets.all(16.0.r),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      CircleAvatar(
-                        backgroundColor: theme.colorScheme.primary.withOpacity(
-                          0.1,
+
+          Divider(height: 1, color: theme.dividerColor.withValues(alpha: 0.08)),
+
+          // User Profile & Logout Bottom Bar
+          Padding(
+            padding: EdgeInsets.all(16.w),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 18.r,
+                      backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.15),
+                      child: Text(
+                        (user?.username.isNotEmpty == true) ? user!.username[0].toUpperCase() : 'U',
+                        style: TextStyle(
+                          color: theme.colorScheme.primary,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14.sp,
                         ),
-                        child: Text(
-                          user.name.substring(0, 1).toUpperCase(),
-                          style: TextStyle(
-                            color: theme.colorScheme.primary,
-                            fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(width: 10.w),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            user?.username ?? 'user'.tr(),
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13.sp,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                        ),
-                      ),
-                      SizedBox(width: 12.w),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              user.name,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                              ),
-                              overflow: TextOverflow.ellipsis,
+                          Text(
+                            user?.isAdmin == true ? 'admin'.tr() : 'cashier'.tr(),
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                              fontSize: 10.sp,
                             ),
-                            Text(
-                              user.role.tr(),
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: theme.colorScheme.onSurface.withOpacity(
-                                  0.6,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                  SizedBox(height: 12.h),
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      icon: const Icon(Icons.logout),
-                      label: Text('logout'.tr()),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.logout_rounded, color: Colors.redAccent),
+                      iconSize: 20.r,
                       onPressed: () {
                         context.read<AuthBloc>().add(AuthLogoutRequested());
                         context.go('/login');
                       },
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.red,
-                        side: const BorderSide(color: Colors.red),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12.r),
-                        ),
-                      ),
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
+                SizedBox(height: 12.h),
+                const LanguageToggle(),
+              ],
             ),
+          ),
         ],
       ),
     );

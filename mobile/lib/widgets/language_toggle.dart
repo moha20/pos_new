@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../core/localization/locale_cubit.dart';
 
@@ -12,12 +11,16 @@ class LanguageToggle extends StatelessWidget {
     return BlocBuilder<LocaleCubit, Locale>(
       builder: (context, currentLocale) {
         final isArabic = currentLocale.languageCode == 'ar';
+        final theme = Theme.of(context);
+
         return Container(
           decoration: BoxDecoration(
-            color: Theme.of(
-              context,
-            ).colorScheme.surfaceContainerHighest.withOpacity(0.5),
+            color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
             borderRadius: BorderRadius.circular(30.r),
+            border: Border.all(
+              color: theme.dividerColor.withValues(alpha: 0.1),
+              width: 1.w,
+            ),
           ),
           padding: EdgeInsets.all(4.r),
           child: Row(
@@ -53,20 +56,21 @@ class LanguageToggle extends StatelessWidget {
     required VoidCallback onTap,
   }) {
     final theme = Theme.of(context);
+
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
         decoration: BoxDecoration(
           color: isSelected ? theme.colorScheme.primary : Colors.transparent,
           borderRadius: BorderRadius.circular(20.r),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: theme.colorScheme.primary.withOpacity(0.3),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
+                    color: theme.colorScheme.primary.withValues(alpha: 0.3),
+                    blurRadius: 6.r,
+                    offset: Offset(0, 2.h),
                   ),
                 ]
               : [],
@@ -74,9 +78,9 @@ class LanguageToggle extends StatelessWidget {
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected ? Colors.white : theme.colorScheme.onSurface,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-            fontSize: 12.sp,
+            color: isSelected ? Colors.white : theme.colorScheme.onSurface.withValues(alpha: 0.7),
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+            fontSize: 11.sp,
           ),
         ),
       ),
