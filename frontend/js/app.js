@@ -1,14 +1,15 @@
 // API Endpoint Configuration
 const BASE_API = window.location.hostname.includes('official-web.online')
   ? 'https://apipos.official-web.online'
-  : '../backend_hostinger';
+  : '../backend';
 
 // Translations Dictionary
 const translations = {
   ar: {
-    app_title: "منصة إدارة الشركات والمبيعات",
+    app_title: "إيجاز - لوحة تحكم الشركات",
     companies_title: "إدارة الشركات",
     sales_title: "المبيعات أونلاين",
+    audit_title: "سجل الأمان والعمليات",
     config_title: "إعدادات النظام",
     total_companies: "إجمالي الشركات",
     active_companies: "الشركات النشطة",
@@ -17,14 +18,20 @@ const translations = {
     companies_management: "إدارة شركات POS",
     companies_desc: "التحكم بفعالية وتنشيط/إيقاف الشركات فورياً لمنع الدخول",
     add_company: "إضافة شركة جديدة",
+    export_csv: "تصدير CSV",
     refresh: "تحديث",
     search_company_placeholder: "بحث باسم الشركة أو الهاتف...",
+    filter_all: "الكل",
+    filter_active: "نشطة 🟢",
+    filter_inactive: "متوقفة 🔴",
     tbl_company_name: "اسم الشركة / الفرع",
     tbl_phone: "الهاتف",
     tbl_email: "البريد الإلكتروني",
     tbl_address: "العنوان",
     tbl_status: "حالة التفعيل",
     tbl_actions: "الإجراءات",
+    tbl_admin_user: "اسم أدمن الشركة",
+    tbl_admin_pass: "كلمة سر أدمن الشركة",
     online_sales_title: "سجل المبيعات المباشرة أونلاين",
     online_sales_desc: "متابعة الفواتير الصادرة من الكاشيرات عبر كافة الشركات النشطة",
     filter_by_company: "تصفية حسب الشركة:",
@@ -43,12 +50,15 @@ const translations = {
     active_badge: "نشطة",
     inactive_badge: "موقوفة",
     confirm_delete: "هل أنت تأكد من حذف هذه الشركة؟",
-    call_support_msg: "برجاء الاتصال بخدمة الدعم الفني لتسجيل الدخول"
+    call_support_msg: "برجاء الاتصال بخدمة الدعم الفني لتسجيل الدخول",
+    audit_desc: "تتبع جميع عمليات التفعيل والإيقاف ومحاولات الدخول على النظام",
+    clear_log: "مسح السجل"
   },
   en: {
     app_title: "Company & Sales Control Platform",
     companies_title: "Companies Management",
     sales_title: "Online Cloud Sales",
+    audit_title: "Audit & Security Log",
     config_title: "System Config",
     total_companies: "Total Companies",
     active_companies: "Active Companies",
@@ -57,14 +67,20 @@ const translations = {
     companies_management: "POS Companies Control",
     companies_desc: "Manage activation status in real-time to block/allow login access",
     add_company: "Add New Company",
+    export_csv: "Export CSV",
     refresh: "Refresh",
     search_company_placeholder: "Search by name or phone...",
+    filter_all: "All",
+    filter_active: "Active 🟢",
+    filter_inactive: "Inactive 🔴",
     tbl_company_name: "Company / Branch Name",
     tbl_phone: "Phone",
     tbl_email: "Email",
     tbl_address: "Address",
     tbl_status: "Activation Status",
     tbl_actions: "Actions",
+    tbl_admin_user: "Company Admin Username",
+    tbl_admin_pass: "Company Admin Password",
     online_sales_title: "Live Cloud Sales Stream",
     online_sales_desc: "Monitor live cashier receipts across all active companies",
     filter_by_company: "Filter by Company:",
@@ -83,28 +99,31 @@ const translations = {
     active_badge: "Active",
     inactive_badge: "Inactive",
     confirm_delete: "Are you sure you want to delete this company?",
-    call_support_msg: "Please call support service to login"
+    call_support_msg: "Please call support service to login",
+    audit_desc: "Track company activation, deactivation and login events",
+    clear_log: "Clear Log"
   }
 };
 
 let currentLang = 'ar';
 let companiesData = [];
 let salesData = [];
+let auditLogs = JSON.parse(localStorage.getItem('admin_audit_logs') || '[]');
+let currentStatusFilter = 'all';
 
 document.addEventListener('DOMContentLoaded', () => {
   initDb();
   setupEventListeners();
   loadCompanies();
   loadSales();
+  renderAuditLogs();
 });
 
 // Auto initialize backend tables if DB is fresh
 async function initDb() {
   try {
     await fetch(`${BASE_API}/db_setup.php`);
-  } catch (e) {
-    console.log('Db setup check notice', e);
-  }
+  } catch (e) {}
 }
 
 function setupEventListeners() {
@@ -139,20 +158,39 @@ function setupEventListeners() {
 
   // Search Companies
   document.getElementById('search-companies').addEventListener('input', (e) => {
-    const q = e.target.value.toLowerCase();
-    const filtered = companiesData.filter(c => 
-      c.name.toLowerCase().includes(q) || (c.phone && c.phone.includes(q))
-    );
-    renderCompaniesTable(filtered);
+    filterCompanies();
   });
+
+  // Filter Tabs
+  document.querySelectorAll('.filter-tabs .tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-tabs .tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentStatusFilter = btn.getAttribute('data-status');
+      filterCompanies();
+    });
+  });
+
+  // Export CSV
+  document.getElementById('export-companies-csv-btn').addEventListener('click', exportCompaniesCSV);
+  document.getElementById('export-sales-csv-btn').addEventListener('click', exportSalesCSV);
 
   // Refresh Buttons
   document.getElementById('refresh-companies-btn').addEventListener('click', loadCompanies);
-  document.getElementById('refresh-sales-btn').addEventListener('click', loadSales);
+  document.getElementById('refresh-sales-btn').addEventListener('click', () => loadSales());
 
   // Filter Sales by Company
   document.getElementById('company-sales-filter').addEventListener('change', (e) => {
     loadSales(e.target.value);
+  });
+
+  // Clear Audit Logs
+  document.getElementById('clear-audit-btn').addEventListener('click', () => {
+    if (confirm('مسح كافة سجلات الأمان؟')) {
+      auditLogs = [];
+      localStorage.removeItem('admin_audit_logs');
+      renderAuditLogs();
+    }
   });
 
   // Modals
@@ -160,6 +198,8 @@ function setupEventListeners() {
   document.getElementById('open-add-company-modal').addEventListener('click', () => {
     document.getElementById('company-form').reset();
     document.getElementById('company-id').value = '';
+    document.getElementById('company-admin-user-input').value = 'admin';
+    document.getElementById('company-admin-pass-input').value = 'admin123';
     document.getElementById('modal-title').innerText = translations[currentLang].modal_add_title;
     modal.classList.add('open');
   });
@@ -167,14 +207,23 @@ function setupEventListeners() {
   document.getElementById('close-modal-btn').addEventListener('click', () => modal.classList.remove('open'));
   document.getElementById('cancel-modal-btn').addEventListener('click', () => modal.classList.remove('open'));
 
+  // Invoice Modal Close
+  document.getElementById('close-inv-modal-btn').addEventListener('click', () => {
+    document.getElementById('invoice-details-modal').classList.remove('open');
+  });
+  document.getElementById('close-inv-btn').addEventListener('click', () => {
+    document.getElementById('invoice-details-modal').classList.remove('open');
+  });
+
   // Company Form Submit
   document.getElementById('company-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const id = document.getElementById('company-id').value;
+    const name = document.getElementById('company-name-input').value.trim();
     const payload = {
       action: id ? 'update' : 'create',
       id: id || undefined,
-      name: document.getElementById('company-name-input').value.trim(),
+      name: name,
       phone: document.getElementById('company-phone-input').value.trim(),
       email: document.getElementById('company-email-input').value.trim(),
       address: document.getElementById('company-address-input').value.trim(),
@@ -192,6 +241,7 @@ function setupEventListeners() {
       const data = await res.json();
       if (data.status === 'success') {
         modal.classList.remove('open');
+        logAudit(id ? 'تعديل بيانات شركة' : 'إضافة شركة جديدة', name, 'نجاح');
         loadCompanies();
       } else {
         alert(data.message || 'Error saving company');
@@ -226,13 +276,28 @@ async function loadCompanies() {
     const json = await res.json();
     if (json.status === 'success') {
       companiesData = json.data || [];
-      renderCompaniesTable(companiesData);
+      filterCompanies();
       updateCompanyFilterDropdown();
       updateStats();
     }
   } catch (e) {
     tbody.innerHTML = `<tr><td colspan="7" style="color:red; text-align:center;">Failed to connect to API backend</td></tr>`;
   }
+}
+
+function filterCompanies() {
+  const q = document.getElementById('search-companies').value.toLowerCase();
+  let filtered = companiesData.filter(c => 
+    c.name.toLowerCase().includes(q) || (c.phone && c.phone.includes(q))
+  );
+
+  if (currentStatusFilter === 'active') {
+    filtered = filtered.filter(c => parseInt(c.is_active) === 1);
+  } else if (currentStatusFilter === 'inactive') {
+    filtered = filtered.filter(c => parseInt(c.is_active) === 0);
+  }
+
+  renderCompaniesTable(filtered);
 }
 
 // Render Companies Table
@@ -248,7 +313,10 @@ function renderCompaniesTable(data) {
     return `
       <tr>
         <td>${idx + 1}</td>
-        <td><strong>${escapeHtml(c.name)}</strong></td>
+        <td>
+          <strong>${escapeHtml(c.name)}</strong>
+          <div style="font-size: 11px; color: var(--text-muted);"><i class="fa-solid fa-user-shield"></i> Admin: ${escapeHtml(c.admin_username || 'admin')}</div>
+        </td>
         <td>${escapeHtml(c.phone || '-')}</td>
         <td>${escapeHtml(c.email || '-')}</td>
         <td>${escapeHtml(c.address || '-')}</td>
@@ -277,6 +345,9 @@ function renderCompaniesTable(data) {
 
 // Toggle Company Active Status
 async function toggleActive(id, isChecked) {
+  const comp = companiesData.find(c => parseInt(c.id) === parseInt(id));
+  const compName = comp ? comp.name : `Company #${id}`;
+
   try {
     const res = await fetch(`${BASE_API}/companies.php`, {
       method: 'POST',
@@ -289,6 +360,7 @@ async function toggleActive(id, isChecked) {
     });
     const json = await res.json();
     if (json.status === 'success') {
+      logAudit(isChecked ? 'تنشيط شركة (السماح بالدخول)' : 'إيقاف شركة (منع الدخول)', compName, isChecked ? 'مفعل 🟢' : 'موقوف 🔴');
       loadCompanies();
     } else {
       alert(json.message);
@@ -318,6 +390,7 @@ function editCompany(id) {
 
 // Delete Company
 async function deleteCompany(id) {
+  const comp = companiesData.find(c => parseInt(c.id) === parseInt(id));
   if (!confirm(translations[currentLang].confirm_delete)) return;
 
   try {
@@ -331,6 +404,7 @@ async function deleteCompany(id) {
     });
     const json = await res.json();
     if (json.status === 'success') {
+      logAudit('حذف شركة من النظام', comp ? comp.name : `#${id}`, 'تم الحذف');
       loadCompanies();
     }
   } catch (e) {
@@ -350,7 +424,7 @@ function updateCompanyFilterDropdown() {
 // Fetch Online Sales Stream
 async function loadSales(companyFilter = 'All') {
   const tbody = document.getElementById('sales-table-body');
-  tbody.innerHTML = `<tr><td colspan="7" class="loading-td"><i class="fa-solid fa-spinner fa-spin"></i> Fetching live sales...</td></tr>`;
+  tbody.innerHTML = `<tr><td colspan="8" class="loading-td"><i class="fa-solid fa-spinner fa-spin"></i> Fetching live sales...</td></tr>`;
 
   try {
     const url = `${BASE_API}/sales.php?company=${encodeURIComponent(companyFilter)}`;
@@ -363,14 +437,14 @@ async function loadSales(companyFilter = 'All') {
       updateStats();
     }
   } catch (e) {
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color: var(--text-muted);">No sales recorded yet</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color: var(--text-muted);">No sales recorded yet</td></tr>`;
   }
 }
 
 function renderSalesTable(data) {
   const tbody = document.getElementById('sales-table-body');
   if (data.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color: var(--text-muted);">No online receipts found</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color: var(--text-muted);">No online receipts found</td></tr>`;
     return;
   }
 
@@ -383,6 +457,105 @@ function renderSalesTable(data) {
       <td>${escapeHtml(s.payment_method)}</td>
       <td><strong style="color: var(--success);">${parseFloat(s.total).toFixed(2)} EGP</strong></td>
       <td>${escapeHtml(s.created_at)}</td>
+      <td>
+        <button class="btn secondary" onclick="openInvoiceDetails('${s.invoice_number}')" style="padding: 4px 10px; font-size: 11px;">
+          <i class="fa-solid fa-eye"></i> عرض
+        </button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+// Open Detailed Invoice Viewer Modal
+function openInvoiceDetails(invNo) {
+  const sale = salesData.find(s => s.invoice_number === invNo);
+  if (!sale) return;
+
+  document.getElementById('modal-inv-no').innerText = `#${sale.invoice_number}`;
+  document.getElementById('inv-modal-company').innerText = sale.company_name;
+  document.getElementById('inv-modal-cashier').innerText = sale.cashier_id;
+  document.getElementById('inv-modal-payment').innerText = sale.payment_method;
+  document.getElementById('inv-modal-date').innerText = sale.created_at;
+
+  const tbody = document.getElementById('inv-modal-items-body');
+  tbody.innerHTML = `
+    <tr>
+      <td>1</td>
+      <td>منتجات متنوعة (Receipt Summary)</td>
+      <td>${sale.items_count}</td>
+      <td>${(parseFloat(sale.total) / (sale.items_count || 1)).toFixed(2)} EGP</td>
+      <td>${parseFloat(sale.total).toFixed(2)} EGP</td>
+    </tr>
+  `;
+
+  document.getElementById('inv-modal-total').innerText = `الإجمالي: ${parseFloat(sale.total).toFixed(2)} EGP`;
+  document.getElementById('invoice-details-modal').classList.add('open');
+}
+
+// Export CSV Functions
+function exportCompaniesCSV() {
+  if (companiesData.length === 0) return alert('No companies to export');
+  let csv = 'ID,Company Name,Phone,Email,Address,Admin Username,Status,Created At\n';
+  companiesData.forEach(c => {
+    csv += `"${c.id}","${c.name}","${c.phone || ''}","${c.email || ''}","${c.address || ''}","${c.admin_username || 'admin'}","${c.is_active == 1 ? 'Active' : 'Inactive'}","${c.created_at}"\n`;
+  });
+  downloadFile(csv, `companies_${dateString()}.csv`, 'text/csv');
+}
+
+function exportSalesCSV() {
+  if (salesData.length === 0) return alert('No sales to export');
+  let csv = 'Invoice Number,Company Name,Cashier,Items Count,Payment Method,Total,Date\n';
+  salesData.forEach(s => {
+    csv += `"${s.invoice_number}","${s.company_name}","${s.cashier_id}","${s.items_count}","${s.payment_method}","${s.total}","${s.created_at}"\n`;
+  });
+  downloadFile(csv, `sales_${dateString()}.csv`, 'text/csv');
+}
+
+function downloadFile(content, fileName, mimeType) {
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+function dateString() {
+  return new Date().toISOString().split('T')[0];
+}
+
+// Audit Logs Recorder
+function logAudit(event, target, status) {
+  auditLogs.unshift({
+    id: auditLogs.length + 1,
+    event: event,
+    target: target,
+    status: status,
+    timestamp: new Date().toLocaleString('ar-EG')
+  });
+  if (auditLogs.length > 100) auditLogs.pop();
+  localStorage.setItem('admin_audit_logs', JSON.stringify(auditLogs));
+  renderAuditLogs();
+}
+
+function renderAuditLogs() {
+  const tbody = document.getElementById('audit-table-body');
+  if (!tbody) return;
+
+  if (auditLogs.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color: var(--text-muted);">لا توجد عمليات مسجلة حتى الآن</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = auditLogs.map((log, idx) => `
+    <tr>
+      <td>${idx + 1}</td>
+      <td><strong>${escapeHtml(log.event)}</strong></td>
+      <td>${escapeHtml(log.target)}</td>
+      <td><span class="badge active" style="background: rgba(59,130,246,0.15); color:#3b82f6;">${escapeHtml(log.status)}</span></td>
+      <td>${escapeHtml(log.timestamp)}</td>
     </tr>
   `).join('');
 }
@@ -413,7 +586,7 @@ function applyTranslations() {
     }
   });
 
-  renderCompaniesTable(companiesData);
+  filterCompanies();
   renderSalesTable(salesData);
 }
 

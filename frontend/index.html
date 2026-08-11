@@ -21,35 +21,43 @@
   <!-- Top Navigation Header -->
   <header class="top-nav">
     <div class="nav-brand">
-      <div class="logo-icon"><i class="fa-solid fa-store"></i></div>
+      <div class="logo-icon">
+        <i class="fa-solid fa-cube"></i>
+      </div>
       <div class="brand-text">
-        <h1 id="app-title">منصة إدارة الشركات والمبيعات</h1>
-        <span class="sub-title">Al-Mohandis Central Control System</span>
+        <h1 data-i18n="app_title">إيجاز - لوحة تحكم الشركات</h1>
+        <span class="sub-title">Super Admin Control System • Cloud Engine v2.0</span>
       </div>
     </div>
-    
+
     <div class="nav-actions">
       <button class="btn-icon" id="theme-toggle" title="تغيير المظهر">
         <i class="fa-solid fa-moon"></i>
       </button>
-      <button class="btn-icon" id="lang-toggle" title="Change Language">
-        <i class="fa-solid fa-globe"></i> <span id="lang-code">EN</span>
+      <button class="btn-icon" id="lang-toggle" title="تغيير اللغة">
+        <i class="fa-solid fa-globe"></i>
+        <span id="lang-code">EN</span>
       </button>
     </div>
   </header>
 
+  <!-- App Main Layout -->
   <div class="main-layout">
-    
+
     <!-- Sidebar Navigation -->
     <aside class="sidebar">
       <div class="sidebar-menu">
         <button class="menu-item active" data-target="section-companies">
-          <i class="fa-solid fa-building-user"></i>
+          <i class="fa-solid fa-building"></i>
           <span data-i18n="companies_title">إدارة الشركات</span>
         </button>
         <button class="menu-item" data-target="section-sales">
           <i class="fa-solid fa-chart-line"></i>
           <span data-i18n="sales_title">المبيعات أونلاين</span>
+        </button>
+        <button class="menu-item" data-target="section-audit">
+          <i class="fa-solid fa-shield-halved"></i>
+          <span data-i18n="audit_title">سجل الأمان والعمليات</span>
         </button>
         <button class="menu-item" data-target="section-config">
           <i class="fa-solid fa-gears"></i>
@@ -103,9 +111,14 @@
             <h2 data-i18n="companies_management">إدارة شركات POS</h2>
             <p data-i18n="companies_desc">التحكم بفعالية وتنشيط/إيقاف الشركات فورياً لمنع الدخول</p>
           </div>
-          <button class="btn primary" id="open-add-company-modal">
-            <i class="fa-solid fa-plus"></i> <span data-i18n="add_company">إضافة شركة جديدة</span>
-          </button>
+          <div class="header-actions">
+            <button class="btn secondary" id="export-companies-csv-btn">
+              <i class="fa-solid fa-file-csv"></i> <span data-i18n="export_csv">تصدير CSV</span>
+            </button>
+            <button class="btn primary" id="open-add-company-modal">
+              <i class="fa-solid fa-plus"></i> <span data-i18n="add_company">إضافة شركة جديدة</span>
+            </button>
+          </div>
         </div>
 
         <div class="card table-card">
@@ -114,6 +127,13 @@
               <i class="fa-solid fa-magnifying-glass"></i>
               <input type="text" id="search-companies" placeholder="بحث باسم الشركة أو الهاتف..." data-i18n-ph="search_company_placeholder">
             </div>
+
+            <div class="filter-tabs">
+              <button class="tab-btn active" data-status="all" data-i18n="filter_all">الكل</button>
+              <button class="tab-btn" data-status="active" data-i18n="filter_active">نشطة 🟢</button>
+              <button class="tab-btn" data-status="inactive" data-i18n="filter_inactive">متوقفة 🔴</button>
+            </div>
+
             <button class="btn secondary" id="refresh-companies-btn">
               <i class="fa-solid fa-arrows-rotate"></i> <span data-i18n="refresh">تحديث</span>
             </button>
@@ -151,9 +171,14 @@
             <h2 data-i18n="online_sales_title">سجل المبيعات المباشرة أونلاين</h2>
             <p data-i18n="online_sales_desc">متابعة الفواتير الصادرة من الكاشيرات عبر كافة الشركات النشطة</p>
           </div>
-          <button class="btn secondary" id="refresh-sales-btn">
-            <i class="fa-solid fa-arrows-rotate"></i> <span data-i18n="refresh">تحديث المبيعات</span>
-          </button>
+          <div class="header-actions">
+            <button class="btn secondary" id="export-sales-csv-btn">
+              <i class="fa-solid fa-file-csv"></i> <span data-i18n="export_csv">تصدير CSV</span>
+            </button>
+            <button class="btn secondary" id="refresh-sales-btn">
+              <i class="fa-solid fa-arrows-rotate"></i> <span data-i18n="refresh">تحديث المبيعات</span>
+            </button>
+          </div>
         </div>
 
         <div class="card table-card">
@@ -177,11 +202,12 @@
                   <th data-i18n="tbl_payment_method">طريقة الدفع</th>
                   <th data-i18n="tbl_total">إجمالي المبلغ</th>
                   <th data-i18n="tbl_date">التاريخ والوقت</th>
+                  <th data-i18n="tbl_actions">التفاصيل</th>
                 </tr>
               </thead>
               <tbody id="sales-table-body">
                 <tr>
-                  <td colspan="7" class="loading-td">
+                  <td colspan="8" class="loading-td">
                     <i class="fa-solid fa-spinner fa-spin"></i> جاري جلب الفواتير أونلاين...
                   </td>
                 </tr>
@@ -191,7 +217,43 @@
         </div>
       </section>
 
-      <!-- SECTION 3: API Config & Server Info -->
+      <!-- SECTION 3: Audit & Security Log -->
+      <section id="section-audit" class="page-section">
+        <div class="section-header">
+          <div>
+            <h2 data-i18n="audit_title">سجل الأمان والعمليات</h2>
+            <p data-i18n="audit_desc">تتبع جميع عمليات التفعيل والإيقاف ومحاولات الدخول على النظام</p>
+          </div>
+          <button class="btn secondary" id="clear-audit-btn">
+            <i class="fa-solid fa-trash"></i> <span data-i18n="clear_log">مسح السجل</span>
+          </button>
+        </div>
+
+        <div class="card table-card">
+          <div class="table-responsive">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>الحدث / العملية</th>
+                  <th>الشركة / المستخدم</th>
+                  <th>الحالة</th>
+                  <th>الوقت والتاريخ</th>
+                </tr>
+              </thead>
+              <tbody id="audit-table-body">
+                <tr>
+                  <td colspan="5" class="loading-td">
+                    <i class="fa-solid fa-shield-halved"></i> لا توجد عمليات مسجلة حتى الآن
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 4: API Config & Server Info -->
       <section id="section-config" class="page-section">
         <div class="section-header">
           <div>
@@ -203,7 +265,7 @@
         <div class="card config-card">
           <div class="config-row">
             <span class="label">API Backend URL:</span>
-            <input type="text" id="api-endpoint-input" class="custom-input" value="https://apipos.official-web.online/api" readonly>
+            <input type="text" id="api-endpoint-input" class="custom-input" value="https://apipos.official-web.online" readonly>
           </div>
           <div class="config-row">
             <span class="label">Inactive Company Message:</span>
@@ -277,6 +339,49 @@
           <button type="submit" class="btn primary" id="save-company-btn" data-i18n="save">حفظ البيانات</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- INVOICE DETAILS MODAL -->
+  <div class="modal-backdrop" id="invoice-details-modal">
+    <div class="modal-card" style="width: 580px;">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-receipt"></i> تفاصيل الفاتورة <span id="modal-inv-no"></span></h3>
+        <button class="close-modal" id="close-inv-modal-btn">&times;</button>
+      </div>
+
+      <div class="inv-modal-body">
+        <div class="inv-meta-grid">
+          <div><strong>الشركة:</strong> <span id="inv-modal-company"></span></div>
+          <div><strong>الكاشير:</strong> <span id="inv-modal-cashier"></span></div>
+          <div><strong>طريقة الدفع:</strong> <span id="inv-modal-payment"></span></div>
+          <div><strong>التاريخ:</strong> <span id="inv-modal-date"></span></div>
+        </div>
+
+        <h4 style="margin: 16px 0 8px; font-size: 14px;">الأصناف والمبيعات</h4>
+        <table class="custom-table" style="font-size: 12px;">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>الصنف</th>
+              <th>الكمية</th>
+              <th>السعر</th>
+              <th>الإجمالي</th>
+            </tr>
+          </thead>
+          <tbody id="inv-modal-items-body">
+            <!-- Populated via JS -->
+          </tbody>
+        </table>
+
+        <div style="margin-top: 16px; text-align: left; font-size: 16px; font-weight: 800; color: var(--success);" id="inv-modal-total">
+          الإجمالي: 0.00 EGP
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn secondary" id="close-inv-btn">إغلاق</button>
+      </div>
     </div>
   </div>
 
