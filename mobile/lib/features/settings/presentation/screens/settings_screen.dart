@@ -77,8 +77,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           }
           if (state is SettingsLoaded) {
             if (_companyController.text.isEmpty) {
-              _companyController.text = (user?.companyName != null && user!.companyName!.isNotEmpty)
-                  ? user.companyName!
+              _companyController.text = (user?.companyName != null && user!.companyName.isNotEmpty)
+                  ? user.companyName
                   : state.companyName;
               _taxController.text = state.taxPercent % 1 == 0
                   ? state.taxPercent.toInt().toString()
@@ -113,13 +113,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           children: [
                             TextFormField(
                               controller: _companyController,
-                              enabled: false,
+                              enabled: isAdmin,
                               decoration: InputDecoration(
                                 labelText: 'company_name'.tr(),
+                                prefixIcon: const Icon(Icons.business_rounded),
                                 border: const OutlineInputBorder(),
                               ),
-                              validator: (v) => v == null || v.isEmpty
-                                  ? 'no_data'.tr()
+                              validator: (v) => v == null || v.trim().isEmpty
+                                  ? 'enter_company_name'.tr()
                                   : null,
                             ),
                             SizedBox(height: 12.h),

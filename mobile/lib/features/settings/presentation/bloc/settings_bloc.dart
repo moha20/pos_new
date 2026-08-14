@@ -146,6 +146,9 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
           logoPath: logo,
         ));
         try {
+          Gravity.find<AuthBloc>().add(AuthUpdateCompany(event.companyName));
+        } catch (_) {}
+        try {
           final user = Gravity.find<AuthBloc>().currentUser;
           Gravity.find<ActivityLogService>().log(
             action: 'settings_updated',
