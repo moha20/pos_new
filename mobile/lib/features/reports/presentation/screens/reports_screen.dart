@@ -144,7 +144,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
     final salesCrossAxisCount = screenWidth > 900 ? 3 : (screenWidth > 600 ? 2 : 1);
     final salesGridWidth = screenWidth - 32.r;
     final salesItemWidth = (salesGridWidth - (salesCrossAxisCount - 1) * 16) / salesCrossAxisCount;
-    final double salesCardHeight = 110.0;
+    final double salesCardHeight = 124.0;
     final double salesChildAspectRatio = salesItemWidth / salesCardHeight;
 
     return Scrollbar(
@@ -239,7 +239,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
     final expensesCrossAxisCount = screenWidth > 900 ? 3 : (screenWidth > 600 ? 2 : 1);
     final expensesGridWidth = screenWidth - 32.r;
     final expensesItemWidth = (expensesGridWidth - (expensesCrossAxisCount - 1) * 16) / expensesCrossAxisCount;
-    final double expensesCardHeight = 110.0;
+    final double expensesCardHeight = 124.0;
     final double expensesChildAspectRatio = expensesItemWidth / expensesCardHeight;
 
     return Scrollbar(

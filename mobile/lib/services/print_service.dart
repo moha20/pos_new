@@ -178,28 +178,54 @@ class PrintService {
                   pw.Divider(borderStyle: pw.BorderStyle.dashed),
 
                   pw.Table(
+                    border: pw.TableBorder.all(color: PdfColors.grey600, width: 0.5),
                     columnWidths: const {
-                      0: pw.FlexColumnWidth(3),
-                      1: pw.FlexColumnWidth(1),
-                      2: pw.FlexColumnWidth(1.5),
-                      3: pw.FlexColumnWidth(1.5),
+                      0: const pw.FlexColumnWidth(3.2),
+                      1: const pw.FlexColumnWidth(1.0),
+                      2: const pw.FlexColumnWidth(1.4),
+                      3: const pw.FlexColumnWidth(1.6),
                     },
                     children: [
                       pw.TableRow(
+                        decoration: const pw.BoxDecoration(color: PdfColors.grey200),
                         children: [
-                          pw.Text(isAr ? 'الصنف' : 'Item', style: _style(fontSize: 7, bold: true)),
-                          pw.Text(isAr ? 'الكمية' : 'Qty', style: _style(fontSize: 7, bold: true), textAlign: pw.TextAlign.center),
-                          pw.Text(isAr ? 'السعر' : 'Price', style: _style(fontSize: 7, bold: true), textAlign: pw.TextAlign.right),
-                          pw.Text(isAr ? 'الإجمالي' : 'Total', style: _style(fontSize: 7, bold: true), textAlign: pw.TextAlign.right),
+                          pw.Padding(
+                            padding: const pw.EdgeInsets.symmetric(vertical: 2.5, horizontal: 2),
+                            child: pw.Text(isAr ? 'الصنف' : 'Item', style: _style(fontSize: 7, bold: true), textAlign: pw.TextAlign.center),
+                          ),
+                          pw.Padding(
+                            padding: const pw.EdgeInsets.symmetric(vertical: 2.5, horizontal: 2),
+                            child: pw.Text(isAr ? 'الكمية' : 'Qty', style: _style(fontSize: 7, bold: true), textAlign: pw.TextAlign.center),
+                          ),
+                          pw.Padding(
+                            padding: const pw.EdgeInsets.symmetric(vertical: 2.5, horizontal: 2),
+                            child: pw.Text(isAr ? 'السعر' : 'Price', style: _style(fontSize: 7, bold: true), textAlign: pw.TextAlign.center),
+                          ),
+                          pw.Padding(
+                            padding: const pw.EdgeInsets.symmetric(vertical: 2.5, horizontal: 2),
+                            child: pw.Text(isAr ? 'الإجمالي' : 'Total', style: _style(fontSize: 7, bold: true), textAlign: pw.TextAlign.center),
+                          ),
                         ],
                       ),
                       ...sale.items.map((item) {
                         return pw.TableRow(
                           children: [
-                            pw.Text(item.productName, style: _style(fontSize: 6.5)),
-                            pw.Text('${item.qty}', style: _style(fontSize: 6.5), textAlign: pw.TextAlign.center),
-                            pw.Text(item.unitPrice.toStringAsFixed(2), style: _style(fontSize: 6.5), textAlign: pw.TextAlign.right),
-                            pw.Text(item.totalPrice.toStringAsFixed(2), style: _style(fontSize: 6.5, bold: true), textAlign: pw.TextAlign.right),
+                            pw.Padding(
+                              padding: const pw.EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+                              child: pw.Text(item.productName, style: _style(fontSize: 6.5)),
+                            ),
+                            pw.Padding(
+                              padding: const pw.EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+                              child: pw.Text('${item.qty}', style: _style(fontSize: 6.5), textAlign: pw.TextAlign.center),
+                            ),
+                            pw.Padding(
+                              padding: const pw.EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+                              child: pw.Text(item.unitPrice.toStringAsFixed(2), style: _style(fontSize: 6.5), textAlign: pw.TextAlign.right),
+                            ),
+                            pw.Padding(
+                              padding: const pw.EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+                              child: pw.Text(item.totalPrice.toStringAsFixed(2), style: _style(fontSize: 6.5, bold: true), textAlign: pw.TextAlign.right),
+                            ),
                           ],
                         );
                       }),

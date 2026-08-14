@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:almohandis_pos/core/di/di.dart';
-import 'package:almohandis_pos/features/inventory/domain/entities/product_entity.dart';
+import 'package:pharmacy_pos/core/di/di.dart';
+import 'package:pharmacy_pos/features/inventory/domain/entities/product_entity.dart';
 
 void main() {
   group('Gravity DI Container Tests', () {
@@ -28,10 +28,30 @@ void main() {
       unit: 'Meter',
       isActive: true,
       prices: [
-        PriceTierEntity(level: 'retail', labelAr: 'تجزئة', labelEn: 'Retail', price: 28.0),
-        PriceTierEntity(level: 'salesman', labelAr: 'مندوب', labelEn: 'Salesman', price: 25.0),
-        PriceTierEntity(level: 'company', labelAr: 'شركة', labelEn: 'Company', price: 23.0),
-        PriceTierEntity(level: 'wholesale', labelAr: 'جملة', labelEn: 'Wholesale', price: 21.0),
+        PriceTierEntity(
+          level: 'retail',
+          labelAr: 'تجزئة',
+          labelEn: 'Retail',
+          price: 28.0,
+        ),
+        PriceTierEntity(
+          level: 'salesman',
+          labelAr: 'مندوب',
+          labelEn: 'Salesman',
+          price: 25.0,
+        ),
+        PriceTierEntity(
+          level: 'company',
+          labelAr: 'شركة',
+          labelEn: 'Company',
+          price: 23.0,
+        ),
+        PriceTierEntity(
+          level: 'wholesale',
+          labelAr: 'جملة',
+          labelEn: 'Wholesale',
+          price: 21.0,
+        ),
       ],
     );
 
