@@ -55,7 +55,7 @@ class OnlineSaleRecord {
 
 class CloudSyncService {
   static const String _storageKey = 'online_cloud_sales_cache';
-  static const String defaultApiUrl = 'https://apipos.official-web.online';
+  static const String defaultApiUrl = 'https://apipharmacy.official-web.online';
 
   Future<String> _getBaseUrl() async {
     final prefs = Gravity.find<SharedPreferences>();

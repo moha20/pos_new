@@ -1,12 +1,12 @@
 // API Endpoint Configuration
 const BASE_API = window.location.hostname.includes('official-web.online')
-  ? 'https://apipos.official-web.online'
+  ? 'https://apipharmacy.official-web.online'
   : '../backend';
 
 // Translations Dictionary
 const translations = {
   ar: {
-    app_title: "إيجاز - لوحة تحكم الشركات",
+    app_title: "إيجاز - لوحة تحكم الصيدليات",
     companies_title: "إدارة الشركات",
     sales_title: "المبيعات أونلاين",
     audit_title: "سجل الأمان والعمليات",
@@ -15,7 +15,7 @@ const translations = {
     active_companies: "الشركات النشطة",
     inactive_companies: "الشركات المتوقفة",
     total_sales: "إجمالي المبيعات",
-    companies_management: "إدارة شركات POS",
+    companies_management: "إدارة صيدليات POS",
     companies_desc: "التحكم بفعالية وتنشيط/إيقاف الشركات فورياً لمنع الدخول",
     add_company: "إضافة شركة جديدة",
     export_csv: "تصدير CSV",
@@ -55,7 +55,7 @@ const translations = {
     clear_log: "مسح السجل"
   },
   en: {
-    app_title: "Company & Sales Control Platform",
+    app_title: "Pharmacy POS Admin Platform",
     companies_title: "Companies Management",
     sales_title: "Online Cloud Sales",
     audit_title: "Audit & Security Log",
