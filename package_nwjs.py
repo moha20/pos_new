@@ -63,6 +63,34 @@ def main():
         else:
             shutil.copy2(s, d)
 
+    # Ensure package.json is copied from mobile/web/package.json
+    package_json_src = os.path.join(BASE_DIR, "mobile", "web", "package.json")
+    if os.path.exists(package_json_src):
+        shutil.copy2(package_json_src, os.path.join(target_extract_path, "package.json"))
+
+    # Rename nw.exe to AlMohandisPOS.exe for a professional appearance
+    orig_exe = os.path.join(target_extract_path, "nw.exe")
+    app_exe = os.path.join(target_extract_path, "AlMohandisPOS.exe")
+    if os.path.exists(orig_exe):
+        if os.path.exists(app_exe):
+            os.remove(app_exe)
+        os.rename(orig_exe, app_exe)
+        print("Renamed nw.exe -> AlMohandisPOS.exe")
+
+    # Create convenient launcher batch file
+    bat_path = os.path.join(target_extract_path, "Start-AlMohandis-POS.bat")
+    with open(bat_path, "w") as f:
+        f.write("@echo off\r\nstart \"\" \"%~dp0AlMohandisPOS.exe\"\r\n")
+
+    # Copy icons
+    icon_src = os.path.join(BASE_DIR, "mobile", "windows", "runner", "resources", "app_icon.ico")
+    if os.path.exists(icon_src):
+        shutil.copy2(icon_src, os.path.join(target_extract_path, "app_icon.ico"))
+
+    png_src = os.path.join(BASE_DIR, "mobile", "assets", "images", "app_icon.png")
+    if os.path.exists(png_src):
+        shutil.copy2(png_src, os.path.join(target_extract_path, "favicon.png"))
+
     index_html_path = os.path.join(target_extract_path, "index.html")
     if os.path.exists(index_html_path):
         print("Configuring base href in index.html...")
@@ -73,7 +101,7 @@ def main():
         with open(index_html_path, 'w', encoding='utf-8') as f:
             f.write(c)
 
-    archive_name = os.path.join(NWJS_DIR, "PharmacyPOS-Win32")
+    archive_name = os.path.join(BASE_DIR, "AlMohandisPOS-Windows-32bit-64bit")
     print(f"Creating portable ZIP archive: {archive_name}.zip...")
     if os.path.exists(f"{archive_name}.zip"):
         os.remove(f"{archive_name}.zip")
@@ -82,6 +110,7 @@ def main():
     print("\n========================================================")
     print("Packaging Complete!")
     print(f"Portable zip created at: {archive_name}.zip")
+    print("Supports Windows 7, 8, 8.1, 10, 11 (32-bit & 64-bit)")
     print("========================================================\n")
 
 if __name__ == '__main__':

@@ -1,0 +1,45 @@
+name: Build Windows Application
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        working-directory: mobile
+        run: flutter pub get
+
+      - name: Enable Windows desktop
+        run: flutter config --enable-windows-desktop
+
+      - name: Build Windows Release
+        working-directory: mobile
+        run: flutter build windows --release
+
+      - name: Create Windows Release ZIP
+        shell: pwsh
+        run: |
+          $sourceDir = "mobile\build\windows\x64\runner\Release"
+          $zipPath = "AlMohandisPOS-Windows-Native-x64.zip"
+          Compress-Archive -Path "$sourceDir\*" -DestinationPath $zipPath -Force
+          Write-Host "Created $zipPath successfully"
+
+      - name: Upload Windows Native Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AlMohandisPOS-Windows-Native-x64
+          path: AlMohandisPOS-Windows-Native-x64.zip
