@@ -1,6 +1,3 @@
-import 'dart:convert';
-import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/services.dart'
@@ -117,7 +114,17 @@ class PrintService {
         (isAr
             ? 'موزع معتمد - مصطفى محمود'
             : 'Authorized Distributor - Mostafa Mahmoud');
-    final companyNameText = prefs.getString('company_name') ?? companyName;
+    final subtitleText =
+        isAr ? 'برمجيات وأجهزة كاشير' : 'POS Software & Cashier Systems';
+    final savedName = prefs.getString('company_name')?.trim();
+    final candidateName = (companyName.trim().isNotEmpty && companyName != 'Elmohands software')
+        ? companyName.trim()
+        : (savedName ?? companyName);
+    final companyNameText = InvoiceStoreInfo.resolveCompanyName(
+      name: candidateName,
+      isArabic: isAr,
+      prefs: prefs,
+    );
     final tafqeetText = isAr
         ? tafqeet(sale.total)
         : 'Only ${sale.total.toStringAsFixed(2)} EGP';
@@ -149,7 +156,8 @@ class PrintService {
                     child: pw.Image(logoImage, fit: pw.BoxFit.contain),
                   ),
                   pw.SizedBox(height: 2),
-                  pw.Text(companyNameText, style: _style(fontSize: 9, bold: true)),
+                  pw.Text(companyNameText, style: _style(fontSize: 10, bold: true)),
+                  pw.Text(subtitleText, style: _style(fontSize: 7)),
                   pw.Text(phoneText, style: _style(fontSize: 7)),
                   pw.SizedBox(height: 4),
                   pw.Divider(borderStyle: pw.BorderStyle.dashed),
@@ -281,17 +289,20 @@ class PrintService {
                   pw.Row(
                     mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                     children: [
-                      // Right/Left side depending on layout direction
+                      // Start column: Company Name, Subtitle, Phone, Address
                       pw.Column(
                         crossAxisAlignment: isAr
                             ? pw.CrossAxisAlignment.start
                             : pw.CrossAxisAlignment.end,
                         children: [
                           pw.Text(
-                            addressText,
-                            style: _style(fontSize: 8, bold: true),
+                            companyNameText,
+                            style: _style(fontSize: 11, bold: true),
                           ),
+                          pw.Text(subtitleText, style: _style(fontSize: 7)),
                           pw.Text(phoneText, style: _style(fontSize: 7)),
+                          if (addressText.isNotEmpty)
+                            pw.Text(addressText, style: _style(fontSize: 7)),
                         ],
                       ),
                       // Center: Logo & Title
@@ -309,7 +320,7 @@ class PrintService {
                           ),
                         ],
                       ),
-                      // Left/Right side depending on layout direction
+                      // End column: Distributor
                       pw.Column(
                         crossAxisAlignment: isAr
                             ? pw.CrossAxisAlignment.end
@@ -319,7 +330,6 @@ class PrintService {
                             distributorText,
                             style: _style(fontSize: 8, bold: true),
                           ),
-                          pw.Text(companyNameText, style: _style(fontSize: 7)),
                         ],
                       ),
                     ],
@@ -562,21 +572,12 @@ class PrintService {
 
   Future<pw.MemoryImage> _getLogoImage() async {
     try {
-      final prefs = Gravity.find<SharedPreferences>();
-      final logoPath = prefs.getString('logo_path');
-      if (logoPath != null && logoPath.isNotEmpty) {
-        if (logoPath.startsWith('data:image/')) {
-          final base64String = logoPath.split(',').last;
-          final bytes = base64.decode(base64String);
-          return pw.MemoryImage(bytes);
-        } else if (!kIsWeb && File(logoPath).existsSync()) {
-          final bytes = await File(logoPath).readAsBytes();
-          return pw.MemoryImage(bytes);
-        }
-      }
-    } catch (_) {}
-    final logoData = await rootBundle.load('assets/images/logo.jpg');
-    return pw.MemoryImage(logoData.buffer.asUint8List());
+      final logoData = await rootBundle.load('assets/images/logo.png');
+      return pw.MemoryImage(logoData.buffer.asUint8List());
+    } catch (_) {
+      final logoData = await rootBundle.load('assets/images/logo.jpg');
+      return pw.MemoryImage(logoData.buffer.asUint8List());
+    }
   }
 
   Future<void> printInvoice(
@@ -969,11 +970,12 @@ class PrintService {
     final isDraft =
         sale.id == 'draft' || (sale.note?.contains('DRAFT') ?? false);
     final prefs = Gravity.find<SharedPreferences>();
-    final companyNameText =
-        prefs.getString('company_name') ??
-        (isArabic
-            ? 'المهندس للأدوات الكهربائية'
-            : 'Al Mohands Electrical Tools');
+    final savedName = prefs.getString('company_name')?.trim();
+    final companyNameText = InvoiceStoreInfo.resolveCompanyName(
+      name: savedName,
+      isArabic: isArabic,
+      prefs: prefs,
+    );
     if (isArabic) {
       if (isDraft) {
         buffer.writeln('*[معاينة مسودة غير محفوظة]*');

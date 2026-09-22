@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:almohandis_pos/core/di/di.dart';
 import 'package:almohandis_pos/features/inventory/domain/entities/product_entity.dart';
+import 'package:almohandis_pos/widgets/invoice_format_widgets.dart';
 
 void main() {
   group('Gravity DI Container Tests', () {
@@ -45,6 +46,75 @@ void main() {
 
     test('Should fallback to first price (Retail) if level does not exist', () {
       expect(product.priceFor('unknown_tier'), equals(28.0));
+    });
+  });
+
+  group('InvoiceStoreInfo Company Name Tests', () {
+    test('Should preserve custom company name exactly as entered', () {
+      final name = InvoiceStoreInfo.resolveCompanyName(
+        name: 'شركة النور للتجارة الحديثة',
+        isArabic: true,
+      );
+      expect(name, equals('شركة النور للتجارة الحديثة'));
+    });
+
+    test('Should preserve custom company name when updated', () {
+      var name = InvoiceStoreInfo.resolveCompanyName(
+        name: 'CyperFusion',
+        isArabic: true,
+      );
+      expect(name, equals('CyperFusion'));
+
+      // User changes company name
+      name = InvoiceStoreInfo.resolveCompanyName(
+        name: 'شركة المهندس للأدوات الكهربائية',
+        isArabic: true,
+      );
+      expect(name, equals('شركة المهندس للأدوات الكهربائية'));
+    });
+
+    test('Should fallback to default Arabic name when candidate is empty or placeholder', () {
+      expect(
+        InvoiceStoreInfo.resolveCompanyName(name: '', isArabic: true),
+        equals('المهندس للبرمجيات'),
+      );
+      expect(
+        InvoiceStoreInfo.resolveCompanyName(name: 'اسم الشركة / الفرع', isArabic: true),
+        equals('المهندس للبرمجيات'),
+      );
+      expect(
+        InvoiceStoreInfo.resolveCompanyName(name: 'Company / Branch Name', isArabic: true),
+        equals('المهندس للبرمجيات'),
+      );
+    });
+
+    test('Should fallback to default English name when candidate is empty or placeholder in English', () {
+      expect(
+        InvoiceStoreInfo.resolveCompanyName(name: '', isArabic: false),
+        equals('Elmohands software'),
+      );
+      expect(
+        InvoiceStoreInfo.resolveCompanyName(name: 'Company / Branch Name', isArabic: false),
+        equals('Elmohands software'),
+      );
+    });
+
+    test('Should localize Elmohands software to Arabic when isArabic is true', () {
+      expect(
+        InvoiceStoreInfo.resolveCompanyName(name: 'Elmohands software', isArabic: true),
+        equals('المهندس للبرمجيات'),
+      );
+    });
+
+    test('Should use fallbackUserCompany if name is empty', () {
+      expect(
+        InvoiceStoreInfo.resolveCompanyName(
+          name: '',
+          fallbackUserCompany: 'مؤسسة الأمل',
+          isArabic: true,
+        ),
+        equals('مؤسسة الأمل'),
+      );
     });
   });
 }

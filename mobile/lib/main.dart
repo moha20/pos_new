@@ -9,7 +9,6 @@ import 'core/db/hive_config.dart';
 import 'services/print_service.dart';
 import 'services/barcode_service.dart';
 import 'services/backup_service.dart';
-import 'services/cloud_sync_service.dart';
 
 import 'features/auth/domain/repositories/auth_repository.dart';
 import 'features/auth/data/repositories/auth_repository_impl.dart';
@@ -68,7 +67,6 @@ void main() async {
   Gravity.put<PrintService>(PrintService());
   Gravity.put<BarcodeService>(BarcodeService());
   Gravity.put<BackupService>(BackupService());
-  Gravity.put<CloudSyncService>(CloudSyncService());
 
   // 4. Register Repository implementations
   Gravity.put<AuthRepository>(AuthRepositoryImpl(HiveConfig.usersBox));

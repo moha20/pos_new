@@ -1,11 +1,11 @@
 {
-    "name": "almohandis_pos",
-    "short_name": "almohandis_pos",
+    "name": "Elmohands POS",
+    "short_name": "Elmohands POS",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#080C16",
+    "theme_color": "#E65100",
+    "description": "Elmohands POS System",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

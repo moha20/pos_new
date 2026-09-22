@@ -7,7 +7,6 @@ import '../../../customers/domain/entities/customer_entity.dart';
 import '../../../customers/domain/repositories/customer_repository.dart';
 import '../../../../core/di/di.dart';
 import '../../../../services/activity_log_service.dart';
-import '../../../../services/cloud_sync_service.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -351,12 +350,6 @@ class POSBloc extends Bloc<POSEvent, POSState> {
 
         // Save sale and deduct stock
         await saleRepository.saveSale(sale);
-
-        // Upload sale to Cloud Sync for online admin access
-        try {
-          final cloudSync = Gravity.find<CloudSyncService>();
-          await cloudSync.uploadSale(sale);
-        } catch (_) {}
 
         // Update customer total purchases and balance if customer selected
         if (state.selectedCustomer != null) {

@@ -37,6 +37,11 @@ class AuthDeleteUserRequested extends AuthEvent {
   AuthDeleteUserRequested(this.id);
 }
 
+class AuthUpdateCompanyName extends AuthEvent {
+  final String companyName;
+  AuthUpdateCompanyName(this.companyName);
+}
+
 // States
 abstract class AuthState {}
 
@@ -91,7 +96,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             Gravity.find<ActivityLogService>().log(
               action: 'login',
               category: 'auth',
-              description: 'User ${user.name} logged in under ${user.companyName}',
+              description: 'User ${user.name} logged in',
               userId: user.username,
             );
           } catch (_) {}
@@ -99,13 +104,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           emit(AuthFailure('invalid_credentials'));
         }
       } catch (e) {
-        if (e.toString().contains('COMPANY_NOT_FOUND')) {
-          emit(AuthFailure('COMPANY_NOT_FOUND'));
-        } else if (e.toString().contains('COMPANY_INACTIVE')) {
-          emit(AuthFailure('COMPANY_INACTIVE'));
-        } else {
-          emit(AuthFailure('invalid_credentials'));
-        }
+        emit(AuthFailure('invalid_credentials'));
       }
     });
 
@@ -124,6 +123,16 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             userId: user.username,
           );
         } catch (_) {}
+      }
+    });
+
+    on<AuthUpdateCompanyName>((event, emit) async {
+      if (_currentUser != null) {
+        _currentUser = _currentUser!.copyWith(companyName: event.companyName.trim());
+        try {
+          await authRepository.updateUser(_currentUser!);
+        } catch (_) {}
+        emit(AuthSuccess(_currentUser!));
       }
     });
 

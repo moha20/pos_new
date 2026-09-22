@@ -3,7 +3,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../domain/entities/sale_entity.dart';
 import '../../../../widgets/responsive_layout.dart';
@@ -11,6 +10,7 @@ import '../../../../widgets/invoice_format_widgets.dart';
 import '../../../../services/print_service.dart';
 import '../../../../core/di/di.dart';
 import '../../../customers/presentation/bloc/customer_bloc.dart';
+import '../../../settings/presentation/bloc/settings_bloc.dart';
 
 class InvoiceDetailsScreen extends StatefulWidget {
   final SaleEntity sale;
@@ -161,17 +161,21 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
             ),
           ),
 
-          // Main Preview Area
+          // Main Preview Area wrapped in BlocBuilder to automatically re-render when company name changes
           Expanded(
-            child: SingleChildScrollView(
-              padding: EdgeInsets.all(20.r),
-              child: Center(
-                child: InvoiceFormattedPreview(
-                  sale: widget.sale,
-                  customerName: _customerName,
-                  shape: _selectedShape,
-                ),
-              ),
+            child: BlocBuilder<SettingsBloc, SettingsState>(
+              builder: (context, _) {
+                return SingleChildScrollView(
+                  padding: EdgeInsets.all(20.r),
+                  child: Center(
+                    child: InvoiceFormattedPreview(
+                      sale: widget.sale,
+                      customerName: _customerName,
+                      shape: _selectedShape,
+                    ),
+                  ),
+                );
+              },
             ),
           ),
         ],
@@ -181,14 +185,13 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
 
   void _printInvoice(BuildContext context) async {
     final printService = Gravity.find<PrintService>();
-    final prefs = Gravity.find<SharedPreferences>();
-    final companyName = prefs.getString('company_name') ?? 'Al-Mohandis POS';
+    final storeInfo = InvoiceStoreInfo.fromContext(context);
     final lang = context.locale.languageCode;
 
     await printService.printInvoice(
       context,
       widget.sale,
-      companyName,
+      storeInfo.companyName,
       lang,
       shape: _selectedShape,
     );

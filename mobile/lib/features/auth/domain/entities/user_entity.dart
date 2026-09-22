@@ -18,4 +18,22 @@ class UserEntity {
   bool get isAdmin => role == 'admin';
   bool get isCashier => role == 'cashier';
   bool get isViewer => role == 'viewer';
+
+  UserEntity copyWith({
+    String? id,
+    String? name,
+    String? username,
+    String? role,
+    bool? isActive,
+    String? companyName,
+  }) {
+    return UserEntity(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      username: username ?? this.username,
+      role: role ?? this.role,
+      isActive: isActive ?? this.isActive,
+      companyName: companyName ?? this.companyName,
+    );
+  }
 }

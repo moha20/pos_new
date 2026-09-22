@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../bloc/auth_bloc.dart';
 import '../../../../widgets/language_toggle.dart';
 import '../../../../widgets/app_logo.dart';
@@ -17,23 +16,22 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _companyNameController = TextEditingController();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
   @override
-  void initState() {
-    super.initState();
-    _loadSavedCompany();
+  void dispose() {
+    _usernameController.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
 
-  void _loadSavedCompany() async {
-    final prefs = await SharedPreferences.getInstance();
-    final savedName = prefs.getString('company_name');
-    if (savedName != null && savedName.isNotEmpty) {
-      _companyNameController.text = savedName;
-    }
+  Future<void> _openUrl(String url) async {
+    try {
+      final uri = Uri.parse(url);
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (_) {}
   }
 
   @override
@@ -53,17 +51,9 @@ class _LoginScreenState extends State<LoginScreen> {
             );
             context.go('/pos');
           } else if (state is AuthFailure) {
-            final String errorText;
-            if (state.message == 'COMPANY_NOT_FOUND') {
-              errorText = 'company_not_found'.tr();
-            } else if (state.message == 'COMPANY_INACTIVE') {
-              errorText = 'company_inactive_support'.tr();
-            } else {
-              errorText = 'error_occurred'.tr();
-            }
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(errorText),
+                content: Text('invalid_credentials'.tr()),
                 backgroundColor: Colors.red,
                 duration: const Duration(seconds: 4),
               ),
@@ -131,25 +121,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     SizedBox(height: 24.h),
 
-                    // Company Name input
-                    TextFormField(
-                      controller: _companyNameController,
-                      decoration: InputDecoration(
-                        labelText: 'company_name'.tr(),
-                        prefixIcon: const Icon(Icons.business_rounded),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12.r),
-                        ),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'enter_company_name'.tr();
-                        }
-                        return null;
-                      },
-                    ),
-                    SizedBox(height: 16.h),
-
                     // Username input
                     TextFormField(
                       controller: _usernameController,
@@ -196,21 +167,14 @@ class _LoginScreenState extends State<LoginScreen> {
                         return ElevatedButton(
                           onPressed: isLoading
                               ? null
-                              : () async {
+                              : () {
                                   if (_formKey.currentState!.validate()) {
-                                    final company = _companyNameController.text.trim();
-                                    final prefs = await SharedPreferences.getInstance();
-                                    await prefs.setString('company_name', company);
-
-                                    if (context.mounted) {
-                                      context.read<AuthBloc>().add(
-                                        AuthLoginRequested(
-                                          _usernameController.text,
-                                          _passwordController.text,
-                                          companyName: company,
-                                        ),
-                                      );
-                                    }
+                                    context.read<AuthBloc>().add(
+                                      AuthLoginRequested(
+                                        _usernameController.text.trim(),
+                                        _passwordController.text.trim(),
+                                      ),
+                                    );
                                   }
                                 },
                           style: ElevatedButton.styleFrom(
@@ -239,7 +203,73 @@ class _LoginScreenState extends State<LoginScreen> {
                         );
                       },
                     ),
-                    SizedBox(height: 24.h),
+                    SizedBox(height: 20.h),
+                    Divider(color: theme.dividerColor.withValues(alpha: 0.1)),
+                    SizedBox(height: 12.h),
+
+                    // Immutable Developer & Owner Info
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.verified_rounded,
+                          size: 14.r,
+                          color: theme.colorScheme.primary,
+                        ),
+                        SizedBox(width: 6.w),
+                        Text(
+                          'Elmohands software',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: theme.colorScheme.primary,
+                            fontSize: 12.sp,
+                          ),
+                        ),
+                        Text(
+                          ' • Mohamed Salah',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: theme.colorScheme.onSurface.withValues(alpha: 0.75),
+                            fontSize: 12.sp,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 8.h),
+
+                    // Social and Website Action Icons
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.language_rounded),
+                          tooltip: 'elmohands.official-web.online',
+                          color: theme.colorScheme.primary,
+                          iconSize: 20.r,
+                          visualDensity: VisualDensity.compact,
+                          onPressed: () => _openUrl('https://elmohands.official-web.online/'),
+                        ),
+                        SizedBox(width: 6.w),
+                        IconButton(
+                          icon: const Icon(Icons.business_center_rounded),
+                          tooltip: 'LinkedIn',
+                          color: const Color(0xFF0A66C2),
+                          iconSize: 20.r,
+                          visualDensity: VisualDensity.compact,
+                          onPressed: () => _openUrl('https://www.linkedin.com/in/mohamed-salah-11a570112/'),
+                        ),
+                        SizedBox(width: 6.w),
+                        IconButton(
+                          icon: const Icon(Icons.public_rounded),
+                          tooltip: 'Facebook',
+                          color: const Color(0xFF1877F2),
+                          iconSize: 20.r,
+                          visualDensity: VisualDensity.compact,
+                          onPressed: () => _openUrl('https://www.facebook.com/share/1K7dFc8zGa/'),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 10.h),
                   ],
                 ),
               ),

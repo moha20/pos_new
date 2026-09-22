@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../features/auth/presentation/bloc/auth_bloc.dart';
+import '../features/settings/presentation/bloc/settings_bloc.dart';
 import 'language_toggle.dart';
 import 'app_logo.dart';
 
@@ -76,6 +77,11 @@ class AppSidebar extends StatelessWidget {
         labelKey: 'settings',
         route: '/settings',
       ),
+      _SidebarItem(
+        icon: Icons.info_outline_rounded,
+        labelKey: 'about',
+        route: '/about',
+      ),
     ];
 
     return Container(
@@ -111,43 +117,50 @@ class AppSidebar extends StatelessWidget {
             child: Column(
               children: [
                 const AppLogo(),
-                if (user?.companyName != null && user!.companyName!.isNotEmpty) ...[
-                  SizedBox(height: 12.h),
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.primary.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(20.r),
-                      border: Border.all(
-                        color: theme.colorScheme.primary.withValues(alpha: 0.25),
-                        width: 1.w,
+                BlocBuilder<SettingsBloc, SettingsState>(
+                  builder: (context, settingsState) {
+                    final company = (settingsState is SettingsLoaded && settingsState.companyName.isNotEmpty)
+                        ? settingsState.companyName
+                        : (user?.companyName ?? '');
+                    if (company.isEmpty) return const SizedBox.shrink();
+
+                    return Container(
+                      margin: EdgeInsets.only(top: 12.h),
+                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.primary.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(20.r),
+                        border: Border.all(
+                          color: theme.colorScheme.primary.withValues(alpha: 0.25),
+                          width: 1.w,
+                        ),
                       ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.business_rounded,
-                          size: 14.r,
-                          color: theme.colorScheme.primary,
-                        ),
-                        SizedBox(width: 6.w),
-                        Flexible(
-                          child: Text(
-                            user.companyName!,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.primary,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 11.sp,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.business_rounded,
+                            size: 14.r,
+                            color: theme.colorScheme.primary,
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+                          SizedBox(width: 6.w),
+                          Flexible(
+                            child: Text(
+                              company,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.primary,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 11.sp,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
               ],
             ),
           ),

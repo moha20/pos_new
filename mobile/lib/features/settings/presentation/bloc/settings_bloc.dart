@@ -81,7 +81,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
   final SharedPreferences prefs;
 
   SettingsBloc(this.prefs) : super(SettingsLoaded(
-    companyName: prefs.getString('company_name') ?? 'مؤسسة المهندس للأدوات الكهربائية',
+    companyName: prefs.getString('company_name') ?? 'Elmohands software',
     taxPercent: prefs.getDouble('tax_percent') ?? 0.0,
     printerIp: prefs.getString('printer_ip') ?? '192.168.1.100',
     themeType: prefs.getString('theme_type') ?? 'copper',
@@ -90,11 +90,12 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     companyAddress: prefs.getString('company_address') ?? 'الهرم - مربوطة حمزة',
     companyPhone: prefs.getString('company_phone') ?? '٠١١١٥٥٢٥٩٤٢ / ٠١٢٢٥٥٩٥٢٧١',
     companyDistributor: prefs.getString('company_distributor') ?? 'موزع معتمد - مصطفى محمود',
-    logoPath: prefs.getString('logo_path'),
+    logoPath: null,
   )) {
+    prefs.remove('logo_path');
     on<LoadSettings>((event, emit) {
       try {
-        final company = prefs.getString('company_name') ?? 'مؤسسة المهندس للأدوات الكهربائية';
+        final company = prefs.getString('company_name') ?? 'Elmohands software';
         final tax = prefs.getDouble('tax_percent') ?? 0.0;
         final ip = prefs.getString('printer_ip') ?? '192.168.1.100';
         final theme = prefs.getString('theme_type') ?? 'copper';
@@ -103,7 +104,6 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
         final address = prefs.getString('company_address') ?? 'الهرم - مربوطة حمزة';
         final phone = prefs.getString('company_phone') ?? '٠١١١٥٥٢٥٩٤٢ / ٠١٢٢٥٥٩٥٢٧١';
         final distributor = prefs.getString('company_distributor') ?? 'موزع معتمد - مصطفى محمود';
-        final logo = prefs.getString('logo_path');
         emit(SettingsLoaded(
           companyName: company,
           taxPercent: tax,
@@ -114,7 +114,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
           companyAddress: address,
           companyPhone: phone,
           companyDistributor: distributor,
-          logoPath: logo,
+          logoPath: null,
         ));
       } catch (e) {
         emit(SettingsError(e.toString()));
@@ -123,7 +123,8 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
 
     on<SaveSettings>((event, emit) async {
       try {
-        await prefs.setString('company_name', event.companyName);
+        final cleanCompany = event.companyName.trim();
+        await prefs.setString('company_name', cleanCompany);
         await prefs.setDouble('tax_percent', event.taxPercent);
         await prefs.setString('printer_ip', event.printerIp);
         await prefs.setString('theme_type', event.themeType);
@@ -134,7 +135,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
         await prefs.setString('company_distributor', event.companyDistributor);
         final logo = prefs.getString('logo_path');
         emit(SettingsLoaded(
-          companyName: event.companyName,
+          companyName: cleanCompany,
           taxPercent: event.taxPercent,
           printerIp: event.printerIp,
           themeType: event.themeType,
@@ -166,7 +167,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
         } else {
           await prefs.setString('logo_path', event.logoPath!);
         }
-        final company = prefs.getString('company_name') ?? 'مؤسسة المهندس للأدوات الكهربائية';
+        final company = prefs.getString('company_name') ?? 'Elmohands software';
         final tax = prefs.getDouble('tax_percent') ?? 0.0;
         final ip = prefs.getString('printer_ip') ?? '192.168.1.100';
         final theme = prefs.getString('theme_type') ?? 'copper';

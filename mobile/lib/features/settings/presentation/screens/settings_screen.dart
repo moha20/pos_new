@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-// import 'package:file_picker/file_picker.dart';
-// import 'package:path_provider/path_provider.dart';
-// import 'dart:convert';
-// import 'dart:io';
-// import 'package:flutter/foundation.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:convert';
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import '../bloc/settings_bloc.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/domain/entities/user_entity.dart';
 import '../../../../widgets/responsive_layout.dart';
 import '../../../../widgets/language_toggle.dart';
-// import '../../../../widgets/app_logo.dart';
+import '../../../../widgets/app_logo.dart';
 import '../../../../core/di/di.dart';
 import '../../../../services/backup_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -66,7 +66,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final theme = Theme.of(context);
     final isArabic = context.locale.languageCode == 'ar';
     final user = context.read<AuthBloc>().currentUser;
-    final isAdmin = user?.isAdmin ?? false;
+    final isAdmin = user?.isAdmin ?? true;
 
     return ResponsiveLayout(
       title: 'settings'.tr(),
@@ -77,9 +77,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
           }
           if (state is SettingsLoaded) {
             if (_companyController.text.isEmpty) {
-              _companyController.text = (user?.companyName != null && user!.companyName!.isNotEmpty)
-                  ? user.companyName!
-                  : state.companyName;
+              final userCompany = user?.companyName?.trim();
+              final stateCompany = state.companyName.trim();
+              if (stateCompany.isNotEmpty && stateCompany != 'Elmohands software') {
+                _companyController.text = stateCompany;
+              } else if (userCompany != null && userCompany.isNotEmpty) {
+                _companyController.text = userCompany;
+              } else {
+                _companyController.text = stateCompany.isNotEmpty ? stateCompany : 'Elmohands software';
+              }
               _taxController.text = state.taxPercent % 1 == 0
                   ? state.taxPercent.toInt().toString()
                   : state.taxPercent.toString();
@@ -113,12 +119,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           children: [
                             TextFormField(
                               controller: _companyController,
-                              enabled: false,
+                              enabled: true,
                               decoration: InputDecoration(
                                 labelText: 'company_name'.tr(),
                                 border: const OutlineInputBorder(),
+                                prefixIcon: const Icon(Icons.business_rounded),
                               ),
-                              validator: (v) => v == null || v.isEmpty
+                              validator: (v) => v == null || v.trim().isEmpty
                                   ? 'no_data'.tr()
                                   : null,
                             ),
@@ -128,7 +135,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 Expanded(
                                   child: TextFormField(
                                     controller: _taxController,
-                                    enabled: isAdmin,
+                                    enabled: true,
                                     keyboardType:
                                         const TextInputType.numberWithOptions(
                                           decimal: true,
@@ -150,7 +157,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 Expanded(
                                   child: TextFormField(
                                     controller: _printerController,
-                                    enabled: isAdmin,
+                                    enabled: true,
                                     decoration: InputDecoration(
                                       labelText: 'printer_ip'.tr(),
                                       border: const OutlineInputBorder(),
@@ -165,7 +172,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                              SizedBox(height: 12.h),
                             TextFormField(
                               controller: _addressController,
-                              enabled: isAdmin,
+                              enabled: true,
                               decoration: InputDecoration(
                                 labelText: 'company_address'.tr(),
                                 prefixIcon: const Icon(
@@ -180,7 +187,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             SizedBox(height: 12.h),
                             TextFormField(
                               controller: _phoneController,
-                              enabled: isAdmin,
+                              enabled: true,
                               decoration: InputDecoration(
                                 labelText: 'company_phone'.tr(),
                                 prefixIcon: const Icon(
@@ -195,7 +202,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             SizedBox(height: 12.h),
                             TextFormField(
                               controller: _distributorController,
-                              enabled: isAdmin,
+                              enabled: true,
                               decoration: InputDecoration(
                                 labelText: 'company_distributor'.tr(),
                                 prefixIcon: const Icon(Icons.business_outlined),
@@ -388,57 +395,58 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 ),
                               ],
                             ),
-                            if (isAdmin) ...[
-                              SizedBox(height: 16.h),
-                              ElevatedButton(
-                                onPressed: () {
-                                  if (_formKey.currentState!.validate()) {
-                                    context.read<SettingsBloc>().add(
-                                      SaveSettings(
-                                        companyName: _companyController.text,
-                                        taxPercent: double.tryParse(
-                                              _taxController.text,
-                                            ) ??
-                                            0.0,
-                                        printerIp: _printerController.text,
-                                        themeType: _selectedTheme ?? 'copper',
-                                        themeMode: _selectedMode ?? 'light',
-                                        whatsappPhone: state.whatsappPhone,
-                                        companyAddress: _addressController.text,
-                                        companyPhone: _phoneController.text,
-                                        companyDistributor:
-                                            _distributorController.text,
-                                      ),
-                                    );
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          'saved_successfully'.tr(),
-                                        ),
-                                        backgroundColor: Colors.green,
-                                      ),
-                                    );
-                                  }
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: theme.colorScheme.primary,
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 24,
-                                    vertical: 12,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12.r),
-                                  ),
-                                ),
-                                child: Text(
-                                  'save'.tr(),
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ],
+                             SizedBox(height: 16.h),
+                             ElevatedButton(
+                               onPressed: () {
+                                 if (_formKey.currentState!.validate()) {
+                                   context.read<SettingsBloc>().add(
+                                     SaveSettings(
+                                       companyName: _companyController.text,
+                                       taxPercent: double.tryParse(
+                                             _taxController.text,
+                                           ) ??
+                                           0.0,
+                                       printerIp: _printerController.text,
+                                       themeType: _selectedTheme ?? 'copper',
+                                       themeMode: _selectedMode ?? 'light',
+                                       whatsappPhone: state.whatsappPhone,
+                                       companyAddress: _addressController.text,
+                                       companyPhone: _phoneController.text,
+                                       companyDistributor:
+                                           _distributorController.text,
+                                     ),
+                                   );
+                                   context.read<AuthBloc>().add(
+                                     AuthUpdateCompanyName(_companyController.text.trim()),
+                                   );
+                                   ScaffoldMessenger.of(context).showSnackBar(
+                                     SnackBar(
+                                       content: Text(
+                                         'saved_successfully'.tr(),
+                                       ),
+                                       backgroundColor: Colors.green,
+                                     ),
+                                   );
+                                 }
+                               },
+                               style: ElevatedButton.styleFrom(
+                                 backgroundColor: theme.colorScheme.primary,
+                                 foregroundColor: Colors.white,
+                                 padding: const EdgeInsets.symmetric(
+                                   horizontal: 24,
+                                   vertical: 12,
+                                 ),
+                                 shape: RoundedRectangleBorder(
+                                   borderRadius: BorderRadius.circular(12.r),
+                                 ),
+                               ),
+                               child: Text(
+                                 'save'.tr(),
+                                 style: const TextStyle(
+                                   fontWeight: FontWeight.bold,
+                                 ),
+                               ),
+                             ),
                           ],
                         ),
                       ),
@@ -575,119 +583,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                       ),
                     if (isAdmin) ...[
-                      /*
-                      SizedBox(height: 24.h),
-                      Text(
-                        'logo_management'.tr(),
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(height: 12.h),
-                      Card(
-                        child: Padding(
-                          padding: EdgeInsets.all(16.0.r),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Text(
-                                isArabic
-                                    ? 'تغيير شعار التطبيق المعروض في شاشة تسجيل الدخول، القائمة الجانبية، الفواتير، وتقارير Z-Report.'
-                                    : 'Change the application logo displayed in the login screen, sidebar, invoice templates, and Z-Reports.',
-                                style: theme.textTheme.bodyMedium?.copyWith(
-                                  color: theme.colorScheme.onSurface
-                                      .withOpacity(0.7),
-                                ),
-                              ),
-                              SizedBox(height: 16.h),
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Container(
-                                    height: 100.h,
-                                    width: 100.w,
-                                    decoration: BoxDecoration(
-                                      border: Border.all(
-                                        color: theme.dividerColor.withOpacity(
-                                          0.2,
-                                        ),
-                                      ),
-                                      borderRadius: BorderRadius.circular(12.r),
-                                    ),
-                                    padding: EdgeInsets.all(8.r),
-                                    child: const AppLogo(fit: BoxFit.contain),
-                                  ),
-                                  SizedBox(width: 16.w),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        ElevatedButton.icon(
-                                          onPressed: () =>
-                                              _handleChangeLogo(context),
-                                          icon: const Icon(
-                                            Icons.image,
-                                            color: Colors.white,
-                                          ),
-                                          label: Text(
-                                            isArabic
-                                                ? 'تغيير الشعار'
-                                                : 'Change Logo',
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor:
-                                                theme.colorScheme.primary,
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(12.r),
-                                            ),
-                                          ),
-                                        ),
-                                        if (state.logoPath != null) ...[
-                                          SizedBox(height: 8.h),
-                                          OutlinedButton.icon(
-                                            onPressed: () =>
-                                                _handleResetLogo(context),
-                                            icon: const Icon(
-                                              Icons.refresh,
-                                              color: Colors.red,
-                                            ),
-                                            label: Text(
-                                              isArabic
-                                                  ? 'استعادة الشعار الافتراضي'
-                                                  : 'Reset to Default',
-                                              style: const TextStyle(
-                                                color: Colors.red,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                            style: OutlinedButton.styleFrom(
-                                              foregroundColor: Colors.red,
-                                              side: const BorderSide(
-                                                color: Colors.red,
-                                              ),
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(12.r),
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      */
                       SizedBox(height: 24.h),
                       Text(
                         'backup_restore'.tr(),
@@ -1142,78 +1037,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  /*
-  void _handleChangeLogo(BuildContext context) async {
-    try {
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['jpg', 'jpeg', 'png'],
-        withData: true,
-      );
-
-      if (result != null) {
-        if (kIsWeb) {
-          final bytes = result.files.single.bytes;
-          if (bytes != null) {
-            final extension = result.files.single.name
-                .split('.')
-                .last
-                .toLowerCase();
-            final base64String = base64Encode(bytes);
-            final dataUri = 'data:image/$extension;base64,$base64String';
-            if (context.mounted) {
-              context.read<SettingsBloc>().add(SaveLogo(dataUri));
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('logo_updated_success'.tr()),
-                  backgroundColor: Colors.green,
-                ),
-              );
-            }
-          }
-        } else if (result.files.single.path != null) {
-          final selectedPath = result.files.single.path!;
-
-          // Copy to app documents directory
-          final appDocDir = await getApplicationDocumentsDirectory();
-          final fileName =
-              'app_logo_${DateTime.now().millisecondsSinceEpoch}.${selectedPath.split('.').last}';
-          final newPath = '${appDocDir.path}/$fileName';
-
-          // Copy the file
-          final file = File(selectedPath);
-          await file.copy(newPath);
-
-          if (context.mounted) {
-            context.read<SettingsBloc>().add(SaveLogo(newPath));
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('logo_updated_success'.tr()),
-                backgroundColor: Colors.green,
-              ),
-            );
-          }
-        }
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
-        );
-      }
-    }
-  }
-
-  void _handleResetLogo(BuildContext context) {
-    context.read<SettingsBloc>().add(SaveLogo(null));
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('logo_reset_success'.tr()),
-        backgroundColor: Colors.green,
-      ),
-    );
-  }
-  */
 
   void _handleBackup(BuildContext context) async {
     final isArabic = context.locale.languageCode == 'ar';

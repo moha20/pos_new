@@ -1,8 +1,139 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../core/di/di.dart';
+import '../features/settings/presentation/bloc/settings_bloc.dart';
+import '../features/auth/presentation/bloc/auth_bloc.dart';
 import '../features/pos/domain/entities/sale_entity.dart';
 import 'app_logo.dart';
+
+class InvoiceStoreInfo {
+  final String companyName;
+  final String companyPhone;
+  final String companyAddress;
+  final String companyDistributor;
+
+  const InvoiceStoreInfo({
+    required this.companyName,
+    required this.companyPhone,
+    required this.companyAddress,
+    required this.companyDistributor,
+  });
+
+  static String resolveCompanyName({
+    String? name,
+    bool isArabic = true,
+    SharedPreferences? prefs,
+    String? fallbackUserCompany,
+  }) {
+    String candidate = (name != null && name.trim().isNotEmpty) ? name.trim() : '';
+
+    if (candidate.isEmpty && prefs != null) {
+      final saved = prefs.getString('company_name')?.trim();
+      if (saved != null && saved.isNotEmpty) {
+        candidate = saved;
+      }
+    }
+
+    if (candidate.isEmpty && fallbackUserCompany != null && fallbackUserCompany.trim().isNotEmpty) {
+      candidate = fallbackUserCompany.trim();
+    }
+
+    final defaultName = isArabic ? 'المهندس للبرمجيات' : 'Elmohands software';
+
+    // Discard only empty strings or exact placeholder translation labels:
+    final isPlaceholder = candidate.isEmpty ||
+        candidate == 'اسم الشركة / الفرع' ||
+        candidate == 'Company / Branch Name' ||
+        candidate == 'اسم الشركة' ||
+        candidate == 'Company Name' ||
+        candidate == 'Company / Store Name';
+
+    if (isPlaceholder) {
+      return defaultName;
+    }
+
+    if (candidate == 'Elmohands software' && isArabic) {
+      return 'المهندس للبرمجيات';
+    }
+
+    return candidate;
+  }
+
+  factory InvoiceStoreInfo.fromContext(BuildContext context) {
+    final isArabic = context.locale.languageCode == 'ar';
+    String? name;
+    String? phone;
+    String? address;
+    String? distributor;
+
+    try {
+      final settingsState = context.watch<SettingsBloc>().state;
+      if (settingsState is SettingsLoaded) {
+        name = settingsState.companyName;
+        phone = settingsState.companyPhone;
+        address = settingsState.companyAddress;
+        distributor = settingsState.companyDistributor;
+      }
+    } catch (_) {
+      try {
+        final settingsState = context.read<SettingsBloc>().state;
+        if (settingsState is SettingsLoaded) {
+          name = settingsState.companyName;
+          phone = settingsState.companyPhone;
+          address = settingsState.companyAddress;
+          distributor = settingsState.companyDistributor;
+        }
+      } catch (_) {}
+    }
+
+    SharedPreferences? prefs;
+    try {
+      prefs = Gravity.find<SharedPreferences>();
+      if (name == null || name.trim().isEmpty) {
+        name = prefs.getString('company_name');
+      }
+      phone ??= prefs.getString('company_phone');
+      address ??= prefs.getString('company_address');
+      distributor ??= prefs.getString('company_distributor');
+    } catch (_) {}
+
+    String? userCompany;
+    try {
+      final user = context.read<AuthBloc>().currentUser;
+      userCompany = user?.companyName;
+    } catch (_) {}
+
+    final resolvedName = resolveCompanyName(
+      name: name,
+      isArabic: isArabic,
+      prefs: prefs,
+      fallbackUserCompany: userCompany,
+    );
+
+    final resolvedPhone = (phone != null && phone.trim().isNotEmpty)
+        ? phone.trim()
+        : '٠١١١٥٥٢٥٩٤٢ / ٠١٢٢٥٥٩٥٢٧١';
+    final resolvedAddress = (address != null && address.trim().isNotEmpty)
+        ? address.trim()
+        : (isArabic ? 'الهرم - مربوطة حمزة' : 'Al-Haram - Marbouta Hamza');
+    final resolvedDistributor = (distributor != null && distributor.trim().isNotEmpty)
+        ? distributor.trim()
+        : (isArabic
+            ? 'موزع معتمد - مصطفى محمود'
+            : 'Authorized Distributor - Mostafa Mahmoud');
+
+    return InvoiceStoreInfo(
+      companyName: resolvedName,
+      companyPhone: resolvedPhone,
+      companyAddress: resolvedAddress,
+      companyDistributor: resolvedDistributor,
+    );
+  }
+}
+
 
 enum InvoiceFormatShape { a4, a5, thermal80 }
 
@@ -74,6 +205,7 @@ class A4InvoicePreviewWidget extends StatelessWidget {
     final isArabic = context.locale.languageCode == 'ar';
     final currency = isArabic ? 'ج.م' : 'EGP';
     final dateStr = DateFormat('yyyy-MM-dd HH:mm').format(sale.createdAt);
+    final storeInfo = InvoiceStoreInfo.fromContext(context);
 
     return Container(
       constraints: const BoxConstraints(maxWidth: 800),
@@ -103,7 +235,7 @@ class A4InvoicePreviewWidget extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'company_name'.tr(),
+                      storeInfo.companyName,
                       style: TextStyle(
                         fontSize: 20.sp,
                         fontWeight: FontWeight.bold,
@@ -119,9 +251,14 @@ class A4InvoicePreviewWidget extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      '${'phone'.tr()}: 01115525942 / 01225595271',
+                      '${'phone'.tr()}: ${storeInfo.companyPhone}',
                       style: TextStyle(fontSize: 11.sp, color: Colors.grey.shade600),
                     ),
+                    if (storeInfo.companyAddress.isNotEmpty)
+                      Text(
+                        storeInfo.companyAddress,
+                        style: TextStyle(fontSize: 10.sp, color: Colors.grey.shade600),
+                      ),
                   ],
                 ),
               ),
@@ -369,6 +506,7 @@ class A5InvoicePreviewWidget extends StatelessWidget {
     final isArabic = context.locale.languageCode == 'ar';
     final currency = isArabic ? 'ج.م' : 'EGP';
     final dateStr = DateFormat('yyyy-MM-dd HH:mm').format(sale.createdAt);
+    final storeInfo = InvoiceStoreInfo.fromContext(context);
 
     return Container(
       constraints: const BoxConstraints(maxWidth: 580),
@@ -407,11 +545,18 @@ class A5InvoicePreviewWidget extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'company_name'.tr(),
+                      storeInfo.companyName,
                       style: TextStyle(
                         fontSize: 15.sp,
                         fontWeight: FontWeight.bold,
                         color: theme.colorScheme.primary,
+                      ),
+                    ),
+                    Text(
+                      'company_subtitle'.tr(),
+                      style: TextStyle(
+                        fontSize: 10.sp,
+                        color: Colors.grey.shade700,
                       ),
                     ),
                     Text(
@@ -533,6 +678,7 @@ class ThermalReceiptPreviewWidget extends StatelessWidget {
     final isArabic = context.locale.languageCode == 'ar';
     final currency = isArabic ? 'ج.م' : 'EGP';
     final dateStr = DateFormat('yyyy-MM-dd HH:mm').format(sale.createdAt);
+    final storeInfo = InvoiceStoreInfo.fromContext(context);
 
     return Container(
       constraints: const BoxConstraints(maxWidth: 340),
@@ -560,7 +706,7 @@ class ThermalReceiptPreviewWidget extends StatelessWidget {
           ),
           SizedBox(height: 6.h),
           Text(
-            'company_name'.tr(),
+            storeInfo.companyName,
             style: TextStyle(
               fontSize: 14.sp,
               fontWeight: FontWeight.bold,
@@ -570,7 +716,16 @@ class ThermalReceiptPreviewWidget extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
           Text(
-            '01115525942 / 01225595271',
+            'company_subtitle'.tr(),
+            style: TextStyle(
+              fontSize: 9.sp,
+              fontFamily: 'monospace',
+              color: Colors.grey.shade700,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          Text(
+            storeInfo.companyPhone,
             style: TextStyle(fontSize: 9.sp, fontFamily: 'monospace', color: Colors.grey.shade800),
           ),
           SizedBox(height: 8.h),

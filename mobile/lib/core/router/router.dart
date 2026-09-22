@@ -16,6 +16,7 @@ import '../../features/returns/presentation/screens/returns_screen.dart';
 import '../../features/balance/presentation/screens/balance_screen.dart';
 import '../../features/pos/presentation/screens/invoice_details_screen.dart';
 import '../../features/pos/domain/entities/sale_entity.dart';
+import '../../features/about/presentation/screens/about_screen.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/login',
@@ -127,6 +128,13 @@ final GoRouter appRouter = GoRouter(
       pageBuilder: (context, state) => NoTransitionPage(
         key: state.pageKey,
         child: const BalanceScreen(),
+      ),
+    ),
+    GoRoute(
+      path: '/about',
+      pageBuilder: (context, state) => NoTransitionPage(
+        key: state.pageKey,
+        child: const AboutScreen(),
       ),
     ),
     GoRoute(

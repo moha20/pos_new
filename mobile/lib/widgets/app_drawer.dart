@@ -51,6 +51,11 @@ class AppDrawer extends StatelessWidget {
         labelKey: 'settings',
         route: '/settings',
       ),
+      _DrawerItem(
+        icon: Icons.info_outline,
+        labelKey: 'about',
+        route: '/about',
+      ),
     ];
 
     // All remaining tabs for quick access:

@@ -11,7 +11,7 @@ import '../../../../widgets/stat_card.dart';
 import '../../../../core/di/di.dart';
 import '../../../../services/print_service.dart';
 import '../../../../widgets/invoice_details_dialog.dart';
-import '../../../../services/cloud_sync_service.dart';
+import '../../../../widgets/invoice_format_widgets.dart';
 
 class SalesHistoryScreen extends StatefulWidget {
   const SalesHistoryScreen({super.key});
@@ -25,28 +25,10 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
   final ScrollController _verticalScrollController = ScrollController();
   final ScrollController _horizontalScrollController = ScrollController();
 
-  bool _showOnline = false;
-  List<OnlineSaleRecord> _onlineRecords = [];
-  bool _isLoadingOnline = false;
-
   @override
   void initState() {
     super.initState();
     context.read<SalesHistoryCubit>().loadSales();
-  }
-
-  void _fetchOnlineSales() async {
-    setState(() => _isLoadingOnline = true);
-    try {
-      final cloudSync = Gravity.find<CloudSyncService>();
-      final list = await cloudSync.fetchOnlineSales();
-      setState(() {
-        _onlineRecords = list;
-        _isLoadingOnline = false;
-      });
-    } catch (_) {
-      setState(() => _isLoadingOnline = false);
-    }
   }
 
   @override
@@ -129,190 +111,27 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
                   ),
                 ),
 
-                // Mode Selector Toggle (Local vs Online Cloud Sales)
+                // Search Box
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: SegmentedButton<bool>(
-                          style: SegmentedButton.styleFrom(
-                            selectedBackgroundColor: theme.colorScheme.primary,
-                            selectedForegroundColor: Colors.white,
-                            visualDensity: VisualDensity.compact,
-                          ),
-                          segments: [
-                            ButtonSegment<bool>(
-                              value: false,
-                              label: Text(isArabic ? 'المبيعات المحلية' : 'Local Sales'),
-                              icon: const Icon(Icons.table_chart_outlined, size: 18),
-                            ),
-                            ButtonSegment<bool>(
-                              value: true,
-                              label: Text('online_sales'.tr()),
-                              icon: const Icon(Icons.cloud_outlined, size: 18),
-                            ),
-                          ],
-                          selected: {_showOnline},
-                          onSelectionChanged: (val) {
-                            final isOnline = val.first;
-                            setState(() {
-                              _showOnline = isOnline;
-                            });
-                            if (isOnline) {
-                              _fetchOnlineSales();
-                            }
-                          },
-                        ),
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: TextField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      hintText: 'search'.tr(),
+                      prefixIcon: const Icon(Icons.search),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.r),
                       ),
-                    ],
+                    ),
+                    onChanged: (val) {
+                      context.read<SalesHistoryCubit>().searchSales(val);
+                    },
                   ),
                 ),
-                SizedBox(height: 8.h),
-
-                // Search Box
-                if (!_showOnline)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: TextField(
-                      controller: _searchController,
-                      decoration: InputDecoration(
-                        hintText: 'search'.tr(),
-                        prefixIcon: const Icon(Icons.search),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12.r),
-                        ),
-                      ),
-                      onChanged: (val) {
-                        context.read<SalesHistoryCubit>().searchSales(val);
-                      },
-                    ),
-                  ),
                 SizedBox(height: 12.h),
 
-                // Online Cloud Sales View
-                if (_showOnline)
-                  Expanded(
-                    child: _isLoadingOnline
-                        ? const Center(child: CircularProgressIndicator())
-                        : _onlineRecords.isEmpty
-                            ? Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(Icons.cloud_off_rounded, size: 48.r, color: Colors.grey),
-                                    SizedBox(height: 8.h),
-                                    Text(
-                                      isArabic ? 'لا توجد مبيعات أونلاين مسجلة بعد' : 'No online cloud sales recorded yet',
-                                      style: TextStyle(color: Colors.grey.shade600),
-                                    ),
-                                  ],
-                                ),
-                              )
-                            : ListView.builder(
-                                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-                                itemCount: _onlineRecords.length,
-                                itemBuilder: (context, index) {
-                                  final rec = _onlineRecords[index];
-                                  final formattedDate = DateFormat('yyyy-MM-dd HH:mm').format(rec.createdAt);
-                                  return Card(
-                                    margin: EdgeInsets.only(bottom: 10.h),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12.r),
-                                      side: BorderSide(
-                                        color: theme.dividerColor.withValues(alpha: 0.1),
-                                      ),
-                                    ),
-                                    child: Padding(
-                                      padding: EdgeInsets.all(14.r),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Row(
-                                                children: [
-                                                  Container(
-                                                    padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-                                                    decoration: BoxDecoration(
-                                                      color: Colors.blue.withValues(alpha: 0.1),
-                                                      borderRadius: BorderRadius.circular(8.r),
-                                                    ),
-                                                    child: Text(
-                                                      rec.invoiceNumber,
-                                                      style: TextStyle(
-                                                        fontWeight: FontWeight.bold,
-                                                        color: Colors.blue.shade800,
-                                                        fontSize: 12.sp,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  SizedBox(width: 8.w),
-                                                  Container(
-                                                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                                                    decoration: BoxDecoration(
-                                                      color: Colors.purple.withValues(alpha: 0.1),
-                                                      borderRadius: BorderRadius.circular(6.r),
-                                                    ),
-                                                    child: Row(
-                                                      children: [
-                                                        Icon(Icons.business, size: 12.r, color: Colors.purple),
-                                                        SizedBox(width: 4.w),
-                                                        Text(
-                                                          rec.companyName,
-                                                          style: TextStyle(
-                                                            fontSize: 11.sp,
-                                                            fontWeight: FontWeight.bold,
-                                                            color: Colors.purple.shade900,
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                              Text(
-                                                formatCurrency(rec.total),
-                                                style: TextStyle(
-                                                  fontWeight: FontWeight.w900,
-                                                  fontSize: 15.sp,
-                                                  color: theme.colorScheme.primary,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          SizedBox(height: 8.h),
-                                          Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Row(
-                                                children: [
-                                                  Icon(Icons.person_pin, size: 14.r, color: Colors.grey),
-                                                  SizedBox(width: 4.w),
-                                                  Text(
-                                                    '${isArabic ? "الكاشير / المستخدم" : "Cashier"}: ${rec.cashierId}',
-                                                    style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w600),
-                                                  ),
-                                                ],
-                                              ),
-                                              Text(
-                                                formattedDate,
-                                                style: TextStyle(fontSize: 11.sp, color: Colors.grey),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                  ),
-
                 // Invoices List (DataTable for Desktop, Cards for Mobile & Tablet)
-                if (!_showOnline)
-                  Expanded(
+                Expanded(
                   child: sales.isEmpty
                       ? Center(child: Text('no_data'.tr()))
                       : (screenWidth <= 950)
@@ -544,10 +363,11 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
                                                   onPressed: () async {
                                                     final printService =
                                                         Gravity.find<PrintService>();
+                                                    final storeInfo = InvoiceStoreInfo.fromContext(context);
                                                     await printService.printInvoice(
                                                       context,
                                                       sale,
-                                                      'Al Mohands Electrical Tools / المهندس للأدوات الكهربائية',
+                                                      storeInfo.companyName,
                                                       context.locale.languageCode,
                                                     );
                                                   },
@@ -561,10 +381,11 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
                                                   onPressed: () async {
                                                     final printService =
                                                         Gravity.find<PrintService>();
+                                                    final storeInfo = InvoiceStoreInfo.fromContext(context);
                                                     await printService.shareInvoice(
                                                       context,
                                                       sale,
-                                                      'Al Mohands Electrical Tools / المهندس للأدوات الكهربائية',
+                                                      storeInfo.companyName,
                                                       context.locale.languageCode,
                                                     );
                                                   },

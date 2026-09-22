@@ -1,10 +1,10 @@
 import 'package:hive/hive.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../domain/entities/user_entity.dart';
 import '../models/user_model.dart';
 import '../../../../core/db/hive_config.dart';
 import '../../../../core/di/di.dart';
-import '../../../../services/cloud_sync_service.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final Box _box;
@@ -15,59 +15,21 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<UserEntity?> login(String username, String password, {String? companyName}) async {
     final passwordHash = hashPassword(password);
-    final userCompany = (companyName != null && companyName.trim().isNotEmpty)
-        ? companyName.trim()
-        : 'Al-Mohandis POS';
 
-    // 1. Verify Online Company Active Status and Company Admin Credentials
-    try {
-      final cloudSync = Gravity.find<CloudSyncService>();
-      final authRes = await cloudSync.authenticateOnline(userCompany, username, password);
-      if (authRes != null && authRes['role'] == 'admin') {
-        final adminUser = UserEntity(
-          id: 'admin_${userCompany.toLowerCase().replaceAll(' ', '_')}',
-          name: '$userCompany Admin',
-          username: username,
-          role: 'admin',
-          isActive: true,
-          companyName: userCompany,
-        );
-
-        // Seed in local Hive storage for offline capability
-        final model = UserModel(
-          id: adminUser.id,
-          name: adminUser.name,
-          username: adminUser.username,
-          passwordHash: passwordHash,
-          role: adminUser.role,
-          isActive: true,
-          companyName: userCompany,
-        );
-        await _box.put(adminUser.id, model.toMap());
-
-        _currentUser = adminUser;
-        return _currentUser;
-      }
-    } catch (e) {
-      if (e.toString().contains('COMPANY_INACTIVE') || e.toString().contains('COMPANY_NOT_FOUND')) {
-        rethrow;
-      }
-    }
-
-    // 2. Check local Hive DB for company users created by Company Admin inside the app
+    // Check local Hive DB for matching user
     for (final entry in _box.toMap().entries) {
       final user = UserModel.fromMap(entry.value as Map<dynamic, dynamic>);
       if (user.username == username && user.passwordHash == passwordHash) {
         if (user.isActive) {
-          final entity = UserEntity(
-            id: user.id,
-            name: user.name,
-            username: user.username,
-            role: user.role,
-            isActive: user.isActive,
-            companyName: userCompany,
-          );
+          final entity = user.toEntity();
           _currentUser = entity;
+          try {
+            final prefs = Gravity.find<SharedPreferences>();
+            await prefs.setString('logged_in_user_id', entity.id);
+            if (entity.companyName.trim().isNotEmpty) {
+              await prefs.setString('company_name', entity.companyName.trim());
+            }
+          } catch (_) {}
           return _currentUser;
         }
       }
@@ -78,22 +40,43 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<void> logout() async {
     _currentUser = null;
+    try {
+      final prefs = Gravity.find<SharedPreferences>();
+      await prefs.remove('logged_in_user_id');
+    } catch (_) {}
   }
 
   @override
   Future<UserEntity?> getCurrentUser() async {
-    return _currentUser;
+    if (_currentUser != null) return _currentUser;
+    try {
+      final prefs = Gravity.find<SharedPreferences>();
+      final savedId = prefs.getString('logged_in_user_id');
+      if (savedId != null) {
+        final raw = _box.get(savedId);
+        if (raw != null) {
+          _currentUser = UserModel.fromMap(raw as Map<dynamic, dynamic>).toEntity();
+          return _currentUser;
+        }
+      }
+    } catch (_) {}
+
+    // Fallback in local offline mode: restore active admin
+    for (final val in _box.values) {
+      final user = UserModel.fromMap(val as Map<dynamic, dynamic>);
+      if (user.role == 'admin' && user.isActive) {
+        _currentUser = user.toEntity();
+        return _currentUser;
+      }
+    }
+    return null;
   }
 
   @override
   Future<List<UserEntity>> getAllUsers() async {
-    final all = _box.values
+    return _box.values
         .map((v) => UserModel.fromMap(v as Map<dynamic, dynamic>).toEntity())
         .toList();
-    if (_currentUser != null && _currentUser!.companyName.isNotEmpty) {
-      return all.where((u) => u.companyName == _currentUser!.companyName || u.companyName.isEmpty).toList();
-    }
-    return all;
   }
 
   @override
@@ -101,7 +84,7 @@ class AuthRepositoryImpl implements AuthRepository {
     final id = generateId();
     final company = user.companyName.isNotEmpty
         ? user.companyName
-        : (_currentUser?.companyName ?? 'Al-Mohandis POS');
+        : (_currentUser?.companyName ?? 'Elmohands software');
 
     final model = UserModel(
       id: id,
@@ -109,7 +92,7 @@ class AuthRepositoryImpl implements AuthRepository {
       username: user.username,
       passwordHash: hashPassword(password),
       role: user.role,
-      isActive: user.isActive,
+      isActive: true,
       companyName: company,
     );
     await _box.put(id, model.toMap());
@@ -129,6 +112,9 @@ class AuthRepositoryImpl implements AuthRepository {
             : old.passwordHash,
         role: user.role,
         isActive: user.isActive,
+        companyName: user.companyName.trim().isNotEmpty
+            ? user.companyName.trim()
+            : old.companyName,
       );
       await _box.put(user.id, model.toMap());
     }
