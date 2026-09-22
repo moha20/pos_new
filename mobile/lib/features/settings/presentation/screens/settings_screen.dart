@@ -126,7 +126,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 prefixIcon: const Icon(Icons.business_rounded),
                               ),
                               validator: (v) => v == null || v.trim().isEmpty
-                                  ? 'no_data'.tr()
+                                  ? 'enter_company_name'.tr()
                                   : null,
                             ),
                             SizedBox(height: 12.h),

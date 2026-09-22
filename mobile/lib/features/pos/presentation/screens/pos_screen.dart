@@ -23,89 +23,199 @@ class POSScreen extends StatefulWidget {
 
 class _POSScreenState extends State<POSScreen> {
   final _searchController = TextEditingController();
-  bool _isGridView = false;
+  bool _isGridView = true;
   int _activeTab = 0;
+  String _selectedCategory = 'all';
 
   @override
   void initState() {
     super.initState();
-    // Load inventory and refresh POS next invoice count
     context.read<InventoryBloc>().add(LoadInventory());
     context.read<POSBloc>().add(POSInit());
   }
 
   @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final width = MediaQuery.of(context).size.width;
     final isDesktop = width > 950;
+    final isTablet = width >= 650 && width <= 950;
+    final isMobile = width < 650;
 
     final mainContent = Column(
       children: [
-        // Search & Scan Actions
-        Padding(
-          padding: EdgeInsets.all(12.0.r),
-          child: Row(
+        // Top Search & Category Filter Header
+        Container(
+          padding: EdgeInsets.fromLTRB(14.w, 12.h, 14.w, 8.h),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            border: Border(
+              bottom: BorderSide(
+                color: theme.colorScheme.outlineVariant.withValues(alpha: 0.6),
+              ),
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: TextField(
-                  controller: _searchController,
-                  decoration: InputDecoration(
-                    hintText: 'search'.tr(),
-                    prefixIcon: const Icon(Icons.search),
-                    border: OutlineInputBorder(
+              // Search input + Scanner + Grid Toggle
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _searchController,
+                      decoration: InputDecoration(
+                        hintText: 'search'.tr(),
+                        prefixIcon: const Icon(Icons.search_rounded),
+                        suffixIcon: _searchController.text.isNotEmpty
+                            ? IconButton(
+                                icon: const Icon(Icons.close_rounded, size: 18),
+                                onPressed: () {
+                                  _searchController.clear();
+                                  context.read<InventoryBloc>().add(SearchInventory(''));
+                                  setState(() {});
+                                },
+                              )
+                            : null,
+                      ),
+                      onChanged: (val) {
+                        setState(() {});
+                        context.read<InventoryBloc>().add(SearchInventory(val));
+                      },
+                    ),
+                  ),
+                  SizedBox(width: 8.w),
+                  IconButton.filledTonal(
+                    style: IconButton.styleFrom(
+                      backgroundColor: theme.colorScheme.surfaceContainerHighest,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                        side: BorderSide(
+                          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.6),
+                        ),
+                      ),
+                      padding: EdgeInsets.all(12.r),
+                    ),
+                    icon: Icon(
+                      _isGridView ? Icons.view_list_rounded : Icons.grid_view_rounded,
+                      color: theme.colorScheme.onSurface,
+                      size: 20.r,
+                    ),
+                    onPressed: () => setState(() => _isGridView = !_isGridView),
+                    tooltip: _isGridView ? 'view_list'.tr() : 'grid_view'.tr(),
+                  ),
+                  SizedBox(width: 8.w),
+                  Container(
+                    decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12.r),
+                      gradient: LinearGradient(
+                        colors: [
+                          theme.colorScheme.primary,
+                          theme.colorScheme.primary.withValues(alpha: 0.88),
+                        ],
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: theme.colorScheme.primary.withValues(alpha: 0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
                     ),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                  ),
-                  onChanged: (val) {
-                    context.read<InventoryBloc>().add(SearchInventory(val));
-                  },
-                ),
-              ),
-              SizedBox(width: 8.w),
-              IconButton(
-                icon: Icon(_isGridView ? Icons.view_list : Icons.grid_view),
-                onPressed: () => setState(() => _isGridView = !_isGridView),
-                tooltip: _isGridView ? 'view_list'.tr() : 'grid_view'.tr(),
-                style: IconButton.styleFrom(
-                  backgroundColor: theme.colorScheme.surface,
-                  padding: EdgeInsets.all(12.r),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.r),
-                    side: BorderSide(
-                      color: theme.dividerColor.withOpacity(0.15),
+                    child: ElevatedButton.icon(
+                      onPressed: () => _triggerBarcodeScanner(context),
+                      icon: const Icon(Icons.qr_code_scanner_rounded, color: Colors.white, size: 18),
+                      label: Text(
+                        'barcode'.tr(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        shadowColor: Colors.transparent,
+                        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 13.h),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                ],
               ),
-              SizedBox(width: 8.w),
-              ElevatedButton.icon(
-                onPressed: () => _triggerBarcodeScanner(context),
-                icon: const Icon(Icons.qr_code_scanner, color: Colors.white),
-                label: Text(
-                  'barcode'.tr(),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: theme.colorScheme.primary,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 16,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.r),
-                  ),
-                ),
+              SizedBox(height: 10.h),
+
+              // Category Pills
+              BlocBuilder<InventoryBloc, InventoryState>(
+                builder: (context, invState) {
+                  List<String> categories = ['all'];
+                  if (invState is InventoryLoaded) {
+                    final cats = invState.allProducts
+                        .map((p) => p.category.trim())
+                        .where((c) => c.isNotEmpty)
+                        .toSet()
+                        .toList();
+                    cats.sort();
+                    categories.addAll(cats);
+                  }
+
+                  return SizedBox(
+                    height: 34.h,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: categories.length,
+                      separatorBuilder: (_, __) => SizedBox(width: 6.w),
+                      itemBuilder: (context, index) {
+                        final cat = categories[index];
+                        final isSelected = _selectedCategory == cat;
+                        final label = cat == 'all' ? (context.locale.languageCode == 'ar' ? 'الكل' : 'All') : cat;
+
+                        return ChoiceChip(
+                          label: Text(label),
+                          selected: isSelected,
+                          onSelected: (selected) {
+                            if (selected) {
+                              setState(() => _selectedCategory = cat);
+                            }
+                          },
+                          showCheckmark: false,
+                          selectedColor: theme.colorScheme.primary,
+                          labelStyle: TextStyle(
+                            color: isSelected ? Colors.white : theme.colorScheme.onSurface,
+                            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                            fontSize: 11.5.sp,
+                          ),
+                          backgroundColor: isDark
+                              ? const Color(0xFF131D31)
+                              : const Color(0xFFF1F5F9),
+                          side: BorderSide(
+                            color: isSelected
+                                ? theme.colorScheme.primary
+                                : theme.colorScheme.outlineVariant.withValues(alpha: 0.6),
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20.r),
+                          ),
+                          padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 2.h),
+                        );
+                      },
+                    ),
+                  );
+                },
               ),
             ],
           ),
         ),
 
-        // Product Grid / List
+        // Product Catalog (Grid / List)
         Expanded(
           child: BlocBuilder<InventoryBloc, InventoryState>(
             builder: (context, invState) {
@@ -113,20 +223,42 @@ class _POSScreenState extends State<POSScreen> {
                 return const Center(child: CircularProgressIndicator());
               }
               if (invState is InventoryLoaded) {
-                final products = invState.filteredProducts
-                    .where((p) => p.isActive)
-                    .toList();
-                if (products.isEmpty) {
-                  return Center(child: Text('no_data'.tr()));
+                var products = invState.filteredProducts.where((p) => p.isActive).toList();
+                if (_selectedCategory != 'all') {
+                  products = products.where((p) => p.category.trim() == _selectedCategory).toList();
                 }
+
+                if (products.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.inventory_2_outlined,
+                          size: 48.r,
+                          color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
+                        ),
+                        SizedBox(height: 12.h),
+                        Text(
+                          'no_data'.tr(),
+                          style: TextStyle(
+                            color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
                 if (_isGridView) {
                   return GridView.builder(
                     padding: EdgeInsets.all(12.r),
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: isDesktop ? 3 : 2,
-                      childAspectRatio: 0.68,
-                      crossAxisSpacing: 12,
-                      mainAxisSpacing: 12,
+                      crossAxisCount: isDesktop ? 3 : (isTablet ? 2 : 2),
+                      childAspectRatio: 0.76,
+                      crossAxisSpacing: 10.w,
+                      mainAxisSpacing: 10.h,
                     ),
                     itemCount: products.length,
                     itemBuilder: (context, index) {
@@ -152,9 +284,6 @@ class _POSScreenState extends State<POSScreen> {
       ],
     );
 
-    final isTablet = width >= 650 && width <= 950;
-    final isMobile = width < 650;
-
     return BlocBuilder<POSBloc, POSState>(
       builder: (context, state) {
         final totalItemsCount = state.cartItems.fold<int>(0, (sum, item) => sum + item.qty);
@@ -163,34 +292,36 @@ class _POSScreenState extends State<POSScreen> {
 
         Widget bodyContent;
         if (isDesktop) {
-          // Desktop: 5:3 ratio split view (UNCHANGED)
           bodyContent = Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Expanded(flex: 5, child: mainContent),
+              Container(
+                width: 1,
+                color: theme.colorScheme.outlineVariant.withValues(alpha: 0.6),
+              ),
               const Expanded(flex: 3, child: CartWidget()),
             ],
           );
         } else if (isTablet) {
-          // Tablet: 6:4 ratio 2-column POS terminal layout
           bodyContent = Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Expanded(flex: 6, child: mainContent),
+              Container(
+                width: 1,
+                color: theme.colorScheme.outlineVariant.withValues(alpha: 0.6),
+              ),
               const Expanded(flex: 4, child: CartWidget()),
             ],
           );
         } else {
-          // Mobile: Tabbed view with Floating Cart Summary Bar
           bodyContent = Stack(
             children: [
               Column(
                 children: [
                   Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 12.w,
-                      vertical: 8.h,
-                    ),
+                    padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
                     child: SizedBox(
                       width: double.infinity,
                       child: SegmentedButton<int>(
@@ -234,14 +365,13 @@ class _POSScreenState extends State<POSScreen> {
                   ),
                 ],
               ),
-              // Floating Cart Bottom Bar on Mobile when on Products tab
               if (isMobile && _activeTab == 0 && state.cartItems.isNotEmpty)
                 Positioned(
                   left: 16.w,
                   right: 16.w,
                   bottom: 16.h,
                   child: Material(
-                    elevation: 8,
+                    elevation: 10,
                     borderRadius: BorderRadius.circular(16.r),
                     color: theme.colorScheme.primary,
                     child: InkWell(
@@ -255,7 +385,7 @@ class _POSScreenState extends State<POSScreen> {
                               label: Text('$totalItemsCount'),
                               backgroundColor: Colors.white,
                               textColor: theme.colorScheme.primary,
-                              child: const Icon(Icons.shopping_bag_outlined, color: Colors.white),
+                              child: const Icon(Icons.shopping_bag_rounded, color: Colors.white),
                             ),
                             SizedBox(width: 12.w),
                             Expanded(
@@ -345,8 +475,8 @@ class _POSScreenState extends State<POSScreen> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            theme.colorScheme.primary.withOpacity(0.6),
-            theme.colorScheme.secondary.withOpacity(0.6),
+            theme.colorScheme.primary.withValues(alpha: 0.6),
+            theme.colorScheme.secondary.withValues(alpha: 0.6),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -356,8 +486,8 @@ class _POSScreenState extends State<POSScreen> {
       child: Text(
         firstLetter,
         style: TextStyle(
-          fontSize: 28.sp,
-          fontWeight: FontWeight.bold,
+          fontSize: 26.sp,
+          fontWeight: FontWeight.w900,
           color: Colors.white,
         ),
       ),
@@ -369,50 +499,44 @@ class _POSScreenState extends State<POSScreen> {
     ProductEntity product,
     ThemeData theme,
   ) {
-    final currencySymbol = 'currency_symbol'.tr();
+    final isArabic = context.locale.languageCode == 'ar';
+    final currencySymbol = isArabic ? 'ج.م' : 'EGP';
     final isLowStock = product.isLowStock;
     final isOutOfStock = product.isOutOfStock;
 
-    Color cardBorderColor = theme.dividerColor.withOpacity(0.15);
-    Color badgeColor = Colors.green;
+    Color badgeColor = const Color(0xFF10B981);
     String badgeText = '${'stock'.tr()}: ${product.stock}';
 
     if (isOutOfStock) {
-      cardBorderColor = Colors.red;
-      badgeColor = Colors.red;
+      badgeColor = const Color(0xFFEF4444);
       badgeText = 'out_of_stock'.tr();
     } else if (isLowStock) {
-      cardBorderColor = Colors.orange;
-      badgeColor = Colors.orange;
+      badgeColor = const Color(0xFFF59E0B);
       badgeText = '${'low_stock'.tr()} (${product.stock})';
     }
 
-    return InkWell(
-      onTap: isOutOfStock
-          ? null
-          : () {
-              context.read<POSBloc>().add(POSAddProduct(product));
-            },
-      child: Card(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16.r),
-          side: BorderSide(color: cardBorderColor, width: 1.5),
-        ),
-        clipBehavior: Clip.antiAlias,
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: isOutOfStock
+            ? null
+            : () {
+                context.read<POSBloc>().add(POSAddProduct(product));
+              },
+        hoverColor: theme.colorScheme.primary.withValues(alpha: 0.05),
         child: Padding(
-          padding: EdgeInsets.all(12.0.r),
+          padding: EdgeInsets.all(10.r),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Product Image or Placeholder
+              // Product Image container
               Container(
-                height: 80.h,
+                height: 76.h,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12.r),
+                  borderRadius: BorderRadius.circular(10.r),
                 ),
                 clipBehavior: Clip.antiAlias,
-                child:
-                    product.imagePath != null && product.imagePath!.isNotEmpty
+                child: product.imagePath != null && product.imagePath!.isNotEmpty
                     ? _buildProductImage(product.imagePath!)
                     : _buildProductPlaceholder(product.name, theme),
               ),
@@ -423,8 +547,9 @@ class _POSScreenState extends State<POSScreen> {
                 child: Text(
                   product.name,
                   style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12.5.sp,
+                    height: 1.2,
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -437,40 +562,45 @@ class _POSScreenState extends State<POSScreen> {
                 '${product.brand} • ${product.category}',
                 style: theme.textTheme.bodySmall?.copyWith(
                   fontSize: 10.sp,
-                  color: theme.colorScheme.onSurface.withOpacity(0.5),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
-              SizedBox(height: 8.h),
+              SizedBox(height: 6.h),
 
-              // Price (Retail is standard)
-              Text(
-                '${product.priceFor('retail').toStringAsFixed(2)} $currencySymbol',
-                style: TextStyle(
-                  fontWeight: FontWeight.w900,
-                  fontSize: 15.sp,
-                  color: theme.colorScheme.primary,
-                ),
-              ),
-              SizedBox(height: 8.h),
-
-              // Stock Status Badge
-              Container(
-                padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                decoration: BoxDecoration(
-                  color: badgeColor.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(8.r),
-                ),
-                child: Text(
-                  badgeText,
-                  style: TextStyle(
-                    color: badgeColor,
-                    fontSize: 10.sp,
-                    fontWeight: FontWeight.bold,
+              // Price & Stock Row
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      '${product.priceFor('retail').toStringAsFixed(2)} $currencySymbol',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w900,
+                        fontSize: 13.5.sp,
+                        color: theme.colorScheme.primary,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
-                  textAlign: TextAlign.center,
-                ),
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                    decoration: BoxDecoration(
+                      color: badgeColor.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(6.r),
+                    ),
+                    child: Text(
+                      badgeText,
+                      style: TextStyle(
+                        color: badgeColor,
+                        fontSize: 9.sp,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -484,57 +614,47 @@ class _POSScreenState extends State<POSScreen> {
     ProductEntity product,
     ThemeData theme,
   ) {
-    final currencySymbol = 'currency_symbol'.tr();
+    final isArabic = context.locale.languageCode == 'ar';
+    final currencySymbol = isArabic ? 'ج.م' : 'EGP';
     final isLowStock = product.isLowStock;
     final isOutOfStock = product.isOutOfStock;
 
-    Color cardBorderColor = theme.dividerColor.withOpacity(0.15);
-    Color badgeColor = Colors.green;
+    Color badgeColor = const Color(0xFF10B981);
     String badgeText = '${'stock'.tr()}: ${product.stock}';
 
     if (isOutOfStock) {
-      cardBorderColor = Colors.red;
-      badgeColor = Colors.red;
+      badgeColor = const Color(0xFFEF4444);
       badgeText = 'out_of_stock'.tr();
     } else if (isLowStock) {
-      cardBorderColor = Colors.orange;
-      badgeColor = Colors.orange;
+      badgeColor = const Color(0xFFF59E0B);
       badgeText = '${'low_stock'.tr()} (${product.stock})';
     }
 
     return Card(
-      margin: EdgeInsets.only(bottom: 8.h),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.r),
-        side: BorderSide(color: cardBorderColor, width: 1.2),
-      ),
+      margin: EdgeInsets.only(bottom: 6.h),
       child: InkWell(
         onTap: isOutOfStock
             ? null
             : () {
                 context.read<POSBloc>().add(POSAddProduct(product));
               },
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(14.r),
         child: Padding(
-          padding: EdgeInsets.all(8.0.r),
+          padding: EdgeInsets.all(8.r),
           child: Row(
             children: [
-              // Product Image or Placeholder
               Container(
-                height: 60.r,
-                width: 60.r,
+                height: 52.r,
+                width: 52.r,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 clipBehavior: Clip.antiAlias,
-                child:
-                    product.imagePath != null && product.imagePath!.isNotEmpty
+                child: product.imagePath != null && product.imagePath!.isNotEmpty
                     ? _buildProductImage(product.imagePath!)
                     : _buildProductPlaceholder(product.name, theme),
               ),
               SizedBox(width: 12.w),
-
-              // Product Info
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -542,7 +662,7 @@ class _POSScreenState extends State<POSScreen> {
                     Text(
                       product.name,
                       style: TextStyle(
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w700,
                         fontSize: 13.sp,
                       ),
                       maxLines: 1,
@@ -553,30 +673,27 @@ class _POSScreenState extends State<POSScreen> {
                       '${product.brand} • ${product.category}',
                       style: theme.textTheme.bodySmall?.copyWith(
                         fontSize: 10.sp,
-                        color: theme.colorScheme.onSurface.withOpacity(0.5),
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    SizedBox(height: 4.h),
+                    SizedBox(height: 3.h),
                     Row(
                       children: [
                         Text(
                           '${product.priceFor('retail').toStringAsFixed(2)} $currencySymbol',
                           style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 13.sp,
                             color: theme.colorScheme.primary,
                           ),
                         ),
-                        SizedBox(width: 12.w),
+                        SizedBox(width: 8.w),
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 2,
-                            horizontal: 6,
-                          ),
+                          padding: EdgeInsets.symmetric(vertical: 2.h, horizontal: 6.w),
                           decoration: BoxDecoration(
-                            color: badgeColor.withOpacity(0.15),
+                            color: badgeColor.withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(6.r),
                           ),
                           child: Text(
@@ -584,7 +701,7 @@ class _POSScreenState extends State<POSScreen> {
                             style: TextStyle(
                               color: badgeColor,
                               fontSize: 9.sp,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
                         ),
@@ -593,12 +710,11 @@ class _POSScreenState extends State<POSScreen> {
                   ],
                 ),
               ),
-
-              // Add button / icon
               IconButton(
                 icon: Icon(
-                  Icons.add_shopping_cart,
+                  Icons.add_circle_outline_rounded,
                   color: isOutOfStock ? Colors.grey : theme.colorScheme.primary,
+                  size: 24.r,
                 ),
                 onPressed: isOutOfStock
                     ? null

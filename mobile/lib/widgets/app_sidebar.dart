@@ -20,7 +20,11 @@ class AppSidebar extends StatelessWidget {
     final user = authBloc.currentUser;
 
     final List<_SidebarItem> items = [
-      _SidebarItem(icon: Icons.point_of_sale_rounded, labelKey: 'pos', route: '/pos'),
+      _SidebarItem(
+        icon: Icons.point_of_sale_rounded,
+        labelKey: 'pos',
+        route: '/pos',
+      ),
       _SidebarItem(
         icon: Icons.receipt_long_rounded,
         labelKey: 'sales_history',
@@ -107,7 +111,9 @@ class AppSidebar extends StatelessWidget {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  theme.colorScheme.primary.withValues(alpha: isDark ? 0.12 : 0.05),
+                  theme.colorScheme.primary.withValues(
+                    alpha: isDark ? 0.12 : 0.05,
+                  ),
                   Colors.transparent,
                 ],
                 begin: Alignment.topCenter,
@@ -195,7 +201,9 @@ class AppSidebar extends StatelessWidget {
                               ? LinearGradient(
                                   colors: [
                                     theme.colorScheme.primary,
-                                    theme.colorScheme.primary.withValues(alpha: 0.85),
+                                    theme.colorScheme.primary.withValues(
+                                      alpha: 0.85,
+                                    ),
                                   ],
                                   begin: Alignment.centerLeft,
                                   end: Alignment.centerRight,
@@ -205,7 +213,9 @@ class AppSidebar extends StatelessWidget {
                           boxShadow: isSelected
                               ? [
                                   BoxShadow(
-                                    color: theme.colorScheme.primary.withValues(alpha: 0.35),
+                                    color: theme.colorScheme.primary.withValues(
+                                      alpha: 0.35,
+                                    ),
                                     blurRadius: 10.r,
                                     offset: Offset(0, 4.h),
                                   ),
@@ -219,7 +229,9 @@ class AppSidebar extends StatelessWidget {
                               size: 20.r,
                               color: isSelected
                                   ? Colors.white
-                                  : theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                                  : theme.colorScheme.onSurface.withValues(
+                                      alpha: 0.7,
+                                    ),
                             ),
                             SizedBox(width: 14.w),
                             Expanded(
@@ -229,7 +241,9 @@ class AppSidebar extends StatelessWidget {
                                   color: isSelected
                                       ? Colors.white
                                       : theme.colorScheme.onSurface,
-                                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
+                                  fontWeight: isSelected
+                                      ? FontWeight.w800
+                                      : FontWeight.w500,
                                   fontSize: 13.sp,
                                 ),
                               ),
@@ -264,9 +278,13 @@ class AppSidebar extends StatelessWidget {
                   children: [
                     CircleAvatar(
                       radius: 18.r,
-                      backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.15),
+                      backgroundColor: theme.colorScheme.primary.withValues(
+                        alpha: 0.15,
+                      ),
                       child: Text(
-                        (user?.username.isNotEmpty == true) ? user!.username[0].toUpperCase() : 'U',
+                        (user?.username.isNotEmpty == true)
+                            ? user!.username[0].toUpperCase()
+                            : 'U',
                         style: TextStyle(
                           color: theme.colorScheme.primary,
                           fontWeight: FontWeight.bold,
@@ -289,9 +307,13 @@ class AppSidebar extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                           ),
                           Text(
-                            user?.isAdmin == true ? 'admin'.tr() : 'cashier'.tr(),
+                            user?.isAdmin == true
+                                ? 'admin'.tr()
+                                : 'cashier'.tr(),
                             style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                              color: theme.colorScheme.onSurface.withValues(
+                                alpha: 0.5,
+                              ),
                               fontSize: 10.sp,
                             ),
                           ),
@@ -299,7 +321,10 @@ class AppSidebar extends StatelessWidget {
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.logout_rounded, color: Colors.redAccent),
+                      icon: const Icon(
+                        Icons.logout_rounded,
+                        color: Colors.redAccent,
+                      ),
                       iconSize: 20.r,
                       onPressed: () {
                         context.read<AuthBloc>().add(AuthLogoutRequested());

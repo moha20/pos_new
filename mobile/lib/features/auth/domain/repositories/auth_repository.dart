@@ -8,4 +8,5 @@ abstract class AuthRepository {
   Future<void> addUser(UserEntity user, String password);
   Future<void> updateUser(UserEntity user, {String? password});
   Future<void> deleteUser(String id);
+  void updateCurrentCompany(String companyName);
 }

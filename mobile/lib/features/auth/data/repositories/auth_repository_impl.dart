@@ -124,4 +124,18 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<void> deleteUser(String id) async {
     await _box.delete(id);
   }
+
+  @override
+  void updateCurrentCompany(String companyName) {
+    if (_currentUser != null) {
+      _currentUser = UserEntity(
+        id: _currentUser!.id,
+        name: _currentUser!.name,
+        username: _currentUser!.username,
+        role: _currentUser!.role,
+        isActive: _currentUser!.isActive,
+        companyName: companyName,
+      );
+    }
+  }
 }

@@ -42,6 +42,11 @@ class AuthUpdateCompanyName extends AuthEvent {
   AuthUpdateCompanyName(this.companyName);
 }
 
+class AuthUpdateCompany extends AuthEvent {
+  final String companyName;
+  AuthUpdateCompany(this.companyName);
+}
+
 // States
 abstract class AuthState {}
 
@@ -206,6 +211,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         } catch (_) {}
       } catch (e) {
         emit(AuthFailure(e.toString()));
+      }
+    });
+
+    on<AuthUpdateCompany>((event, emit) async {
+      authRepository.updateCurrentCompany(event.companyName);
+      final user = await authRepository.getCurrentUser();
+      if (user != null) {
+        _currentUser = user;
+        emit(AuthSuccess(user));
       }
     });
   }

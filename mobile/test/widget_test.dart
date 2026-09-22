@@ -29,10 +29,30 @@ void main() {
       unit: 'Meter',
       isActive: true,
       prices: [
-        PriceTierEntity(level: 'retail', labelAr: 'تجزئة', labelEn: 'Retail', price: 28.0),
-        PriceTierEntity(level: 'salesman', labelAr: 'مندوب', labelEn: 'Salesman', price: 25.0),
-        PriceTierEntity(level: 'company', labelAr: 'شركة', labelEn: 'Company', price: 23.0),
-        PriceTierEntity(level: 'wholesale', labelAr: 'جملة', labelEn: 'Wholesale', price: 21.0),
+        PriceTierEntity(
+          level: 'retail',
+          labelAr: 'تجزئة',
+          labelEn: 'Retail',
+          price: 28.0,
+        ),
+        PriceTierEntity(
+          level: 'salesman',
+          labelAr: 'مندوب',
+          labelEn: 'Salesman',
+          price: 25.0,
+        ),
+        PriceTierEntity(
+          level: 'company',
+          labelAr: 'شركة',
+          labelEn: 'Company',
+          price: 23.0,
+        ),
+        PriceTierEntity(
+          level: 'wholesale',
+          labelAr: 'جملة',
+          labelEn: 'Wholesale',
+          price: 21.0,
+        ),
       ],
     );
 

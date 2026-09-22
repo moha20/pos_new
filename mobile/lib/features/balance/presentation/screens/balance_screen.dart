@@ -159,7 +159,7 @@ class _BalanceScreenState extends State<BalanceScreen>
                     builder: (context, constraints) {
                       final crossAxisCount = constraints.maxWidth > 750 ? 3 : (constraints.maxWidth > 450 ? 2 : 1);
                       final itemWidth = (constraints.maxWidth - (crossAxisCount - 1) * 16) / crossAxisCount;
-                      final double cardHeight = 100.h;
+                      final double cardHeight = 115.h;
                       final double childAspectRatio = itemWidth / cardHeight;
                       return GridView.count(
                         crossAxisCount: crossAxisCount,

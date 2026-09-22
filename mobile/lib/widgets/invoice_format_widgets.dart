@@ -752,52 +752,129 @@ class ThermalReceiptPreviewWidget extends StatelessWidget {
             style: TextStyle(fontSize: 10.sp, fontFamily: 'monospace'),
           ),
 
-          Text(
-            '------------------------------------------',
-            style: TextStyle(color: Colors.grey.shade500, fontFamily: 'monospace'),
-          ),
-
-          // Items list (Receipt style)
-          ...sale.items.map((item) {
-            return Padding(
-              padding: EdgeInsets.symmetric(vertical: 3.h),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+          // Items Table (80mm Receipt Table)
+          Table(
+            border: TableBorder.all(
+              color: Colors.black45,
+              width: 0.8,
+            ),
+            columnWidths: const {
+              0: const FlexColumnWidth(3.2),
+              1: const FlexColumnWidth(1.0),
+              2: const FlexColumnWidth(1.4),
+              3: const FlexColumnWidth(1.6),
+            },
+            children: [
+              TableRow(
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.07),
+                ),
                 children: [
-                  Text(
-                    item.productName,
-                    style: TextStyle(
-                      fontSize: 11.sp,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'monospace',
+                  Padding(
+                    padding: EdgeInsets.symmetric(vertical: 4.h, horizontal: 2.w),
+                    child: Text(
+                      'item'.tr(),
+                      style: TextStyle(
+                        fontSize: 10.sp,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'monospace',
+                      ),
+                      textAlign: TextAlign.center,
                     ),
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        '  ${item.qty} x ${item.unitPrice.toStringAsFixed(2)}',
-                        style: TextStyle(fontSize: 10.sp, fontFamily: 'monospace'),
+                  Padding(
+                    padding: EdgeInsets.symmetric(vertical: 4.h, horizontal: 2.w),
+                    child: Text(
+                      'qty'.tr(),
+                      style: TextStyle(
+                        fontSize: 10.sp,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'monospace',
                       ),
-                      Text(
-                        '${item.totalPrice.toStringAsFixed(2)} $currency',
-                        style: TextStyle(
-                          fontSize: 11.sp,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'monospace',
-                        ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.symmetric(vertical: 4.h, horizontal: 2.w),
+                    child: Text(
+                      'price'.tr(),
+                      style: TextStyle(
+                        fontSize: 10.sp,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'monospace',
                       ),
-                    ],
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.symmetric(vertical: 4.h, horizontal: 2.w),
+                    child: Text(
+                      'total'.tr(),
+                      style: TextStyle(
+                        fontSize: 10.sp,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'monospace',
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
                   ),
                 ],
               ),
-            );
-          }),
-
-          Text(
-            '------------------------------------------',
-            style: TextStyle(color: Colors.grey.shade500, fontFamily: 'monospace'),
+              ...sale.items.map((item) {
+                return TableRow(
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.symmetric(vertical: 3.h, horizontal: 3.w),
+                      child: Text(
+                        item.productName,
+                        style: TextStyle(
+                          fontSize: 10.sp,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: 'monospace',
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.symmetric(vertical: 3.h, horizontal: 2.w),
+                      child: Text(
+                        '${item.qty}',
+                        style: TextStyle(
+                          fontSize: 10.sp,
+                          fontFamily: 'monospace',
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.symmetric(vertical: 3.h, horizontal: 2.w),
+                      child: Text(
+                        item.unitPrice.toStringAsFixed(2),
+                        style: TextStyle(
+                          fontSize: 10.sp,
+                          fontFamily: 'monospace',
+                        ),
+                        textAlign: TextAlign.right,
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.symmetric(vertical: 3.h, horizontal: 2.w),
+                      child: Text(
+                        item.totalPrice.toStringAsFixed(2),
+                        style: TextStyle(
+                          fontSize: 10.sp,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'monospace',
+                        ),
+                        textAlign: TextAlign.right,
+                      ),
+                    ),
+                  ],
+                );
+              }),
+            ],
           ),
+
+          SizedBox(height: 8.h),
 
           // Totals Breakdown
           _thermalRow('subtotal'.tr(), '${sale.subtotal.toStringAsFixed(2)} $currency'),
