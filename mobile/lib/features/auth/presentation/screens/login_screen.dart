@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../bloc/auth_bloc.dart';
 import '../../../../widgets/language_toggle.dart';
 import '../../../../widgets/app_logo.dart';
+import '../../../../core/constants/app_version.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -270,6 +271,31 @@ class _LoginScreenState extends State<LoginScreen> {
                       ],
                     ),
                     SizedBox(height: 10.h),
+
+                    // Version Badge
+                    Center(
+                      child: Container(
+                        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12.r),
+                          border: Border.all(
+                            color: theme.colorScheme.primary.withValues(alpha: 0.25),
+                          ),
+                        ),
+                        child: Text(
+                          AppVersion.getDisplayVersion(
+                            isArabic: context.locale.languageCode == 'ar',
+                          ),
+                          style: TextStyle(
+                            color: theme.colorScheme.primary,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 11.sp,
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 6.h),
                   ],
                 ),
               ),

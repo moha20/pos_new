@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../widgets/responsive_layout.dart';
 import '../../../../widgets/app_logo.dart';
+import '../../../../core/constants/app_version.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
@@ -124,6 +125,36 @@ class AboutScreen extends StatelessWidget {
                               fontWeight: FontWeight.bold,
                               fontSize: 12.sp,
                             ),
+                          ),
+                        ),
+                        SizedBox(height: 10.h),
+                        Container(
+                          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
+                          decoration: BoxDecoration(
+                            color: Colors.green.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(20.r),
+                            border: Border.all(
+                              color: Colors.green.withValues(alpha: 0.35),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.new_releases_rounded,
+                                size: 14.r,
+                                color: Colors.green.shade700,
+                              ),
+                              SizedBox(width: 6.w),
+                              Text(
+                                AppVersion.getDisplayVersion(isArabic: isArabic),
+                                style: TextStyle(
+                                  color: Colors.green.shade800,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12.sp,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
