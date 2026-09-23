@@ -1,65 +1,59 @@
-# Al-Mohandis Electrical Tools POS
+# 📱 Al-Mohandis POS - Mobile & Desktop Application
 
-A production-ready, local-first Desktop and Mobile Point of Sale (POS) application built for **Al-Mohandis Electrical Tools** using Flutter, Realm DB for local storage, easy_localization for bilingual (Arabic/English) translations, GoRouter for routing, and flutter_bloc for state management, organized under Clean Architecture principles.
+![Flutter](https://img.shields.io/badge/Flutter-%3E%3D3.10.0-02569B.svg?logo=flutter)
+![Dart](https://img.shields.io/badge/Dart-%3E%3D3.0.0-0175C2.svg?logo=dart)
+![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20iOS%20%7C%20macOS%20%7C%20Windows%20%7C%20Web-blue)
 
----
-
-## ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-## FEATURES & STATE FLOW
-## ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-1. **Clean Architecture**: Organized into `core/` (infrastructure, DI container, routing, themes) and `features/` (auth, inventory, pos, customers, suppliers, reports, cashier, settings) with clear splits between domain, data, and presentation layers.
-2. **Local-first with Realm DB**: Seamless offline experience using Realm DB for lightning-fast database transactions.
-3. **Multi-tier Pricing**:
-   - Products are seeded with 4 distinct price tiers: **Retail**, **Salesman**, **Company**, and **Wholesale**.
-   - Customer profiles are assigned a tier level. Selecting a customer at checkout automatically recalculates all cart items to their assigned pricing tier.
-   - Managers and administrators can manually override any item's price level at checkout using a dropdown menu. Cashier accounts have this option disabled.
-4. **Bilingual Localization (RTL / LTR)**:
-   - Built-in, hot-swappable toggle pill switch (AR | EN) changes the entire UI layout.
-   - Arabic sets `TextDirection.rtl`, shifts the sidebar, aligns forms right, and formats prices using EGP.
-   - English sets `TextDirection.ltr` and aligns forms left.
-5. **Cashier Shifts & Z-Reports**:
-   - Register shift management: Open shift with starting cash.
-   - Log business expenses, categorizing them securely.
-   - Close shifts to automatically generate and print Z-reports detailing cash flows.
-6. **Receipt Printing**: Generates and prints roll-80 formatted customer receipts using the `printing` and `pdf` packages.
+The Flutter mobile & desktop application module for **Al-Mohandis POS (تطبيق المهندس لنقاط البيع وإدارة المبيعات)**. Built with Clean Architecture, Flutter, Hive/Realm DB for local storage, `easy_localization` for bilingual (Arabic/English) support, `go_router` for routing, and `flutter_bloc` / `signals_flutter` for state management.
 
 ---
 
-## ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-## SETUP & COMPILATION
-## ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+## 🌟 Features & Capabilities
+
+1. **Clean Architecture Layout**: Organized into `core/` (infrastructure, DI container, routing, themes, localization) and `features/` (auth, inventory, pos, customers, suppliers, reports, cashier, settings).
+2. **Offline-First Storage**: High-performance local transactions using Hive / Realm DB.
+3. **Multi-tier Pricing Matrix**:
+   - Products support 4 price tiers: **Retail**, **Salesman**, **Company**, and **Wholesale**.
+   - Customer selection auto-applies customer pricing tier to active cart items.
+   - Admin/Manager manual price level override options.
+4. **Bilingual RTL / LTR Switching**:
+   - Dynamic switch pill (`AR` | `EN`) re-renders layouts on the fly.
+   - Full Arabic RTL layout support with EGP currency formatting.
+5. **Cashier Shift & Z-Reports**:
+   - Register shift opening with initial drawer cash tracking.
+   - Categorized expense logging during shift.
+   - Shift closure Z-report generation and thermal printing.
+6. **Receipt & Thermal Printing**:
+   - 80mm roll printer support and standard PDF output via `printing` and `pdf` packages.
+7. **Direct WhatsApp Invoice Sharing**:
+   - Fast one-click customer receipt transmission via WhatsApp integration.
+
+---
+
+## 🛠️ Setup & Execution
 
 ### 1. Fetch Dependencies
-Install package dependencies:
 ```bash
 flutter pub get
 ```
 
-### 2. Compile Realm Schemas
-Realm DB requires code generation for model schemas. Compile the schemas:
+### 2. Generate Code & DB Schemas
 ```bash
 dart run build_runner build --delete-conflicting-outputs
 ```
 
-### 3. Run the App
-Launch the POS app on your active platform (Android, iOS, macOS, Windows, Linux, or Web):
+### 3. Run Application
 ```bash
 flutter run
 ```
 
 ---
 
-## ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-## SEEDED ACCOUNTS FOR TESTING
-## ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+## 🔑 Default Credentials
 
-On first launch, the app initializes the database and seeds **10 electrical products** (each with 4 price tiers) and **2 users** for testing:
+- **Admin Account**: Username: `admin` | Password: `admin123`
+- **Cashier Account**: Username: `cashier` | Password: `cashier123`
 
-*   **Administrator Account** (Full access, including manual pricing overrides and user management):
-    *   **Username**: `admin`
-    *   **Password**: `admin123`
-*   **Cashier Account** (Restricted access, hidden cost prices, disabled manual pricing overrides):
-    *   **Username**: `cashier`
-    *   **Password**: `cashier123`
-# pos_new
+---
+
+For complete project details, company info, and Windows NW.js packaging instructions, see the main [Root README.md](../README.md).
