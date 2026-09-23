@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>سياسة الخصوصية | Privacy Policy - Al-Mohandis POS</title>
-  <meta name="description" content="سياسة الخصوصية الرسمية لتطبيق المهندس لنقاط البيع وإدارة المبيعات (Al-Mohandis POS) التابع لشركة المهندس للبرمجيات.">
+  <title>Privacy Policy | سياسة الخصوصية - Al-Mohandis POS</title>
+  <meta name="description" content="Official Privacy Policy for Al-Mohandis POS Point of Sale and Inventory Management System by Elmohands Software.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -44,7 +44,7 @@
     }
 
     body {
-      font-family: 'Cairo', 'Inter', -apple-system, sans-serif;
+      font-family: 'Inter', 'Cairo', -apple-system, sans-serif;
       background: var(--bg);
       color: var(--text);
       line-height: 1.7;
@@ -57,8 +57,8 @@
       background-attachment: fixed;
     }
 
-    html[dir="ltr"] {
-      font-family: 'Inter', 'Cairo', -apple-system, sans-serif;
+    html[dir="rtl"] {
+      font-family: 'Cairo', 'Inter', -apple-system, sans-serif;
     }
 
     header {
@@ -294,15 +294,90 @@
           <span id="themeIcon">☀️</span>
         </button>
         <button class="btn" id="langBtn" aria-label="Toggle Language">
-          <span id="langLabel">English</span>
+          <span id="langLabel">العربية</span>
         </button>
       </div>
     </div>
   </header>
 
   <main>
+    <!-- ENGLISH CONTENT (DEFAULT) -->
+    <div id="content-en" class="lang-content active">
+      <div class="hero">
+        <span class="tag">🛡️ Official Google Play Privacy Document</span>
+        <h1>Privacy Policy for Al-Mohandis POS</h1>
+        <div class="meta-bar">
+          <span>📦 Package ID: <code>com.almohandis.almohandis_pos</code></span>
+          <span>🏢 Developer: Elmohands Software</span>
+          <span>📅 Last Updated: September 23, 2026</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>1. Overview & Commitment to Privacy</h2>
+        <p>At <strong>Elmohands Software</strong>, we hold your privacy in the highest regard. <strong>Al-Mohandis POS</strong> is engineered with a strict <strong>Offline-First architecture</strong>, ensuring that all confidential commercial data, financial logs, and customer records remain strictly on your local device.</p>
+      </div>
+
+      <div class="card">
+        <h2>2. Data Handling & Offline-First Principles</h2>
+        <p>The application functions as a self-contained, independent Point of Sale system:</p>
+        <ul>
+          <li><strong>Inventory & Transaction Data:</strong> Sales invoices, product catalogs, pricing tiers, customer contacts, and supplier logs are maintained in a secure local database (Hive/Realm) on device storage.</li>
+          <li><strong>No Remote Tracking or Analytics:</strong> We do not transmit, analyze, rent, or sell your business transactions to external cloud servers or third-party marketing services.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h2>3. Device Permissions & Usage Rationale</h2>
+        <p>The application strictly requests permissions necessary to deliver operational cashier functionality:</p>
+        <div class="badge-grid">
+          <div class="badge-box">
+            <strong>📷 Camera</strong>
+            <span>Used exclusively for scanning product barcodes. No photos, videos, or camera feeds are captured, stored, or transferred.</span>
+          </div>
+          <div class="badge-box">
+            <strong>🖨️ Bluetooth / Nearby Devices</strong>
+            <span>Enables direct connection to thermal POS receipt printers (80mm roll printers) for immediate receipt and Z-report printing.</span>
+          </div>
+          <div class="badge-box">
+            <strong>💾 Storage / Files</strong>
+            <span>Allows generating PDF customer receipts and creating or restoring local encrypted database backups.</span>
+          </div>
+          <div class="badge-box">
+            <strong>💬 WhatsApp Invoice Sharing</strong>
+            <span>Transfers formatted invoice text directly into your local WhatsApp application only upon your deliberate selection.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>4. Children's Privacy</h2>
+        <p>Al-Mohandis POS is intended strictly for commercial enterprises and business operators. It does not solicit or collect information from children under the age of 13.</p>
+      </div>
+
+      <div class="card">
+        <h2>5. Data Retention & Full User Control</h2>
+        <p>Because all records reside on your hardware, you retain unconditional control:</p>
+        <ul>
+          <li>You can reset, clear, or backup your data directly within the application or via device settings at any time.</li>
+          <li>Uninstalling the application immediately and permanently purges all local app records from your system.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h2>6. Contact & Developer Details</h2>
+        <p>If you have questions regarding this Privacy Policy or data security practices, reach us via:</p>
+        <ul>
+          <li><strong>Organization:</strong> Elmohands Software (شركة المهندس للبرمجيات)</li>
+          <li><strong>Lead Architect:</strong> Eng. Mohamed Salah (المهندس محمد صلاح)</li>
+          <li><strong>Official Website:</strong> <a href="https://elmohands.official-web.online/" target="_blank" rel="noopener">elmohands.official-web.online</a></li>
+          <li><strong>Facebook Page:</strong> <a href="https://www.facebook.com/share/1K7dFc8zGa/" target="_blank" rel="noopener">Elmohands Software Page</a></li>
+        </ul>
+      </div>
+    </div>
+
     <!-- ARABIC CONTENT -->
-    <div id="content-ar" class="lang-content active">
+    <div id="content-ar" class="lang-content">
       <div class="hero">
         <span class="tag">🛡️ وثيقة الخصوصية المعتمدة لمتجر Google Play</span>
         <h1>سياسة الخصوصية لتطبيق المهندس لنقاط البيع</h1>
@@ -375,81 +450,6 @@
         </ul>
       </div>
     </div>
-
-    <!-- ENGLISH CONTENT -->
-    <div id="content-en" class="lang-content">
-      <div class="hero">
-        <span class="tag">🛡️ Official Google Play Privacy Document</span>
-        <h1>Privacy Policy for Al-Mohandis POS</h1>
-        <div class="meta-bar">
-          <span>📦 Package ID: <code>com.almohandis.almohandis_pos</code></span>
-          <span>🏢 Developer: Elmohands Software</span>
-          <span>📅 Last Updated: September 23, 2026</span>
-        </div>
-      </div>
-
-      <div class="card">
-        <h2>1. Overview & Commitment to Privacy</h2>
-        <p>At <strong>Elmohands Software</strong>, we hold your privacy in the highest regard. <strong>Al-Mohandis POS</strong> is engineered with a strict <strong>Offline-First architecture</strong>, ensuring that all confidential commercial data, financial logs, and customer records remain strictly on your local device.</p>
-      </div>
-
-      <div class="card">
-        <h2>2. Data Handling & Offline-First Principles</h2>
-        <p>The application functions as a self-contained, independent Point of Sale system:</p>
-        <ul>
-          <li><strong>Inventory & Transaction Data:</strong> Sales invoices, product catalogs, pricing tiers, customer contacts, and supplier logs are maintained in an encrypted/isolated local database (Hive/Realm) on device storage.</li>
-          <li><strong>No Remote Tracking or Analytics:</strong> We do not transmit, analyze, rent, or sell your business transactions to external cloud servers or third-party marketing services.</li>
-        </ul>
-      </div>
-
-      <div class="card">
-        <h2>3. Device Permissions & Usage Rationale</h2>
-        <p>The application strictly requests permissions necessary to deliver operational cashier functionality:</p>
-        <div class="badge-grid">
-          <div class="badge-box">
-            <strong>📷 Camera</strong>
-            <span>Used exclusively for scanning product barcodes. No photos, videos, or camera feeds are captured, stored, or transferred.</span>
-          </div>
-          <div class="badge-box">
-            <strong>🖨️ Bluetooth / Nearby Devices</strong>
-            <span>Enables direct connection to thermal POS receipt printers (80mm roll printers) for immediate receipt and Z-report printing.</span>
-          </div>
-          <div class="badge-box">
-            <strong>💾 Storage / Files</strong>
-            <span>Allows generating PDF customer receipts and creating or restoring local encrypted database backups.</span>
-          </div>
-          <div class="badge-box">
-            <strong>💬 WhatsApp Invoice Sharing</strong>
-            <span>Transfers formatted invoice text directly into your local WhatsApp application only upon your deliberate selection.</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <h2>4. Children's Privacy</h2>
-        <p>Al-Mohandis POS is intended strictly for commercial enterprises and business operators. It does not solicit or collect information from children under the age of 13.</p>
-      </div>
-
-      <div class="card">
-        <h2>5. Data Retention & Full User Control</h2>
-        <p>Because all records reside on your hardware, you retain unconditional control:</p>
-        <ul>
-          <li>You can reset, clear, or backup your data directly within the application or via device settings at any time.</li>
-          <li>Uninstalling the application immediately and permanently purges all local app records from your system.</li>
-        </ul>
-      </div>
-
-      <div class="card">
-        <h2>6. Contact & Developer Details</h2>
-        <p>If you have questions regarding this Privacy Policy or data security practices, reach us via:</p>
-        <ul>
-          <li><strong>Organization:</strong> Elmohands Software</li>
-          <li><strong>Lead Architect:</strong> Eng. Mohamed Salah</li>
-          <li><strong>Official Website:</strong> <a href="https://elmohands.official-web.online/" target="_blank" rel="noopener">elmohands.official-web.online</a></li>
-          <li><strong>Facebook Page:</strong> <a href="https://www.facebook.com/share/1K7dFc8zGa/" target="_blank" rel="noopener">Elmohands Software Page</a></li>
-        </ul>
-      </div>
-    </div>
   </main>
 
   <footer>
@@ -469,7 +469,7 @@
     const contentEn = document.getElementById('content-en');
 
     let currentTheme = 'dark';
-    let currentLang = 'ar';
+    let currentLang = 'en';
 
     themeBtn.addEventListener('click', () => {
       currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
@@ -478,19 +478,19 @@
     });
 
     langBtn.addEventListener('click', () => {
-      currentLang = currentLang === 'ar' ? 'en' : 'ar';
-      if (currentLang === 'en') {
-        document.documentElement.setAttribute('lang', 'en');
-        document.documentElement.setAttribute('dir', 'ltr');
-        contentAr.classList.remove('active');
-        contentEn.classList.add('active');
-        langLabel.textContent = 'العربية';
-      } else {
+      currentLang = currentLang === 'en' ? 'ar' : 'en';
+      if (currentLang === 'ar') {
         document.documentElement.setAttribute('lang', 'ar');
         document.documentElement.setAttribute('dir', 'rtl');
         contentEn.classList.remove('active');
         contentAr.classList.add('active');
         langLabel.textContent = 'English';
+      } else {
+        document.documentElement.setAttribute('lang', 'en');
+        document.documentElement.setAttribute('dir', 'ltr');
+        contentAr.classList.remove('active');
+        contentEn.classList.add('active');
+        langLabel.textContent = 'العربية';
       }
     });
   </script>
