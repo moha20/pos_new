@@ -146,6 +146,7 @@ python3 package_nwjs.py
 
 ### 🌐 روابط التواصل والموقع الرسمي
 - 🌍 **الموقع الرسمي:** [Elmohands Software](https://elmohands.official-web.online/)
+- 🛡️ **سياسة الخصوصية (Privacy Policy):** [Privacy Policy Link](https://privacy.elmohands.official-web.online/)
 - 💼 **LinkedIn:** [Mohamed Salah Profile](https://www.linkedin.com/in/mohamed-salah-11a570112/)
 - 📘 **Facebook:** [Elmohands Software Page](https://www.facebook.com/share/1K7dFc8zGa/)
 
