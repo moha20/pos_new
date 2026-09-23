@@ -435,11 +435,13 @@ class _ProductFormState extends State<ProductForm> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            '${'price_tiers'.tr()} / Prices',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14.sp,
+                          Expanded(
+                            child: Text(
+                              'price_tiers'.tr(),
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14.sp,
+                              ),
                             ),
                           ),
                           TextButton.icon(
@@ -456,7 +458,7 @@ class _ProductFormState extends State<ProductForm> {
                               });
                             },
                             icon: const Icon(Icons.add),
-                            label: Text('${'add_price'.tr()} / Add Price'),
+                            label: Text('add_price'.tr()),
                           ),
                         ],
                       ),
