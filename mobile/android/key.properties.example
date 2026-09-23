@@ -1,0 +1,8 @@
+# Reference keystore configuration for Android Release Signing
+# DO NOT COMMIT actual key passwords or keystore files to source control!
+# Copy this file to `key.properties` in `mobile/android/key.properties`
+
+storePassword=YOUR_KEYSTORE_PASSWORD
+keyPassword=YOUR_KEY_PASSWORD
+keyAlias=upload
+storeFile=upload-keystore.jks
